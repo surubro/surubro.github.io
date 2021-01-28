@@ -32,11 +32,26 @@ footer, header, hgroup, menu, nav, section {
 body {
 	line-height: 1;
 }
+#hmm:hover{
+	color:white;
+	font-weight: 900;
 
+}
 ol, ul {
 	list-style: none;
 }
 
+#hi{
+	font-weight:900;
+	font-size:30px;
+}
+#hehe{
+	font-weight: bolder;
+	font-size: larger;
+}
+header{
+	font-size: larger;
+}
 blockquote, q {
 	quotes: none;
 }
