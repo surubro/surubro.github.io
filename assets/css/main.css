@@ -3991,3 +3991,12 @@ body.is-ie #wrapper > section > .content > section {
 	color:antiquewhite;
   text-shadow: 1px 1px 5px #f5f5f5bd;
 }
+.head{
+  font-weight: 650;
+}
+.head:hover{
+  font-weight: 700;
+  color:antiquewhite;
+  text-shadow: 1px 1px 5px #f5f5f5bd;
+
+}
