@@ -147,13 +147,12 @@ ul {
 #hii:hover {
   text-shadow: 1px 1px 5px #000000;
 }
-#hehe:hover {
-  text-shadow: 1px 1px 10px #261436;
-}
+
 #hehe {
   font-weight: 800;
   font-size: 1.9rem;
   color:#ffffff;
+  text-shadow: 1px 1px 10px #261436ae;
 }
 header {
   font-size: larger;
