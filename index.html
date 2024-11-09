@@ -1,4 +1,124 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>San-Kernel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://raw.githubusercontent.com/san-kernel/san-kernel.github.io/main/background.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            color: #333;
+            position: relative;
+        }
+        header {
+            background-color: rgba(74,144,226,0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            margin: 0;
+        }
+        .menu {
+            position: absolute;
+            top: 60px; /* Adjusted for header height */
+            left: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+        .menu-button {
+            background-color: #fff;
+            border: none;
+            color: #4a90e2;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1001; /* Ensure the button is above the menu */
+        }
+        .menu a {
+            display: block;
+            padding: 10px;
+            color: #333;
+            text-decoration: none;
+            border-bottom: 1px solid #e7e7e7;
+        }
+        .menu a:hover {
+            background-color: #f1f1f1;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h2 {
+            color: #4a90e2;
+        }
+        .features {
+            list-style: none;
+            padding: 0;
+        }
+        .features li {
+            padding: 10px;
+            background: #e7f3ff;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        a {
+            color: #4a90e2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #4a90e2;
+            color: white;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        /* Overlay for menu */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999; /* Ensure overlay is above everything else */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button class="menu-button" onclick="toggleMenu()">Menu</button>
+        <div class="menu" id="menu">
+            <a href="https://san-kernel.github.io" target="_blank">Home</a>
+            <a href="https://t.me/project_san_support" target="_blank">Community Chat</a>
+            <a href="https://www.pling.com/u/user-why-red" target="_blank">Download</a>
+            <a href="https://github.com/user-why-red" target="_blank">Developer Contact</a>
+        </div>
+
+<!DOCTYPE html>
 <html>
 
 <head>
