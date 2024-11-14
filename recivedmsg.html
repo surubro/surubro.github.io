@@ -35,12 +35,49 @@
     <!-- Box to show the last message -->
     <div class="message-box">
         <div class="box-title">Last Message</div>
-        <div class="message-content">
-            <!-- Replace this with the actual last message -->
-            This is the last message from the bot: <b>Hello! How can I assist you today?</b>
+        <div id="lastMessage" class="message-content">
+            <!-- Last message will be injected here -->
+            Loading...
         </div>
     </div>
 
+    <script>
+        // Function to fetch the last received message from the bot
+        async function fetchLastMessage() {
+            try {
+                // Replace this with your actual bot token and chat ID
+                const token = '8011121326:AAGPDXxlVyeK8v5RVICiPCu50-duD-Py06Q';
+                const chatId = '6617755331';
+                
+                // Construct the API URL
+                const url = `https://api.telegram.org/bot${token}/getUpdates?chat_id=${chatId}`;
+
+                // Fetch the data from Telegram API
+                const response = await fetch(url);
+                const data = await response.json();
+
+                // Check if there are any messages
+                if (data.result && data.result.length > 0) {
+                    const lastMessage = data.result[data.result.length - 1].message.text;
+                    document.getElementById('lastMessage').innerText = lastMessage;
+                } else {
+                    document.getElementById('lastMessage').innerText = 'No messages received yet.';
+                }
+            } catch (error) {
+                console.error('Error fetching message:', error);
+                document.getElementById('lastMessage').innerText = 'Error loading message';
+            }
+        }
+
+        // Fetch the message when the page loads
+        window.onload = function() {
+            // Fetch the last message initially
+            fetchLastMessage();
+
+            // Update the last message every 5 seconds (5000ms)
+            setInterval(fetchLastMessage, 5000);
+        };
+    </script>
+
 </body>
 </html>
-￼Enter
