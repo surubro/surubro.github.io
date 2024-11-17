@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Message</title>
+</head>
+<body>
+    <h1>Send Message</h1>
+
+    <!-- Form with a text area and a submit button -->
+    <form id="messageForm">
+        <textarea id="messageText" rows="4" cols="50" placeholder="Write your message..."></textarea><br><br>
+        <button type="submit">Send to Telegram</button>
+    </form>
+
+    <script>
+        document.getElementById('messageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const message = document.getElementById('messageText').value;
+
+            if (message) {
+                // Update this URL to point to your Replit server
+                fetch('https://665f0d2c-2ed8-44d9-a75c-88eebc38f177-00-du6zyj1q6hxp.sisko.replit.dev/send-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message); // Show success message
+                    } else {
+                        alert('Error sending message');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('There was an error with the request');
+                });
+            } else {
+                alert('Please write a message!');
+            }
+        });
+    </script>
+</body>
+</html
