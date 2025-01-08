@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T9 Encoder and Decoder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 50px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .output {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>T9 Encoder and Decoder</h1>
+    <label for="textInput">Enter Message (Plain Text or T9 Encoded):</label>
+    <textarea id="textInput" placeholder="Enter a message (e.g., 'hi' or '420_430')"></textarea>
+    <button onclick="convert()">Convert</button>
+
+    <div class="output">
+        <p><strong>Encoded Message (T9):</strong> <span id="encodedMessage"></span></p>
+        <p><strong>Decoded Message (Plain Text):</strong> <span id="decodedMessage"></span></p>
+    </div>
+
+    <script>
+        function convert() {
+            const t9Keys = {
+                "2": ["a", "b", "c"],
+                "3": ["d", "e", "f"],
+                "4": ["g", "h", "i"],
+                "5": ["j", "k", "l"],
+                "6": ["m", "n", "o"],
+                "7": ["p", "q", "r", "s"],
+                "8": ["t", "u", "v"],
+                "9": ["w", "x", "y", "z"]
+            };
+
+            const input = document.getElementById("textInput").value.trim().toLowerCase();
+
+            let encodedMessage = "";
+            let decodedMessage = "";
+
+            // Check if input is T9 code (numbers and '_')
+            if (/^[0-9_]+$/.test(input)) {
+                const words = input.split("_"); // Split by `_` for spaces
+                for (const word of words) {
+                    const segments = word.split("0"); // Split by `0` for letters
+                    for (const segment of segments) {
+                        if (segment.length >= 2) {
+                            const key = segment[0]; // T9 key (e.g., '4')
+                            const index = parseInt(segment[1]) - 1; // 1-based index for letter
+                            if (t9Keys[key] && t9Keys[key][index]) {
+                                decodedMessage += t9Keys[key][index];
+                            } else {
+                                decodedMessage += "?"; // Add placeholder for invalid segments
+                            }
+                        }
+                    }
+                    decodedMessage += " "; // Add a space after each word
+                }
+                decodedMessage = decodedMessage.trim(); // Remove trailing space
+                encodedMessage = input; // T9 input is already encoded
+            }
+            // Check if input is plain text (letters and spaces)
+            else if (/^[a-z\s]+$/.test(input)) {
+                for (const char of input) {
+                    if (char === " ") {
+                        encodedMessage += "_"; // Use `_` as word separator
+                    } else {
+                        for (const [key, letters] of Object.entries(t9Keys)) {
+                            const index = letters.indexOf(char);
+                            if (index !== -1) {
+                                encodedMessage += key + (index + 1) + "0"; // Add key and index (1-based)
+                                break;
+                            }
+                        }
+                    }
+                }
+                encodedMessage = encodedMessage.slice(0, -1); // Remove trailing `0`
+                decodedMessage = input; // Plain text is already decoded
+            } else {
+                decodedMessage = "Invalid input! Please enter only plain text or valid T9 code.";
+                encodedMessage = "Invalid input! Please enter only plain text or valid T9 code.";
+            }
+
+            // Update the HTML elements to show the messages
+            document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
+            document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+        }
+    </script>
+</body>
+</html>
