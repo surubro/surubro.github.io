@@ -32,6 +32,24 @@
             text-align: center;
             margin-top: 30px;
         }
+        .copy-btn {
+            padding: 5px 10px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background-color: #007B9E;
+        }
+        .text-box {
+            width: 100%;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -41,8 +59,13 @@
     <button onclick="convert()">Convert</button>
 
     <div class="output">
-        <p><strong>Encoded Message (T9):</strong> <span id="encodedMessage"></span></p>
-        <p><strong>Decoded Message (Plain Text):</strong> <span id="decodedMessage"></span></p>
+        <p><strong>Encoded Message (T9):</strong></p>
+        <div id="encodedMessage" class="text-box"></div>
+        <button class="copy-btn" onclick="copyText('encodedMessage')">Copy</button>
+
+        <p><strong>Decoded Message (Plain Text):</strong></p>
+        <div id="decodedMessage" class="text-box"></div>
+        <button class="copy-btn" onclick="copyText('decodedMessage')">Copy</button>
     </div>
 
     <!-- Image Section -->
@@ -114,6 +137,28 @@
             // Update the HTML elements to show the messages
             document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
             document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+        }
+
+        function copyText(elementId) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        alert("Text copied to clipboard!");
+                    })
+                    .catch((err) => {
+                        alert("Failed to copy text: " + err);
+                    });
+            } else {
+                // Fallback for browsers that don't support Clipboard API
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                document.body.removeChild(textArea);
+                alert("Text copied to clipboard!");
+            }
         }
     </script>
 </body>
