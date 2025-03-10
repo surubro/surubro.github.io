@@ -73,15 +73,17 @@
             document.getElementById("popup").style.display = "none";
             document.getElementById("overlay").style.display = "none";
             document.getElementById("message").innerText = "";
+            document.getElementById("password").value = "";  // Clear input after closing
         }
 
         function checkPassword() {
             var password = document.getElementById("password").value;
+            var message = document.getElementById("message");
+
             if (password === "chicken") {
-                document.getElementById("message").innerText = "Access Granted: I 8591815338</p>
-    <p>S 9137267873";
+                message.innerHTML = "<p>Access Granted: I 8591815338</p><p>S 9137267873</p>";
             } else {
-                document.getElementById("message").innerText = "Incorrect Password!";
+                message.innerText = "Incorrect Password!";
             }
         }
     </script>
