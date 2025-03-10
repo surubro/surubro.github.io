@@ -1,26 +1,82 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken World</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px gray;
+            border-radius: 8px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .close {
+            cursor: pointer;
+            color: red;
+            font-size: 18px;
+            float: right;
+        }
+    </style>
+</head>
 <body>
 
-<h1>My First Heading</h1>
-<p>A semiconductor is a material that is between the conductor and insulator in ability to conduct electrical current.[1] In many cases their conducting properties may be altered in useful ways by introducing impurities ("doping") into the crystal structure. When two differently doped regions exist in the same crystal, a semiconductor junction is created. The behavior of charge carriers, which include electrons, ions, and electron holes, at these junctions is the basis of diodes, transistors, and most modern electronics. Some examples of semiconductors are silicon, germanium, gallium arsenide, and elements near the so-called "metalloid staircase" on the periodic table. After silicon, gallium arsenide is the second-most common semiconductor and is used in laser diodes, solar cells, microwave-frequency integrated circuits, and others. Silicon is a critical element for fabricating most electronic circuits.
- 
- Here are 10 CPU names from different manufacturers:
+    <h1 onclick="showPopup()">Chicken World</h1>
 
-1. Intel Core i9-14900K
-2. Intel Core i7-13700K
-3. Intel Core i5-12600K
-4. Intel Xeon Platinum 8480+
-5. AMD Ryzen 9 7950X
-6. AMD Ryzen 7 7800X3D
-7. AMD Ryzen 5 7600X
-8. AMD EPYC 9654
-9. Apple M3 Max
-10. Qualcomm Snapdragon X Elite
-These CPUs range from high-performance desktop processors to server-grade and mobile chips. Let me know if you need more details!
+    <div class="overlay" id="overlay" onclick="closePopup()"></div>
 
- I 8591815338 S 9137267873
-  .</p>
+    <div class="popup" id="popup">
+        <span class="close" onclick="closePopup()">X</span>
+        <h2>Enter Password</h2>
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="checkPassword()">Submit</button>
+        <p id="message"></p>
+    </div>
+
+    <h3>Contact Information:</h3>
+    <p>Imran (Gpay) - 8591815338</p>
+    <p>Sunil - 9137267873</p>
+
+    <script>
+        function showPopup() {
+            document.getElementById("popup").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+        }
+
+        function closePopup() {
+            document.getElementById("popup").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+            document.getElementById("message").innerText = "";
+        }
+
+        function checkPassword() {
+            var password = document.getElementById("password").value;
+            if (password === "Imran") {
+                document.getElementById("message").innerText = "Access Granted: Welcome to Chicken World!";
+            } else {
+                document.getElementById("message").innerText = "Incorrect Password!";
+            }
+        }
+    </script>
 
 </body>
 </html>
