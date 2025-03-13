@@ -1,2 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy to Clipboard</title>
+</head>
+<body>
 
-netsh wlan export profile folder=C:\  key=clear
+    <p id="textToCopy">netsh wlan export profile folder=C:\ key=clear</p>
+    <button onclick="copyToClipboard()">Copy</button>
+
+    <script>
+        function copyToClipboard() {
+            // Create a temporary text area
+            let textArea = document.createElement("textarea");
+            textArea.value = document.getElementById("textToCopy").innerText;
+            
+            // Append to body
+            document.body.appendChild(textArea);
+            
+            // Select text
+            textArea.select();
+            textArea.setSelectionRange(0, 99999); // For mobile devices
+            
+            // Copy text
+            document.execCommand("copy");
+            
+            // Remove temporary element
+            document.body.removeChild(textArea);
+            
+            alert("Copied to clipboard!");
+        }
+    </script>
+
+</body>
+</html>
