@@ -12,19 +12,21 @@
         button { padding: 5px 10px; cursor: pointer; }
     </style>
     <script type="module">
+        // 🔹 Import Firebase Modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 🔹 Your Firebase Configuration
+        // 🔹 Firebase Configuration
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+            authDomain: "striped-acrobat-342207.firebaseapp.com",
+            databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+            projectId: "striped-acrobat-342207",
+            storageBucket: "striped-acrobat-342207.appspot.com",
+            messagingSenderId: "367114842706",
+            appId: "1:367114842706:web:0f6d504163ed3c72ed658b",
+            measurementId: "G-XXG625G3VP"
         };
 
         // 🔹 Initialize Firebase
@@ -32,7 +34,7 @@
         const auth = getAuth(app);
         const database = getDatabase(app);
 
-        // 🔹 Admin Login Function
+        // 🔹 Admin Login
         window.adminLogin = function () {
             const email = document.getElementById("adminEmail").value;
             const password = document.getElementById("adminPassword").value;
@@ -41,7 +43,7 @@
                 .then((userCredential) => {
                     const user = userCredential.user;
 
-                    // 🔹 Check if user is an admin
+                    // 🔹 Check if the user is an admin
                     get(ref(database, "admins/" + user.uid)).then((snapshot) => {
                         if (snapshot.exists()) {
                             document.getElementById("loginForm").style.display = "none";
