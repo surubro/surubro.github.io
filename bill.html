@@ -35,9 +35,6 @@
             border-radius: 3px;
             font-weight: bold;
         }
-        #result2 {
-            background-color: #f9f9f9;
-        }
         #result5 {
             margin-top: 20px;
             background-color: #e6f3ff;
@@ -64,25 +61,26 @@
         function calculateBill(event) {
             event.preventDefault();
             const units = document.getElementById('units').value;
-            const rate1 = 4.71;  // Energy charge rate
-            const rate2 = 1.17;  // Distribution multiplier
-            const rate3 = 0.25;  // FAC rate
-            const fixedCharge = 138;  // Fixed charges
+            const energyRate = 4.71;     // Energy charge rate
+            const distRate = 1.50;       // Distribution rate (adjust this as needed)
+            const facRate = 0.25;        // FAC rate
+            const multiplier = 1.17;     // Final bill multiplier
+            const fixedCharge = 138;     // Fixed charges
             
-            const energyCharge = units * rate1;
-            const finalBill = energyCharge * rate2;
-            const distributionCharge = finalBill - energyCharge;
-            const facCharge = units * rate3;
-            const electricityDuty = energyCharge + distributionCharge + facCharge + fixedCharge;
+            const energyCharge = units * energyRate;
+            const distributionCharge = units * distRate;
+            const facCharge = units * facRate;
+            const subtotal = (energyCharge + distributionCharge + facCharge) * multiplier;
+            const electricityDuty = subtotal + fixedCharge;
             
             document.getElementById('result1').innerHTML = 
                 `Energy Charge (× 4.71): $${energyCharge.toFixed(2)}`;
             document.getElementById('result2').innerHTML = 
-                `Final Bill (× 1.17): $${finalBill.toFixed(2)}`;
+                `Distribution Charge (× 1.50): $${distributionCharge.toFixed(2)}`;
             document.getElementById('result3').innerHTML = 
                 `FAC Charge (× 0.25): $${facCharge.toFixed(2)}`;
             document.getElementById('result4').innerHTML = 
-                `Distribution Charge: $${distributionCharge.toFixed(2)}<br>Fixed Charge: $${fixedCharge.toFixed(2)}`;
+                `Subtotal (× 1.17): $${subtotal.toFixed(2)}<br>Fixed Charge: $${fixedCharge.toFixed(2)}`;
             document.getElementById('result5').innerHTML = 
                 `Electricity Duty (Total): $${electricityDuty.toFixed(2)}`;
         }
