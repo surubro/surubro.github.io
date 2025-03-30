@@ -1,1 +1,59 @@
-dock
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .calculator {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="number"] {
+            padding: 5px;
+            width: 100px;
+            margin: 10px 0;
+        }
+        input[type="submit"] {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Bill Calculator</h2>
+        <form id="billForm" onsubmit="calculateBill(event)">
+            <label for="units">Enter Units:</label><br>
+            <input type="number" id="units" name="units" min="0" step="0.01" required><br>
+            <input type="submit" value="Calculate">
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateBill(event) {
+            event.preventDefault();
+            const units = document.getElementById('units').value;
+            const rate = 4.71;
+            const total = units * rate;
+            document.getElementById('result').innerHTML = 
+                `Total Bill: $${total.toFixed(2)}`;
+        }
+    </script>
+</body>
+</html>
