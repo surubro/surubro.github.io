@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        #adminPanel { display: none; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; }
+        button { padding: 5px 10px; cursor: pointer; }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -32,13 +39,21 @@
 
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    document.getElementById("loginForm").style.display = "none";
-                    document.getElementById("adminPanel").style.display = "block";
-                    loadUnapprovedUsers();
+                    const user = userCredential.user;
+
+                    // 🔹 Check if user is an admin
+                    get(ref(database, "admins/" + user.uid)).then((snapshot) => {
+                        if (snapshot.exists()) {
+                            document.getElementById("loginForm").style.display = "none";
+                            document.getElementById("adminPanel").style.display = "block";
+                            loadUnapprovedUsers();
+                        } else {
+                            alert("Access Denied! You are not an admin.");
+                            signOut(auth);
+                        }
+                    });
                 })
-                .catch(error => {
-                    alert("Login Failed: " + error.message);
-                });
+                .catch(error => alert("Login Failed: " + error.message));
         };
 
         // 🔹 Load Unapproved Users
@@ -91,13 +106,14 @@
 
     <!-- 🔹 Admin Login Form -->
     <div id="loginForm">
-        <input type="email" id="adminEmail" placeholder="Admin Email">
-        <input type="password" id="adminPassword" placeholder="Password">
+        <h3>Admin Login</h3>
+        <input type="email" id="adminEmail" placeholder="Admin Email" required>
+        <input type="password" id="adminPassword" placeholder="Password" required>
         <button onclick="adminLogin()">Login</button>
     </div>
 
     <!-- 🔹 Admin Dashboard -->
-    <div id="adminPanel" style="display: none;">
+    <div id="adminPanel">
         <h3>Unapproved Users</h3>
         <ul id="unapprovedUsers"></ul>
         <button onclick="adminLogout()">Logout</button>
