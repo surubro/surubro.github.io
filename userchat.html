@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Chat with OTP Login</title>
+    <title>Firebase Chat with Google Login</title>
     <script type="module">
         // Import Firebase SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -26,17 +26,14 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth();
-
-        // Setup reCAPTCHA
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible'
-        });
+        const provider = new GoogleAuthProvider();
 
         // Monitor authentication state
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById("authContainer").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
+                document.getElementById("userName").innerText = `Welcome, ${user.displayName}`;
                 loadMessages();
             } else {
                 document.getElementById("authContainer").style.display = "block";
@@ -44,22 +41,9 @@
             }
         });
 
-        // Function to send OTP
-        window.sendOTP = function () {
-            const phoneNumber = document.getElementById("phone").value;
-            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
-                .then(confirmationResult => {
-                    window.confirmationResult = confirmationResult;
-                    alert("OTP sent!");
-                })
-                .catch(error => alert(error.message));
-        };
-
-        // Function to verify OTP
-        window.verifyOTP = function () {
-            const otpCode = document.getElementById("otp").value;
-            window.confirmationResult.confirm(otpCode)
-                .then(() => alert("User logged in!"))
+        // Function to sign in with Google
+        window.googleLogin = function () {
+            signInWithPopup(auth, provider)
                 .catch(error => alert(error.message));
         };
 
@@ -76,7 +60,7 @@
 
             push(ref(database, "messages"), {
                 text: inputText,
-                user: user.phoneNumber,
+                user: user.displayName,
                 timestamp: Date.now()
             });
 
@@ -158,18 +142,13 @@
 
     <!-- Authentication Container -->
     <div class="container" id="authContainer">
-        <h2>Login with Phone</h2>
-        <input type="text" id="phone" placeholder="Enter phone number (e.g., +1234567890)" required><br>
-        <div id="recaptcha-container"></div>
-        <button onclick="sendOTP()">Send OTP</button>
-        <br><br>
-        <input type="text" id="otp" placeholder="Enter OTP" required><br>
-        <button onclick="verifyOTP()">Verify OTP</button>
+        <h2>Login with Google</h2>
+        <button onclick="googleLogin()">Sign in with Google</button>
     </div>
 
     <!-- Chat Container (Hidden Until Logged In) -->
     <div class="container" id="chatContainer" style="display:none;">
-        <h2>Chat Room</h2>
+        <h2 id="userName">Chat Room</h2>
         <div class="chat-box" id="chatBox"></div>
         <div class="input-container">
             <input type="text" id="userInput" placeholder="Type a message...">
