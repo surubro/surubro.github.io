@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 400px;
+            max-width: 450px;
             margin: 20px auto;
             padding: 20px;
         }
@@ -38,12 +38,15 @@
         #result2 {
             background-color: #f9f9f9;
         }
-        #result3 {
-            margin-bottom: 0;
+        #result5 {
+            margin-top: 20px;
+            background-color: #e6f3ff;
+            border-color: #0066cc;
         }
     </style>
 </head>
-<body |<div class="calculator">
+<body>
+    <div class="calculator">
         <h2>Bill Calculator</h2>
         <form id="billForm" onsubmit="calculateBill(event)">
             <label for="units">Enter Units:</label><br>
@@ -53,26 +56,35 @@
         <div id="result1" class="result-box"></div>
         <div id="result2" class="result-box"></div>
         <div id="result3" class="result-box"></div>
+        <div id="result4" class="result-box"></div>
+        <div id="result5" class="result-box"></div>
     </div>
 
     <script>
         function calculateBill(event) {
             event.preventDefault();
             const units = document.getElementById('units').value;
-            const rate1 = 4.71;  // Base rate
-            const rate2 = 1.17;  // Second multiplier
+            const rate1 = 4.71;  // Energy charge rate
+            const rate2 = 1.17;  // Distribution multiplier
             const rate3 = 0.25;  // FAC rate
+            const fixedCharge = 138;  // Fixed charges
             
-            const total1 = units * rate1;
-            const total2 = total1 * rate2;
-            const total3 = units * rate3;
+            const energyCharge = units * rate1;
+            const finalBill = energyCharge * rate2;
+            const distributionCharge = finalBill - energyCharge;
+            const facCharge = units * rate3;
+            const electricityDuty = energyCharge + distributionCharge + facCharge + fixedCharge;
             
             document.getElementById('result1').innerHTML = 
-                `energy (× 4.71): $${total1.toFixed(2)}`;
+                `Energy Charge (× 4.71): $${energyCharge.toFixed(2)}`;
             document.getElementById('result2').innerHTML = 
-                `distribution (× 1.17): $${total2.toFixed(2)}`;
+                `Final Bill (× 1.17): $${finalBill.toFixed(2)}`;
             document.getElementById('result3').innerHTML = 
-                `FAC Charge (× 0.25): $${total3.toFixed(2)}`;
+                `FAC Charge (× 0.25): $${facCharge.toFixed(2)}`;
+            document.getElementById('result4').innerHTML = 
+                `Distribution Charge: $${distributionCharge.toFixed(2)}<br>Fixed Charge: $${fixedCharge.toFixed(2)}`;
+            document.getElementById('result5').innerHTML = 
+                `Electricity Duty (Total): $${electricityDuty.toFixed(2)}`;
         }
     </script>
 </body>
