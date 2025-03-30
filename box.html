@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit to Firebase</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: darkblue;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Save to Firebase</h2>
+        <form id="myForm">
+            <input type="text" id="userInput" placeholder="Enter text..." required>
+            <button type="submit">Submit</button>
+        </form>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        // Firebase Configuration (Replace with your own config)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Handle Form Submission
+        document.getElementById("myForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const inputText = document.getElementById("userInput").value;
+
+            // Save to Firestore
+            db.collection("messages").add({
+                text: inputText,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                document.getElementById("status").innerText = "Saved successfully!";
+                document.getElementById("userInput").value = ""; // Clear input
+            })
+            .catch(error => {
+                document.getElementById("status").innerText = "Error: " + error;
+                console.error("Error adding document: ", error);
+            });
+        });
+    </script>
+
+</body>
+</html>
