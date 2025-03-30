@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit to Firebase</title>
+    <title>Submitt to Firebase</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
     <style>
@@ -64,7 +64,7 @@
             authDomain: "striped-acrobat-342207.firebaseapp.com",
             databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
             projectId: "striped-acrobat-342207",
-            storageBucket: "striped-acrobat-342207.appspot.com", // Fixed typo in storage bucket URL
+            storageBucket: "striped-acrobat-342207.appspot.com",
             messagingSenderId: "367114842706",
             appId: "1:367114842706:web:0f6d504163ed3c72ed658b",
             measurementId: "G-XXG625G3VP"
@@ -74,26 +74,37 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        console.log("Firebase initialized successfully"); // Check if Firebase loads
+
         // Form Submission Event Listener
         document.getElementById("myForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const inputText = document.getElementById("userInput").value;
             const statusMsg = document.getElementById("status");
 
-            // Save data to Realtime Database
+            if (!inputText.trim()) {
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "❌ Please enter some text!";
+                return;
+            }
+
+            console.log("Submitting to Firebase...");
+
+            // Save data to Firebase
             database.ref("messages").push({
                 text: inputText,
                 timestamp: Date.now()
             })
             .then(() => {
+                console.log("Data successfully sent to Firebase");
                 statusMsg.style.color = "green";
                 statusMsg.innerText = "✅ Successfully Sent!";
-                document.getElementById("userInput").value = ""; // Clear input field
+                document.getElementById("userInput").value = ""; // Clear input
             })
             .catch(error => {
+                console.error("Error adding document:", error);
                 statusMsg.style.color = "red";
                 statusMsg.innerText = "❌ Error: " + error.message;
-                console.error("Error adding document:", error);
             });
         });
     </script>
