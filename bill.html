@@ -28,9 +28,16 @@
             border: none;
             cursor: pointer;
         }
-        #result {
+        .result-box {
             margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
             font-weight: bold;
+        }
+        #result2 {
+            margin-top: 10px;
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -42,17 +49,24 @@
             <input type="number" id="units" name="units" min="0" step="0.01" required><br>
             <input type="submit" value="Calculate">
         </form>
-        <div id="result"></div>
+        <div id="result1" class="result-box"></div>
+        <div id="result2" class="result-box"></div>
     </div>
 
     <script>
         function calculateBill(event) {
             event.preventDefault();
             const units = document.getElementById('units').value;
-            const rate = 4.71;
-            const total = units * rate;
-            document.getElementById('result').innerHTML = 
-                `Total Bill: $${total.toFixed(2)}`;
+            const rate1 = 4.71;
+            const rate2 = 1.17;
+            
+            const total1 = units * rate1;
+            const total2 = total1 * rate2;
+            
+            document.getElementById('result1').innerHTML = 
+                `Base Bill (× 4.71): $${total1.toFixed(2)}`;
+            document.getElementById('result2').innerHTML = 
+                `Final Bill (× 1.17): $${total2.toFixed(2)}`;
         }
     </script>
 </body>
