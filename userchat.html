@@ -28,7 +28,7 @@
         const auth = getAuth();
         const provider = new GoogleAuthProvider();
 
-        // Monitor authentication state
+        // Monitor Authentication State
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById("authContainer").style.display = "none";
@@ -41,18 +41,18 @@
             }
         });
 
-        // Function to sign in with Google
+        // Google Login
         window.googleLogin = function () {
             signInWithPopup(auth, provider)
-                .catch(error => alert(error.message));
+                .catch(error => alert("Login Failed: " + error.message));
         };
 
-        // Function to log out
+        // Logout
         window.logout = function () {
             signOut(auth).then(() => alert("Logged out!"));
         };
 
-        // Function to send message
+        // Send Message
         window.sendMessage = function () {
             const user = auth.currentUser;
             const inputText = document.getElementById("userInput").value.trim();
@@ -67,7 +67,7 @@
             document.getElementById("userInput").value = ""; // Clear input
         };
 
-        // Function to load messages
+        // Load Messages
         function loadMessages() {
             const chatBox = document.getElementById("chatBox");
             chatBox.innerHTML = ""; // Clear chat on login
@@ -108,6 +108,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             margin-bottom: 10px;
+            background: #f9f9f9;
         }
         .input-container {
             display: flex;
