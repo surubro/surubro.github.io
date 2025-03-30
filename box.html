@@ -3,9 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit to Firebase</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+    <title>Firebase Data Submission</title>
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+            authDomain: "striped-acrobat-342207.firebaseapp.com",
+            databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+            projectId: "striped-acrobat-342207",
+            storageBucket: "striped-acrobat-342207.appspot.com",
+            messagingSenderId: "367114842706",
+            appId: "1:367114842706:web:0f6d504163ed3c72ed658b",
+            measurementId: "G-XXG625G3VP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Function to submit data
+        window.submitData = function () {
+            const inputText = document.getElementById("userInput").value;
+            const statusMsg = document.getElementById("status");
+
+            if (inputText.trim() === "") {
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "❌ Input cannot be empty!";
+                return;
+            }
+
+            push(ref(database, "messages"), {
+                text: inputText,
+                timestamp: Date.now()
+            })
+            .then(() => {
+                statusMsg.style.color = "green";
+                statusMsg.innerText = "✅ Successfully Sent!";
+                document.getElementById("userInput").value = ""; // Clear input
+            })
+            .catch(error => {
+                statusMsg.style.color = "red";
+                statusMsg.innerText = "❌ Error: " + error.message;
+                console.error("Error adding document:", error);
+            });
+        };
+    </script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,53 +96,10 @@
 
     <div class="container">
         <h2>Send Data to Firebase</h2>
-        <form id="myForm">
-            <input type="text" id="userInput" placeholder="Enter text..." required>
-            <button type="submit">Submit</button>
-        </form>
+        <input type="text" id="userInput" placeholder="Enter text..." required>
+        <button onclick="submitData()">Submit</button>
         <p id="status"></p>
     </div>
-
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-            authDomain: "striped-acrobat-342207.firebaseapp.com",
-            databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-            projectId: "striped-acrobat-342207",
-            storageBucket: "striped-acrobat-342207.appspot.com",
-            messagingSenderId: "367114842706",
-            appId: "1:367114842706:web:0f6d504163ed3c72ed658b",
-            measurementId: "G-XXG625G3VP"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Form Submission Event Listener
-        document.getElementById("myForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            const inputText = document.getElementById("userInput").value;
-            const statusMsg = document.getElementById("status");
-
-            // Save data to Firebase
-            database.ref("messages").push({
-                text: inputText,
-                timestamp: Date.now()
-            })
-            .then(() => {
-                statusMsg.style.color = "green";
-                statusMsg.innerText = "✅ Successfully Sent!";
-                document.getElementById("userInput").value = ""; // Clear input
-            })
-            .catch(error => {
-                statusMsg.style.color = "red";
-                statusMsg.innerText = "❌ Error: " + error.message;
-                console.error("Error adding document:", error);
-            });
-        });
-    </script>
 
 </body>
 </html>
