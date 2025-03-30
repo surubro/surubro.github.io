@@ -55,6 +55,7 @@
         <div id="result3" class="result-box"></div>
         <div id="result4" class="result-box"></div>
         <div id="result5" class="result-box"></div>
+        <div id="totalBill" class="result-box"></div>
     </div>
 
     <script>
@@ -84,7 +85,10 @@
 
             // Apply 16% duty on the total before duty
             const electricityDuty = (totalBeforeDuty * 16) / 100;
-            
+
+            // Calculate total bill
+            const totalBill = totalBeforeDuty + electricityDuty;
+
             // Display results
             document.getElementById('result1').innerHTML = 
                 `Energy Charge (× ${energyRate}): $${energyCharge.toFixed(2)}`;
@@ -96,6 +100,8 @@
                 `Subtotal: $${subtotal.toFixed(2)}<br>Fixed Charge: $${fixedCharge.toFixed(2)}`;
             document.getElementById('result5').innerHTML = 
                 `Electricity Duty (16%): $${electricityDuty.toFixed(2)}`;
+            document.getElementById('totalBill').innerHTML = 
+                `Total Bill: $${totalBill.toFixed(2)}`;
         }
     </script>
 </body>
