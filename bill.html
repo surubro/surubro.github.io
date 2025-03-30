@@ -60,29 +60,4 @@
     <script>
         function calculateBill(event) {
             event.preventDefault();
-            const units = document.getElementById('units').value;
-            const energyRate = 4.71;     // Energy charge rate
-            const distRate = 1.17;       // Distribution rate (adjust this as needed)
-            const facRate = 0.25;        // FAC rate
-            const fixedCharge = 138;     // Fixed charges
-            
-            const energyCharge = units * energyRate;
-            const distributionCharge = units * distRate;
-            const facCharge = units * facRate;
-            const subtotal = (energyCharge + distributionCharge + facCharge) * multiplier;
-            const electricityDuty = subtotal + fixedCharge;
-            
-            document.getElementById('result1').innerHTML = 
-                `Energy Charge (× 4.71): $${energyCharge.toFixed(2)}`;
-            document.getElementById('result2').innerHTML = 
-                `Distribution Charge (× 1.50): $${distributionCharge.toFixed(2)}`;
-            document.getElementById('result3').innerHTML = 
-                `FAC Charge (× 0.25): $${facCharge.toFixed(2)}`;
-            document.getElementById('result4').innerHTML = 
-                `Subtotal (× 1.17): $${subtotal.toFixed(2)}<br>Fixed Charge: $${fixedCharge.toFixed(2)}`;
-            document.getElementById('result5').innerHTML = 
-                `Electricity Duty (Total): $${electricityDuty.toFixed(2)}`;
-        }
-    </script>
-</body>
-</html>
+            const units = parseFloat(document.get
