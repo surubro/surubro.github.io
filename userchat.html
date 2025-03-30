@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Chat with OTP Login</title>
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+            authDomain: "striped-acrobat-342207.firebaseapp.com",
+            databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+            projectId: "striped-acrobat-342207",
+            storageBucket: "striped-acrobat-342207.appspot.com",
+            messagingSenderId: "367114842706",
+            appId: "1:367114842706:web:0f6d504163ed3c72ed658b",
+            measurementId: "G-XXG625G3VP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth();
+
+        // Setup reCAPTCHA
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible'
+        });
+
+        // Monitor authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("authContainer").style.display = "none";
+                document.getElementById("chatContainer").style.display = "block";
+                loadMessages();
+            } else {
+                document.getElementById("authContainer").style.display = "block";
+                document.getElementById("chatContainer").style.display = "none";
+            }
+        });
+
+        // Function to send OTP
+        window.sendOTP = function () {
+            const phoneNumber = document.getElementById("phone").value;
+            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+                .then(confirmationResult => {
+                    window.confirmationResult = confirmationResult;
+                    alert("OTP sent!");
+                })
+                .catch(error => alert(error.message));
+        };
+
+        // Function to verify OTP
+        window.verifyOTP = function () {
+            const otpCode = document.getElementById("otp").value;
+            window.confirmationResult.confirm(otpCode)
+                .then(() => alert("User logged in!"))
+                .catch(error => alert(error.message));
+        };
+
+        // Function to log out
+        window.logout = function () {
+            signOut(auth).then(() => alert("Logged out!"));
+        };
+
+        // Function to send message
+        window.sendMessage = function () {
+            const user = auth.currentUser;
+            const inputText = document.getElementById("userInput").value.trim();
+            if (!user || inputText === "") return;
+
+            push(ref(database, "messages"), {
+                text: inputText,
+                user: user.phoneNumber,
+                timestamp: Date.now()
+            });
+
+            document.getElementById("userInput").value = ""; // Clear input
+        };
+
+        // Function to load messages
+        function loadMessages() {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML = ""; // Clear chat on login
+
+            onChildAdded(ref(database, "messages"), (snapshot) => {
+                const message = snapshot.val();
+                const messageDiv = document.createElement("div");
+                messageDiv.className = "message";
+                messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+            });
+        }
+
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            flex-direction: column;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+        .message {
+            padding: 8px;
+            margin: 5px 0;
+            background: #007bff;
+            color: white;
+            border-radius: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Authentication Container -->
+    <div class="container" id="authContainer">
+        <h2>Login with Phone</h2>
+        <input type="text" id="phone" placeholder="Enter phone number (e.g., +1234567890)" required><br>
+        <div id="recaptcha-container"></div>
+        <button onclick="sendOTP()">Send OTP</button>
+        <br><br>
+        <input type="text" id="otp" placeholder="Enter OTP" required><br>
+        <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+
+    <!-- Chat Container (Hidden Until Logged In) -->
+    <div class="container" id="chatContainer" style="display:none;">
+        <h2>Chat Room</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <button onclick="logout()" style="background: red;">Logout</button>
+    </div>
+
+</body>
+</html>
