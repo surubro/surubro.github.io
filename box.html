@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submitt to Firebase</title>
+    <title>Submit to Firebase</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
     <style>
@@ -49,7 +49,7 @@
 <body>
 
     <div class="container">
-        <h2>Save 1to Firebase</h2>
+        <h2>Send Data to Firebase</h2>
         <form id="myForm">
             <input type="text" id="userInput" placeholder="Enter text..." required>
             <button type="submit">Submit</button>
@@ -74,21 +74,11 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        console.log("Firebase initialized successfully"); // Check if Firebase loads
-
         // Form Submission Event Listener
         document.getElementById("myForm").addEventListener("submit", function(event) {
             event.preventDefault();
             const inputText = document.getElementById("userInput").value;
             const statusMsg = document.getElementById("status");
-
-            if (!inputText.trim()) {
-                statusMsg.style.color = "red";
-                statusMsg.innerText = "❌ Please enter some text!";
-                return;
-            }
-
-            console.log("Submitting to Firebase...");
 
             // Save data to Firebase
             database.ref("messages").push({
@@ -96,15 +86,14 @@
                 timestamp: Date.now()
             })
             .then(() => {
-                console.log("Data successfully sent to Firebase");
                 statusMsg.style.color = "green";
                 statusMsg.innerText = "✅ Successfully Sent!";
                 document.getElementById("userInput").value = ""; // Clear input
             })
             .catch(error => {
-                console.error("Error adding document:", error);
                 statusMsg.style.color = "red";
                 statusMsg.innerText = "❌ Error: " + error.message;
+                console.error("Error adding document:", error);
             });
         });
     </script>
