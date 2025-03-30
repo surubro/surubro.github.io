@@ -25,7 +25,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        const auth = getAuth();
+        const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
         // Monitor Authentication State
@@ -44,6 +44,7 @@
         // Google Login
         window.googleLogin = function () {
             signInWithPopup(auth, provider)
+                .then((result) => console.log("User signed in:", result.user))
                 .catch(error => alert("Login Failed: " + error.message));
         };
 
