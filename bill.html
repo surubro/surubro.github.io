@@ -29,20 +29,21 @@
             cursor: pointer;
         }
         .result-box {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 3px;
             font-weight: bold;
         }
         #result2 {
-            margin-top: 10px;
             background-color: #f9f9f9;
+        }
+        #result3 {
+            margin-bottom: 0;
         }
     </style>
 </head>
-<body>
-    <div class="calculator">
+<body |<div class="calculator">
         <h2>Bill Calculator</h2>
         <form id="billForm" onsubmit="calculateBill(event)">
             <label for="units">Enter Units:</label><br>
@@ -51,22 +52,27 @@
         </form>
         <div id="result1" class="result-box"></div>
         <div id="result2" class="result-box"></div>
+        <div id="result3" class="result-box"></div>
     </div>
 
     <script>
         function calculateBill(event) {
             event.preventDefault();
             const units = document.getElementById('units').value;
-            const rate1 = 4.71;
-            const rate2 = 1.17;
+            const rate1 = 4.71;  // Base rate
+            const rate2 = 1.17;  // Second multiplier
+            const rate3 = 0.25;  // FAC rate
             
             const total1 = units * rate1;
             const total2 = total1 * rate2;
+            const total3 = units * rate3;
             
             document.getElementById('result1').innerHTML = 
                 `Base Bill (× 4.71): $${total1.toFixed(2)}`;
             document.getElementById('result2').innerHTML = 
                 `Final Bill (× 1.17): $${total2.toFixed(2)}`;
+            document.getElementById('result3').innerHTML = 
+                `FAC Charge (× 0.25): $${total3.toFixed(2)}`;
         }
     </script>
 </body>
