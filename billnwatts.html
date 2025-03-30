@@ -1,0 +1,107 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watt to Bill Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="number"] {
+            padding: 5px;
+            width: 150px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .result-box {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Watt to Unit Calculator</h2>
+        <label for="watt">Enter Wattage of Appliance:</label><br>
+        <input type="number" id="watt" placeholder="Enter watts" required>
+        <button onclick="calculateUnits()">Calculate</button>
+        <div>
+            <h3>Consumption Details</h3>
+            <p>Monthly Consumption: <span id="monthUnit">0</span> Units</p>
+        </div>
+    </div><div class="container">
+    <h2>Bill Calculator</h2>
+    <label for="units">Enter Units:</label><br>
+    <input type="number" id="units" name="units" min="0" step="0.01" required>
+    <button onclick="calculateBill()">Calculate Bill</button>
+    <div id="billResults" class="result-box"></div>
+</div>
+
+<script>
+    function calculateUnits() {
+        let watt = document.getElementById("watt").value;
+        if (watt > 0) {
+            let perHour = watt / 1000;
+            let perDay = perHour * 24;
+            let perMonth = perDay * 30;
+            
+            document.getElementById("monthUnit").innerText = perMonth.toFixed(2);
+            document.getElementById("units").value = perMonth.toFixed(2);
+        } else {
+            alert("Please enter a valid wattage.");
+        }
+    }
+
+    function calculateBill() {
+        let units = parseFloat(document.getElementById('units').value);
+        if (isNaN(units) || units <= 0) {
+            alert("Please enter a valid number of units.");
+            return;
+        }
+
+        const energyRate = 4.71;
+        const distRate = 1.17;
+        const facRate = 0.25;
+        const fixedCharge = 138;
+        
+        const energyCharge = units * energyRate;
+        const distributionCharge = units * distRate;
+        const facCharge = units * facRate;
+        const subtotal = energyCharge + distributionCharge + facCharge;
+        const totalBeforeDuty = subtotal + fixedCharge;
+        const electricityDuty = (totalBeforeDuty * 16) / 100;
+        const totalBill = totalBeforeDuty + electricityDuty;
+
+        document.getElementById('billResults').innerHTML = `
+            <p>Energy Charge: $${energyCharge.toFixed(2)}</p>
+            <p>Distribution Charge: $${distributionCharge.toFixed(2)}</p>
+            <p>FAC Charge: $${facCharge.toFixed(2)}</p>
+            <p>Subtotal: $${subtotal.toFixed(2)}</p>
+            <p>Fixed Charge: $${fixedCharge.toFixed(2)}</p>
+            <p>Electricity Duty (16%): $${electricityDuty.toFixed(2)}</p>
+            <h3>Total Bill: $${totalBill.toFixed(2)}</h3>
+        `;
+    }
+</script>
+
+</body>
+</html>
