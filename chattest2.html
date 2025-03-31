@@ -85,3 +85,98 @@
                 if (message.user === currentUserEmail) {
                     messageDiv.className = "message sent";
                     messageDiv.innerText = message.text;
+                } else {
+                    messageDiv.className = "message received";
+                    messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
+                }
+
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+            width: 100%;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            width: 100%;
+        }
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .message {
+            padding: 5px 10px;
+            margin: 5px 0;
+            max-width: 70%;
+            word-wrap: break-word;
+            font-size: 16px;
+        }
+        .sent {
+            background: #30D158;
+            color: white;
+            text-align: right;
+            align-self: flex-end;
+        }
+        .received {
+            background: #f1f1f1;
+            color: black;
+            text-align: left;
+            align-self: flex-start;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="authContainer">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button onclick="resetPassword()">Forgot Password?</button>
+    </div>
+
+    <div class="container" id="chatContainer" style="display:none;">
+        <h2 id="userName">Chat Room</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <button onclick="logout()" style="background: red;">Logout</button>
+    </div>
+</body>
+</html>
