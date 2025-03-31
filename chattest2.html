@@ -33,7 +33,7 @@
                 document.getElementById("userName").innerText = `Welcome, ${user.email}`;
                 loadMessages();
             } else {
-                document.getElementById("authContainer").style.display = "block";
+                document.getElementById("authContainer").style.display = "flex";
                 document.getElementById("chatContainer").style.display = "none";
             }
         });
@@ -45,39 +45,33 @@
                 .catch(error => alert("Login Failed: " + error.message));
         };
 
-        window.resetPassword = function () {
-            const email = document.getElementById("loginEmail").value;
-            if (email) {
-                sendPasswordResetEmail(auth, email)
-                    .then(() => alert("Password reset email sent! Check your inbox."))
-                    .catch(error => alert("Error: " + error.message));
-            } else {
-                alert("Please enter your email first.");
-            }
-        };
-
         window.logout = function () {
             signOut(auth).then(() => alert("Logged out!"));
         };
-    </script>
-</head>
-<body>
-    <div class="container" id="authContainer">
-        <h2>Login</h2>
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <button onclick="resetPassword()" style="background: none; color: blue; border: none; cursor: pointer;">Forgot Password?</button>
-    </div>
 
-    <div class="container" id="chatContainer" style="display:none;">
-        <h2 id="userName">Chat Room</h2>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="input-container">
-            <input type="text" id="userInput" placeholder="Type a message...">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-        <button onclick="logout()" style="background: red;">Logout</button>
-    </div>
-</body>
-</html>
+        window.resetPassword = function () {
+            const email = document.getElementById("loginEmail").value;
+            if (!email) {
+                alert("Please enter your email to reset password.");
+                return;
+            }
+            sendPasswordResetEmail(auth, email)
+                .then(() => alert("Password reset email sent!"))
+                .catch(error => alert("Error: " + error.message));
+        };
+
+        window.sendMessage = function () {
+            const user = auth.currentUser;
+            const inputText = document.getElementById("userInput").value.trim();
+            if (!user || inputText === "") return;
+
+            push(ref(database, "messages"), {
+                text: inputText,
+                user: user.email,
+                timestamp: Date.now()
+            });
+
+            document.getElementById("userInput").value = "";
+        };
+
+        function loadMessages
