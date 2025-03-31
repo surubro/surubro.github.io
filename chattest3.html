@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            max-width: 60%;
+            word-wrap: break-word;
+            font-size: 16px;
+            border-radius: 20px;
+            position: relative;
+        }
+        .sent {
+            background: #30D158;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        .sent::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #30D158;
+            border-top: 10px solid transparent;
+        }
+        .received {
+            background: #f1f1f1;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        .received::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 0;
+            height: 0;
+            border-right: 10px solid #f1f1f1;
+            border-top: 10px solid transparent;
+        }
+        .input-container {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const inputText = document.getElementById("userInput").value.trim();
+            if (inputText === "") return;
+
+            const chatBox = document.getElementById("chatBox");
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message sent";
+            messageDiv.innerText = inputText;
+            chatBox.appendChild(messageDiv);
+            document.getElementById("userInput").value = "";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
