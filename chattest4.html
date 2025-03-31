@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+            authDomain: "striped-acrobat-342207.firebaseapp.com",
+            databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+            projectId: "striped-acrobat-342207",
+            storageBucket: "striped-acrobat-342207.appspot.com",
+            messagingSenderId: "367114842706",
+            appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+        const messaging = getMessaging(app);
+
+        let currentUserEmail = "";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserEmail = user.email;
+                document.getElementById("authContainer").style.display = "none";
+                document.getElementById("chatContainer").style.display = "flex";
+                document.getElementById("userName").innerText = `Welcome, ${user.email}`;
+                loadMessages();
+                requestNotificationPermission();
+            } else {
+                document.getElementById("authContainer").style.display = "block";
+                document.getElementById("chatContainer").style.display = "none";
+            }
+        });
+
+        window.login = function () {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+            signInWithEmailAndPassword(auth, email, password)
+                .catch(error => alert("Login Failed: " + error.message));
+        };
+
+        window.resetPassword = function () {
+            const email = document.getElementById("loginEmail").value;
+            if (email) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => alert("Password reset email sent!"))
+                    .catch(error => alert("Error: " + error.message));
+            } else {
+                alert("Please enter your email address.");
+            }
+        };
+
+        window.logout = function () {
+            signOut(auth).then(() => alert("Logged out!"));
+        };
+
+        window.sendMessage = function () {
+            const user = auth.currentUser;
+            const inputText = document.getElementById("userInput").value.trim();
+            if (!user || inputText === "") return;
+
+            push(ref(database, "messages"), {
+                text: inputText,
+                user: user.email,
+                timestamp: Date.now()
+            });
+
+            document.getElementById("userInput").value = "";
+        };
+
+        function requestNotificationPermission() {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    getToken(messaging, { vapidKey: "YOUR_VAPID_KEY_HERE" })
+                        .then(token => console.log("FCM Token:", token))
+                        .catch(err => console.log("Error getting token: ", err));
+                }
+            });
+        }
+
+        onMessage(messaging, (payload) => {
+            console.log("Message received: ", payload);
+            alert(`New message: ${payload.notification.body}`);
+        });
+    </script>
+</head>
+<body>
+    <div class="container" id="authContainer">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button onclick="resetPassword()">Reset Password</button>
+    </div>
+
+    <div class="container" id="chatContainer" style="display:none;">
+        <h2 id="userName">Chat Room</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <button onclick="logout()" style="background: red;">Logout</button>
+    </div>
+</body>
+</html>
