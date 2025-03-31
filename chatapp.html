@@ -80,10 +80,20 @@
 
             onChildAdded(ref(database, "messages"), (snapshot) => {
                 const message = snapshot.val();
+                const messageWrapper = document.createElement("div");
+                messageWrapper.className = message.user === currentUserEmail ? "message-wrapper sent" : "message-wrapper received";
+
+                const senderInfo = document.createElement("div");
+                senderInfo.className = "sender-info";
+                senderInfo.innerText = message.user;
+
                 const messageDiv = document.createElement("div");
-                messageDiv.className = message.user === currentUserEmail ? "message sent" : "message received";
+                messageDiv.className = "message";
                 messageDiv.innerText = message.text;
-                chatBox.appendChild(messageDiv);
+
+                messageWrapper.appendChild(senderInfo);
+                messageWrapper.appendChild(messageDiv);
+                chatBox.appendChild(messageWrapper);
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
         }
@@ -130,28 +140,29 @@
             border-radius: 5px;
             margin-left: 5px;
         }
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+            margin-bottom: 10px;
+        }
+        .sender-info {
+            font-size: 12px;
+            color: gray;
+            margin-bottom: 2px;
+        }
         .message {
             padding: 10px;
-            margin: 5px;
-            max-width: 70%;
-            word-wrap: break-word;
             border-radius: 15px;
             font-size: 16px;
-            display: inline-block;
-            clear: both;
+            word-wrap: break-word;
         }
         .sent {
-            background: #30D158;
-            color: white;
             align-self: flex-end;
-            float: right;
             text-align: right;
         }
         .received {
-            background: #e5e5ea;
-            color: black;
             align-self: flex-start;
-            float: left;
             text-align: left;
         }
     </style>
