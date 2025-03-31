@@ -81,15 +81,8 @@
             onChildAdded(ref(database, "messages"), (snapshot) => {
                 const message = snapshot.val();
                 const messageDiv = document.createElement("div");
-
-                if (message.user === currentUserEmail) {
-                    messageDiv.className = "message sent";
-                    messageDiv.innerText = message.text;
-                } else {
-                    messageDiv.className = "message received";
-                    messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
-                }
-
+                messageDiv.className = message.user === currentUserEmail ? "message sent" : "message received";
+                messageDiv.innerHTML = message.user === currentUserEmail ? message.text : `<strong>${message.user}:</strong> ${message.text}`;
                 chatBox.appendChild(messageDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
@@ -147,16 +140,14 @@
         .sent {
             background: #30D158;
             color: white;
-            text-align: right;
-            float: right;
-            border-radius: 10px 10px 0 10px;
+            text-align: left;
+            float: left;
         }
         .received {
             background: #f1f1f1;
             color: black;
             text-align: left;
             float: left;
-            border-radius: 10px 10px 10px 0;
         }
     </style>
 </head>
