@@ -59,41 +59,6 @@
         window.logout = function () {
             signOut(auth).then(() => alert("Logged out!"));
         };
-
-        window.sendMessage = function () {
-            const user = auth.currentUser;
-            const inputText = document.getElementById("userInput").value.trim();
-            if (!user || inputText === "") return;
-
-            push(ref(database, "messages"), {
-                text: inputText,
-                user: user.email,
-                timestamp: Date.now()
-            });
-
-            document.getElementById("userInput").value = "";
-        };
-
-        function loadMessages() {
-            const chatBox = document.getElementById("chatBox");
-            chatBox.innerHTML = "";
-
-            onChildAdded(ref(database, "messages"), (snapshot) => {
-                const message = snapshot.val();
-                const messageDiv = document.createElement("div");
-
-                if (message.user === currentUserEmail) {
-                    messageDiv.className = "message sent";
-                    messageDiv.innerText = message.text;
-                } else {
-                    messageDiv.className = "message received";
-                    messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
-                }
-
-                chatBox.appendChild(messageDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-            });
-        }
     </script>
 </head>
 <body>
