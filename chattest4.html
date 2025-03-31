@@ -44,7 +44,7 @@
         function requestNotificationPermission() {
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") {
-                    getToken(messaging, { vapidKey: "YOUR_VAPID_KEY_HERE" })
+                    getToken(messaging, { vapidKey: "BOQ4MyKU-LpNwKvXKipjhCsNYNwTrppN6YmCXlO-2N8isKWN9oeq7mCAY9OtlCGxhFc7ZiXzmAZdMQ41_n6UiN8" })
                         .then(token => console.log("FCM Token:", token))
                         .catch(error => console.error("Error getting FCM token", error));
                 }
