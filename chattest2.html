@@ -81,13 +81,13 @@
             onChildAdded(ref(database, "messages"), (snapshot) => {
                 const message = snapshot.val();
                 const messageDiv = document.createElement("div");
+                messageDiv.className = "message";
+                messageDiv.innerText = message.text;
 
                 if (message.user === currentUserEmail) {
-                    messageDiv.className = "message sent";
-                    messageDiv.innerText = message.text;
+                    messageDiv.classList.add("sent");
                 } else {
-                    messageDiv.className = "message received";
-                    messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
+                    messageDiv.classList.add("received");
                 }
 
                 chatBox.appendChild(messageDiv);
@@ -107,62 +107,68 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             background-color: #282c34;
             color: white;
         }
         .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-box {
+            flex-grow: 1;
             width: 100%;
-            max-width: 400px;
+            overflow-y: auto;
             padding: 20px;
             background: #1e1e2e;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
         }
-        input, button {
+        .input-container {
             width: 100%;
+            display: flex;
             padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
+            background: #1e1e2e;
         }
         input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
             background: #2b2b3d;
             color: white;
         }
         button {
+            padding: 10px;
             background: #30D158;
             color: white;
+            border: none;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #28b24a;
-        }
-        .chat-box {
-            height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            background: #25273a;
-            border-radius: 10px;
+            border-radius: 5px;
+            margin-left: 5px;
         }
         .message {
             padding: 10px;
             margin: 5px 0;
-            border-radius: 8px;
+            max-width: 70%;
             word-wrap: break-word;
+            font-size: 16px;
         }
         .sent {
             background: #30D158;
-            text-align: left;
             color: white;
+            align-self: flex-start;
+            text-align: left;
         }
         .received {
             background: #3a3d4e;
-            text-align: left;
             color: white;
+            align-self: flex-end;
+            text-align: right;
         }
     </style>
 </head>
@@ -178,8 +184,10 @@
     <div class="container" id="chatContainer" style="display:none;">
         <h2 id="userName">Chat Room</h2>
         <div class="chat-box" id="chatBox"></div>
-        <input type="text" id="userInput" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
         <button onclick="logout()" style="background: red;">Logout</button>
     </div>
 </body>
