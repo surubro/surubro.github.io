@@ -74,4 +74,106 @@
             document.getElementById("userInput").value = "";
         };
 
-        function loadMessages
+        function loadMessages() {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.innerHTML = "";
+
+            onChildAdded(ref(database, "messages"), (snapshot) => {
+                const message = snapshot.val();
+                const messageDiv = document.createElement("div");
+
+                if (message.user === currentUserEmail) {
+                    messageDiv.className = "message sent";
+                    messageDiv.innerText = message.text;
+                } else {
+                    messageDiv.className = "message received";
+                    messageDiv.innerHTML = `<strong>${message.user}:</strong> ${message.text}`;
+                }
+
+                chatBox.appendChild(messageDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #282c34;
+            color: white;
+        }
+        .container {
+            width: 400px;
+            padding: 20px;
+            background: #1e1e2e;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            background: #2b2b3d;
+            color: white;
+        }
+        button {
+            background: #30D158;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #28b24a;
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #25273a;
+            border-radius: 10px;
+        }
+        .message {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+        .sent {
+            background: #30D158;
+            text-align: left;
+            color: white;
+        }
+        .received {
+            background: #3a3d4e;
+            text-align: left;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="authContainer">
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <button onclick="resetPassword()" style="background: orange;">Forgot Password?</button>
+    </div>
+
+    <div class="container" id="chatContainer" style="display:none;">
+        <h2 id="userName">Chat Room</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <input type="text" id="userInput" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="logout()" style="background: red;">Logout</button>
+    </div>
+</body>
+</html>
