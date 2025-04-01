@@ -6,7 +6,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";const firebaseConfig = {
+        import { getAuth, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";const firebaseConfig = {
         apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
         authDomain: "striped-acrobat-342207.firebaseapp.com",
         databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
@@ -23,13 +23,17 @@
     let currentUserEmail = "";
 
     onAuthStateChanged(auth, (user) => {
-        if (user) {
+        if (user && user.emailVerified) {
             currentUserEmail = user.email;
             document.getElementById("authContainer").style.display = "none";
             document.getElementById("chatContainer").style.display = "flex";
             document.getElementById("userName").innerText = `Welcome, ${user.email}`;
             loadMessages();
         } else {
+            if (user) {
+                alert("Please verify your email before logging in.");
+                signOut(auth);
+            }
             document.getElementById("authContainer").style.display = "block";
             document.getElementById("chatContainer").style.display = "none";
         }
@@ -38,18 +42,24 @@
     window.login = function () {
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
+        
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
-                const user = userCredential.user;
-                if (user.emailVerified) {
-                    alert("Login successful!");
-                    // Redirect or allow access
-                } else {
-                    alert("Please verify your email before logging in.");
-                    signOut(auth); // Logs out unverified users
+                if (!userCredential.user.emailVerified) {
+                    alert("Email not verified. Please check your inbox and verify your email.");
+                    signOut(auth);
                 }
             })
             .catch(error => alert("Login Failed: " + error.message));
+    };
+
+    window.sendVerificationEmail = function () {
+        const user = auth.currentUser;
+        if (user && !user.emailVerified) {
+            sendEmailVerification(user)
+                .then(() => alert("Verification email sent! Please check your inbox."))
+                .catch(error => alert("Error: " + error.message));
+        }
     };
 
     window.resetPassword = function () {
@@ -106,83 +116,12 @@
     }
 </script>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #f4f4f4;
-    }
-    .container {
-        width: 100%;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-    .chat-box {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 20px;
-        background: white;
-        display: flex;
-        flex-direction: column;
-    }
-    .input-container {
-        display: flex;
-        padding: 10px;
-        background: #fff;
-    }
-    input {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-    button {
-        padding: 10px;
-        background: blue;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        margin-left: 5px;
-    }
-    .message-wrapper {
-        display: flex;
-        flex-direction: column;
-        max-width: 70%;
-        margin-bottom: 10px;
-    }
-    .sent {
-        align-self: flex-end;
-        text-align: right;
-    }
-    .received {
-        align-self: flex-start;
-        text-align: left;
-    }
-    .sender-info {
-        font-size: 12px;
-        color: gray;
-        margin-bottom: 2px;
-    }
-    .message {
-        padding: 10px;
-        border-radius: 10px;
-        font-size: 16px;
-        word-wrap: break-word;
-        border: 1px solid #ccc;
-    }
-    .sent .message {
-        background: #30D158;
-        color: white;
-    }
-    .received .message {
-        background: #e5e5ea;
-        color: black;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #f4f4f4; }
+    .container { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .chat-box { flex-grow: 1; overflow-y: auto; padding: 20px; background: white; display: flex; flex-direction: column; }
+    .input-container { display: flex; padding: 10px; background: #fff; }
+    input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    button { padding: 10px; background: blue; color: white; border: none; cursor: pointer; border-radius: 5px; margin: 5px; }
 </style>
 
 </head>
@@ -193,6 +132,16 @@
         <input type="password" id="loginPassword" placeholder="Password">
         <button onclick="login()">Login</button>
         <button onclick="resetPassword()">Reset Password</button>
+        <button onclick="sendVerificationEmail()">Resend Verification Email</button>
+    </div>
+    <div class="container" id="chatContainer" style="display:none;">
+        <h2 id="userName">Chat Room</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <button onclick="logout()" style="background: red;">Logout</button>
     </div>
 </body>
 </html>
