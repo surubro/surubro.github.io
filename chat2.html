@@ -56,6 +56,7 @@
 
     #logoutBtn {
       background-color: red;
+      margin-top: 10px;
     }
 
     .link {
@@ -70,7 +71,13 @@
       display: none;
       height: 100%;
       flex-direction: column;
-      justify-content: space-between;
+    }
+
+    #chatHeader {
+      padding: 10px;
+      background: #1877f2;
+      color: white;
+      text-align: center;
     }
 
     #chatBox {
@@ -80,6 +87,8 @@
       padding: 10px;
       box-sizing: border-box;
       background: #fff;
+      display: flex;
+      flex-direction: column;
     }
 
     .message {
@@ -88,18 +97,22 @@
       padding: 8px 12px;
       border-radius: 12px;
       word-wrap: break-word;
+      display: inline-block;
+      font-size: 14px;
     }
 
     .sent {
       align-self: flex-end;
       background-color: #30d158;
       color: white;
+      text-align: right;
     }
 
     .received {
       align-self: flex-start;
       background-color: #e5e5ea;
       color: black;
+      text-align: left;
     }
 
     .chatInputArea {
@@ -144,7 +157,7 @@
   </div>
 
   <div id="chatContainer">
-    <div style="padding: 10px;"><strong>Welcome:</strong> <span id="userEmail"></span></div>
+    <div id="chatHeader">Welcome: <span id="userEmail"></span></div>
     <div id="chatBox"></div>
     <div class="chatInputArea">
       <input type="text" id="messageInput" placeholder="Type a message...">
