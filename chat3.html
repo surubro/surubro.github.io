@@ -4,17 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat App</title>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      onChildAdded
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import {
       getAuth,
+      createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
+      sendEmailVerification,
       sendPasswordResetEmail,
       signOut,
       onAuthStateChanged
@@ -33,22 +31,18 @@
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
     const auth = getAuth(app);
+
     let currentUserEmail = "";
 
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        if (user.emailVerified) {
-          currentUserEmail = user.email;
-          document.getElementById("authContainer").style.display = "none";
-          document.getElementById("chatContainer").style.display = "flex";
-          document.getElementById("userName").innerText = `Welcome, ${user.email}`;
-          loadMessages();
-        } else {
-          alert("Please verify your email before logging in.");
-          signOut(auth);
-        }
+      if (user && user.emailVerified) {
+        currentUserEmail = user.email;
+        document.getElementById("authContainer").style.display = "none";
+        document.getElementById("chatContainer").style.display = "flex";
+        document.getElementById("userName").innerText = `Welcome, ${user.email}`;
+        loadMessages();
       } else {
-        document.getElementById("authContainer").style.display = "block";
+        document.getElementById("authContainer").style.display = "flex";
         document.getElementById("chatContainer").style.display = "none";
       }
     });
@@ -56,7 +50,14 @@
     window.login = function () {
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
+
       signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          if (!userCredential.user.emailVerified) {
+            alert("Please verify your email before logging in.");
+            signOut(auth);
+          }
+        })
         .catch(error => alert("Login Failed: " + error.message));
     };
 
@@ -112,24 +113,96 @@
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
+
+    window.createAccount = function () {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        alert("Please fill in both fields.");
+        return;
+      }
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          sendEmailVerification(userCredential.user)
+            .then(() => {
+              alert("Account created! Please verify your email before logging in.");
+              signOut(auth);
+            });
+        })
+        .catch(error => alert("Account creation failed: " + error.message));
+    };
   </script>
 
   <style>
+    * { box-sizing: border-box; }
+
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .auth-container {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #f4f4f4;
+      background: linear-gradient(to bottom right, #eaf3ff, #fdfbff);
+    }
+
+    .auth-box {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      width: 300px;
+    }
+
+    .auth-box input {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .login-btn {
+      background-color: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .register-btn {
+      background-color: white;
+      color: #1877f2;
+      border: 1px solid #1877f2;
+      border-radius: 999px;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .link {
+      text-align: center;
+      margin: 10px 0;
+      color: #1877f2;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     .container {
-      width: 100%;
       height: 100vh;
-      display: flex;
       flex-direction: column;
+      display: none;
     }
 
     .chat-box {
@@ -147,14 +220,14 @@
       background: #fff;
     }
 
-    input {
+    .input-container input {
       flex: 1;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
 
-    button {
+    .input-container button {
       padding: 10px;
       background: blue;
       color: white;
@@ -206,24 +279,25 @@
     }
   </style>
 </head>
-
 <body>
-  <div class="container" id="authContainer">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email" />
-    <input type="password" id="loginPassword" placeholder="Password" />
-    <button onclick="login()">Login</button>
-    <button onclick="resetPassword()">Reset Password</button>
+  <div class="auth-container" id="authContainer">
+    <div class="auth-box">
+      <input type="email" id="loginEmail" placeholder="Mobile number or email address" />
+      <input type="password" id="loginPassword" placeholder="Password" />
+      <button class="login-btn" onclick="login()">Log in</button>
+      <div class="link" onclick="resetPassword()">Forgotten password?</div>
+      <button class="register-btn" onclick="createAccount()">Create new account</button>
+    </div>
   </div>
 
-  <div class="container" id="chatContainer" style="display:none;">
+  <div class="container" id="chatContainer">
     <h2 id="userName">Chat Room</h2>
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
       <input type="text" id="userInput" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
     </div>
-    <button onclick="logout()" style="background: red;">Logout</button>
+    <button onclick="logout()" style="background: red; margin: 10px;">Logout</button>
   </div>
 </body>
 </html>
