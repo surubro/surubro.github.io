@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Upload to Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; padding: 40px; text-align: center; background: #f4f4f4; }
+    input, button { padding: 10px; font-size: 16px; margin: 10px; }
+    a { display: block; margin-top: 20px; word-break: break-all; }
+  </style>
+</head>
+<body>
+
+  <h2>Upload File to Firebase Storage</h2>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Upload</button>
+  <div id="result"></div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+
+    window.uploadFile = async function () {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert("Please select a file");
+
+      const storagePath = `uploads/${Date.now()}_${file.name}`;
+      const fileRef = ref(storage, storagePath);
+
+      try {
+        await uploadBytes(fileRef, file);
+        const downloadURL = await getDownloadURL(fileRef);
+        document.getElementById("result").innerHTML = `
+          <p><strong>File uploaded!</strong></p>
+          <a href="${downloadURL}" target="_blank">${downloadURL}</a>
+        `;
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
+    };
+  </script>
+
+</body>
+</html>
