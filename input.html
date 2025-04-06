@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Send Message</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <h2>Send Message</h2>
+  <input type="text" id="messageInput" placeholder="Type your message...">
+  <button onclick="sendMessage()">Send</button>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.sendMessage = function () {
+      const msg = document.getElementById("messageInput").value.trim();
+      if (!msg) return alert("Please enter a message");
+
+      push(ref(db, "simpleMessages"), {
+        message: msg,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("messageInput").value = "";
+      alert("Message sent!");
+    };
+  </script>
+
+</body>
+</html>
