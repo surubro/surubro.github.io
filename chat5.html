@@ -5,8 +5,172 @@
   <title>Chat By Surendra</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* [Same styles as before – unchanged] */
-    /* You can keep your original CSS, it's not changed for functionality */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header, footer {
+      background-color: #fff;
+      padding: 10px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    footer {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .input-box {
+      width: 90%;
+      max-width: 400px;
+      padding: 12px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .login-btn, .create-btn {
+      width: 90%;
+      max-width: 400px;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .login-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .create-btn {
+      background-color: green;
+      color: white;
+    }
+
+    .forgot-link {
+      font-size: 14px;
+      color: #007bff;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .heart {
+      color: red;
+    }
+
+    #chatContainer {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #userName {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      margin: 0;
+    }
+
+    .chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 15px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-container {
+      display: flex;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .input-container input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .input-container button {
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      margin-left: 10px;
+      border-radius: 5px;
+    }
+
+    .message-wrapper {
+      display: flex;
+      flex-direction: column;
+      max-width: 70%;
+      margin-bottom: 10px;
+    }
+
+    .sent {
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .received {
+      align-self: flex-start;
+      text-align: left;
+    }
+
+    .sender-info {
+      font-size: 12px;
+      color: gray;
+      margin-bottom: 2px;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 16px;
+      word-wrap: break-word;
+      border: 1px solid #ccc;
+    }
+
+    .sent .message {
+      background: #30D158;
+      color: white;
+    }
+
+    .received .message {
+      background: #e5e5ea;
+      color: black;
+    }
+
+    .logout-btn {
+      background: red;
+      color: white;
+      margin: 10px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      align-self: flex-end;
+    }
   </style>
 </head>
 <body>
@@ -58,14 +222,13 @@
     let currentUserEmail = "";
 
     onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
+      if (user) {
         currentUserEmail = user.email;
         document.getElementById("authContainer").style.display = "none";
         document.getElementById("chatContainer").style.display = "flex";
         document.getElementById("userName").innerText = "Welcome, " + currentUserEmail;
         loadMessages();
       } else {
-        auth.signOut(); // logout unverified users if logged in
         document.getElementById("authContainer").style.display = "flex";
         document.getElementById("chatContainer").style.display = "none";
       }
@@ -75,11 +238,11 @@
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       signInWithEmailAndPassword(auth, email, password)
-        .then(result => {
-          const user = result.user;
+        .then((userCredential) => {
+          const user = userCredential.user;
           if (!user.emailVerified) {
-            auth.signOut();
             alert("Please verify your email before logging in.");
+            signOut(auth);
           }
         })
         .catch(e => alert("Login Failed: " + e.message));
