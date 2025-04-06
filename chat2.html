@@ -4,6 +4,157 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat App</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+    }
+
+    #authContainer, #chatContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 20px;
+    }
+
+    input {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #createBtn {
+      background-color: green;
+    }
+
+    #loginBtn {
+      background-color: #1877f2;
+    }
+
+    #resetBtn {
+      background-color: gray;
+    }
+
+    #logoutBtn {
+      background-color: red;
+    }
+
+    .link {
+      font-size: 14px;
+      text-decoration: underline;
+      color: #1877f2;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    #chatContainer {
+      display: none;
+      height: 100%;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #chatBox {
+      flex: 1;
+      overflow-y: auto;
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      background: #fff;
+    }
+
+    .message {
+      max-width: 70%;
+      margin: 6px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      word-wrap: break-word;
+    }
+
+    .sent {
+      align-self: flex-end;
+      background-color: #30d158;
+      color: white;
+    }
+
+    .received {
+      align-self: flex-start;
+      background-color: #e5e5ea;
+      color: black;
+    }
+
+    .chatInputArea {
+      display: flex;
+      padding: 10px;
+      background: #f2f2f2;
+      gap: 10px;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #sendButton {
+      padding: 10px 16px;
+      background: #1877f2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="authContainer">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn" onclick="login()">Log In</button>
+    <div class="link" onclick="resetPassword()">Forgot Password?</div>
+    <button id="createBtn" onclick="register()">Create New Account</button>
+  </div>
+
+  <div id="chatContainer">
+    <div style="padding: 10px;"><strong>Welcome:</strong> <span id="userEmail"></span></div>
+    <div id="chatBox"></div>
+    <div class="chatInputArea">
+      <input type="text" id="messageInput" placeholder="Type a message...">
+      <button id="sendButton" onclick="sendMessage()">Send</button>
+    </div>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="footer">Made with ❤️ by Surendra Sonawane</div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
@@ -45,7 +196,7 @@
         currentUserEmail = user.email;
         loadMessages();
       } else {
-        document.getElementById("authContainer").style.display = "block";
+        document.getElementById("authContainer").style.display = "flex";
         document.getElementById("chatContainer").style.display = "none";
         if (user && !user.emailVerified) {
           alert("Please verify your email before logging in.");
@@ -84,8 +235,8 @@
 
     window.logout = () => {
       signOut(auth).then(() => {
-        alert("Logged out");
         document.getElementById("chatBox").innerHTML = "";
+        alert("Logged out");
       });
     };
 
@@ -107,144 +258,11 @@
         const data = snapshot.val();
         const div = document.createElement("div");
         div.className = "message " + (data.user === currentUserEmail ? "sent" : "received");
-        div.innerHTML = `<div class="user">${data.user}</div>${data.text}`;
+        div.innerHTML = `<div style="font-size:12px; margin-bottom:4px;">${data.user}</div>${data.text}`;
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
       });
     }
   </script>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      height: 100%;
-      font-family: sans-serif;
-      background: #f4f4f4;
-    }
-    .container {
-      width: 100%;
-      max-width: 400px;
-      margin: auto;
-      padding: 20px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      font-size: 14px;
-      border-radius: 5px;
-    }
-    button {
-      border: none;
-      background-color: #1877f2;
-      color: white;
-    }
-    .link {
-      font-size: 13px;
-      color: #1877f2;
-      text-align: center;
-      text-decoration: underline;
-      cursor: pointer;
-      margin: 10px 0;
-    }
-
-    #chatContainer {
-      display: none;
-      flex-direction: column;
-      height: 100vh;
-      max-width: 100%;
-    }
-
-    #chatBox {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: white;
-    }
-
-    .message {
-      max-width: 75%;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 14px;
-      word-wrap: break-word;
-    }
-
-    .sent {
-      align-self: flex-end;
-      background: #30d158;
-      color: white;
-    }
-
-    .received {
-      align-self: flex-start;
-      background: #e5e5ea;
-    }
-
-    .user {
-      font-size: 11px;
-      margin-bottom: 2px;
-      color: #444;
-    }
-
-    .inputArea {
-      display: flex;
-      padding: 10px;
-      gap: 6px;
-      background: #f9f9f9;
-    }
-
-    #messageInput {
-      flex: 1;
-      padding: 10px;
-      font-size: 14px;
-    }
-
-    #sendButton {
-      padding: 10px 15px;
-      background: #1877f2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-    }
-
-    .footer {
-      font-size: 12px;
-      color: #555;
-      text-align: center;
-      padding: 8px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container" id="authContainer">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Log In</button>
-    <div class="link" onclick="resetPassword()">Forgot Password?</div>
-    <button onclick="register()" style="background: green;">Create New Account</button>
-  </div>
-
-  <div id="chatContainer">
-    <div style="padding: 10px; background: #1877f2; color: white;">
-      Welcome, <span id="userEmail"></span>
-      <button onclick="logout()" style="float:right;background:red;color:white;padding:4px 8px;border:none;border-radius:4px;">Logout</button>
-    </div>
-    <div id="chatBox"></div>
-    <div class="inputArea">
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <button id="sendButton" onclick="sendMessage()">Send</button>
-    </div>
-  </div>
-
-  <div class="footer">Made with ❤️ by Surendra Sonawane</div>
 </body>
 </html>
