@@ -2,19 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Send Message</title>
+  <title>Simple Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    #chatBox {
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      padding: 8px;
+      background-color: #f0f0f0;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+
+    #messageInput {
+      width: 70%;
+      padding: 8px;
+    }
+
+    #sendBtn {
+      padding: 8px 16px;
+    }
+  </style>
 </head>
 <body>
 
-  <h2>Send Message</h2>
-  <input type="text" id="messageInput" placeholder="Type your message...">
-  <button onclick="sendMessage()">Send</button>
+  <h2>Simple Chat</h2>
+  <div id="chatBox"></div>
+
+  <input type="text" id="messageInput" placeholder="Type your message..." />
+  <button id="sendBtn" onclick="sendMessage()">Send</button>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
@@ -28,19 +60,31 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const chatRef = ref(db, "simpleMessages");
+
+    const chatBox = document.getElementById("chatBox");
 
     window.sendMessage = function () {
       const msg = document.getElementById("messageInput").value.trim();
-      if (!msg) return alert("Please enter a message");
+      if (!msg) return;
 
-      push(ref(db, "simpleMessages"), {
+      push(chatRef, {
         message: msg,
         timestamp: Date.now()
       });
 
       document.getElementById("messageInput").value = "";
-      alert("Message sent!");
     };
+
+    // Load messages as they come in
+    onChildAdded(chatRef, (snapshot) => {
+      const data = snapshot.val();
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message";
+      msgDiv.textContent = data.message;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
   </script>
 
 </body>
