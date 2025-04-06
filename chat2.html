@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat App</title>
   <style>
@@ -10,82 +10,79 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
     }
 
-    #authContainer, #chatContainer {
+    body {
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
+      background: #f0f0f0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
       padding: 20px;
     }
 
-    input, button {
+    #authContainer input {
       width: 100%;
-      max-width: 300px;
-      padding: 12px;
-      margin: 8px 0;
+      margin: 5px 0;
+      padding: 10px;
       font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
     }
 
-    button {
-      background-color: #1877f2;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    #createBtn {
-      background-color: green;
-    }
-
-    #logoutBtn {
-      background-color: red;
+    #authContainer button {
       width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      background: #1877f2;
     }
 
     .link {
       font-size: 14px;
       color: #1877f2;
-      cursor: pointer;
+      text-align: center;
       text-decoration: underline;
+      margin: 10px 0;
+      cursor: pointer;
     }
 
     #chatContainer {
-      display: none;
-      height: 100vh;
-      width: 100%;
+      flex: 1;
+      display: flex;
       flex-direction: column;
+      height: 100%;
     }
 
     #chatHeader {
-      background-color: #1877f2;
+      background: #1877f2;
       color: white;
-      padding: 15px;
+      padding: 10px;
       text-align: center;
-      font-size: 18px;
     }
 
     #chatBox {
       flex: 1;
       overflow-y: auto;
+      padding: 10px;
+      background: #e5ddd5;
       display: flex;
       flex-direction: column;
-      padding: 10px;
-      background-color: #e5ddd5;
     }
 
     .message {
       max-width: 70%;
       padding: 10px 14px;
-      margin: 6px 0;
+      margin: 6px;
       border-radius: 18px;
       word-wrap: break-word;
       font-size: 15px;
+      display: inline-block;
     }
 
     .sent {
@@ -100,172 +97,182 @@
       border-bottom-left-radius: 0;
     }
 
-    .chatInputArea {
+    #inputArea {
       display: flex;
       padding: 10px;
-      background: #fff;
+      background: white;
       border-top: 1px solid #ccc;
     }
 
     #messageInput {
       flex: 1;
+      padding: 10px;
       font-size: 16px;
-      padding: 12px;
       border-radius: 20px;
       border: 1px solid #ccc;
-      outline: none;
+      margin-right: 10px;
     }
 
     #sendButton {
-      margin-left: 10px;
-      padding: 12px 16px;
-      border: none;
+      padding: 10px 16px;
+      font-size: 16px;
       border-radius: 20px;
-      background-color: #1877f2;
+      background: #1877f2;
       color: white;
-      cursor: pointer;
+      border: none;
+    }
+
+    #logoutButton {
+      background: red;
+      color: white;
+      font-size: 16px;
+      padding: 10px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
     }
 
     .footer {
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       color: #555;
-      padding: 5px;
+      margin: 10px 0;
     }
   </style>
-</head>
-<body>
 
-<div id="authContainer">
-  <h2>Login</h2>
-  <input type="email" id="email" placeholder="Email"/>
-  <input type="password" id="password" placeholder="Password"/>
-  <button onclick="login()">Login</button>
-  <div class="link" onclick="resetPassword()">Forgot Password?</div>
-  <button id="createBtn" onclick="register()">Create Account</button>
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      sendEmailVerification,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onChildAdded
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<div id="chatContainer">
-  <div id="chatHeader">Welcome: <span id="userEmail"></span></div>
-  <div id="chatBox"></div>
-  <div class="chatInputArea">
-    <input type="text" id="messageInput" placeholder="Type a message..."/>
-    <button id="sendButton" onclick="sendMessage()">Send</button>
-  </div>
-  <button id="logoutBtn" onclick="logout()">Logout</button>
-</div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
 
-<div class="footer">Made with ❤️ by Surendra Sonawane</div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    let currentUserEmail = "";
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    sendPasswordResetEmail,
-    sendEmailVerification,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    onChildAdded
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-    authDomain: "striped-acrobat-342207.firebaseapp.com",
-    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-    projectId: "striped-acrobat-342207",
-    storageBucket: "striped-acrobat-342207.appspot.com",
-    messagingSenderId: "367114842706",
-    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-  let currentUserEmail = "";
-
-  onAuthStateChanged(auth, (user) => {
-    if (user && user.emailVerified) {
-      document.getElementById("authContainer").style.display = "none";
-      document.getElementById("chatContainer").style.display = "flex";
-      document.getElementById("userEmail").innerText = user.email;
-      currentUserEmail = user.email;
-      loadMessages();
-    } else {
-      document.getElementById("authContainer").style.display = "flex";
-      document.getElementById("chatContainer").style.display = "none";
-      if (user && !user.emailVerified) {
-        alert("Please verify your email before logging in.");
-        signOut(auth);
-      }
-    }
-  });
-
-  window.register = () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(({ user }) => {
-        sendEmailVerification(user).then(() => {
-          alert("Verification email sent. Please verify and then login.");
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        document.getElementById("authContainer").style.display = "none";
+        document.getElementById("chatContainer").style.display = "flex";
+        document.getElementById("userEmail").innerText = "Welcome: " + user.email;
+        currentUserEmail = user.email;
+        loadMessages();
+      } else {
+        document.getElementById("authContainer").style.display = "block";
+        document.getElementById("chatContainer").style.display = "none";
+        if (user && !user.emailVerified) {
+          alert("Please verify your email before logging in.");
           signOut(auth);
-        });
-      })
-      .catch(err => alert("Register error: " + err.message));
-  };
-
-  window.login = () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    signInWithEmailAndPassword(auth, email, password)
-      .catch(err => alert("Login failed: " + err.message));
-  };
-
-  window.resetPassword = () => {
-    const email = document.getElementById("email").value;
-    if (!email) return alert("Enter your email.");
-    sendPasswordResetEmail(auth, email)
-      .then(() => alert("Password reset email sent."))
-      .catch(err => alert("Error: " + err.message));
-  };
-
-  window.logout = () => {
-    signOut(auth).then(() => {
-      document.getElementById("chatBox").innerHTML = "";
-      alert("Logged out");
+        }
+      }
     });
-  };
 
-  window.sendMessage = () => {
-    const msg = document.getElementById("messageInput").value.trim();
-    if (!msg || !auth.currentUser) return;
-    push(ref(db, "messages"), {
-      user: auth.currentUser.email,
-      text: msg,
-      timestamp: Date.now()
-    });
-    document.getElementById("messageInput").value = "";
-  };
+    window.register = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(({ user }) => {
+          sendEmailVerification(user).then(() => {
+            alert("Verification email sent. Please verify and then login.");
+            signOut(auth);
+          });
+        })
+        .catch(err => alert("Register error: " + err.message));
+    };
 
-  function loadMessages() {
-    const chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = "";
-    onChildAdded(ref(db, "messages"), (snapshot) => {
-      const data = snapshot.val();
-      const div = document.createElement("div");
-      div.className = "message " + (data.user === currentUserEmail ? "sent" : "received");
-      div.textContent = data.text;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  }
-</script>
+    window.login = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .catch(err => alert("Login failed: " + err.message));
+    };
 
+    window.resetPassword = () => {
+      const email = document.getElementById("email").value;
+      if (!email) return alert("Enter your email.");
+      sendPasswordResetEmail(auth, email)
+        .then(() => alert("Password reset email sent."))
+        .catch(err => alert("Error: " + err.message));
+    };
+
+    window.logout = () => {
+      signOut(auth).then(() => {
+        alert("Logged out");
+        document.getElementById("chatBox").innerHTML = "";
+      });
+    };
+
+    window.sendMessage = () => {
+      const msg = document.getElementById("messageInput").value.trim();
+      if (!msg || !auth.currentUser) return;
+      push(ref(db, "messages"), {
+        user: auth.currentUser.email,
+        text: msg,
+        timestamp: Date.now()
+      });
+      document.getElementById("messageInput").value = "";
+    };
+
+    function loadMessages() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.innerHTML = "";
+      onChildAdded(ref(db, "messages"), (snapshot) => {
+        const data = snapshot.val();
+        const div = document.createElement("div");
+        div.className = "message " + (data.user === currentUserEmail ? "sent" : "received");
+        div.innerText = data.text;
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+  </script>
+</head>
+
+<body>
+  <div class="container" id="authContainer">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Log In</button>
+    <div class="link" onclick="resetPassword()">Forgot Password?</div>
+    <button onclick="register()" style="background: green;">Create New Account</button>
+  </div>
+
+  <div id="chatContainer" style="display:none; flex-direction: column;">
+    <div id="chatHeader">
+      <span id="userEmail"></span>
+    </div>
+    <div id="chatBox"></div>
+    <div id="inputArea">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button id="sendButton" onclick="sendMessage()">Send</button>
+    </div>
+    <button id="logoutButton" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="footer">Made with ❤️ by Surendra Sonawane</div>
 </body>
 </html>
