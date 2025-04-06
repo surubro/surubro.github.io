@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat App</title>
   <style>
@@ -10,27 +10,26 @@
       padding: 0;
       height: 100%;
       font-family: Arial, sans-serif;
-      background-color: #f2f2f2;
+      background-color: #f0f0f0;
     }
 
     #authContainer, #chatContainer {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100%;
       padding: 20px;
     }
 
     input, button {
       width: 100%;
-      max-width: 320px;
+      max-width: 300px;
       padding: 12px;
       margin: 8px 0;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 6px;
-      box-sizing: border-box;
     }
 
     button {
@@ -46,83 +45,84 @@
 
     #logoutBtn {
       background-color: red;
+      width: 100%;
     }
 
     .link {
       font-size: 14px;
-      text-decoration: underline;
       color: #1877f2;
       cursor: pointer;
-      margin-bottom: 10px;
+      text-decoration: underline;
     }
 
     #chatContainer {
       display: none;
-      height: 100%;
+      height: 100vh;
       width: 100%;
       flex-direction: column;
     }
 
     #chatHeader {
-      padding: 12px;
-      background: #1877f2;
+      background-color: #1877f2;
       color: white;
+      padding: 15px;
       text-align: center;
-      font-weight: bold;
+      font-size: 18px;
     }
 
     #chatBox {
       flex: 1;
       overflow-y: auto;
-      padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      background-color: #ffffff;
+      padding: 10px;
+      background-color: #e5ddd5;
     }
 
     .message {
-      max-width: 75%;
+      max-width: 70%;
       padding: 10px 14px;
-      border-radius: 10px;
+      margin: 6px 0;
+      border-radius: 18px;
       word-wrap: break-word;
       font-size: 15px;
     }
 
     .sent {
       align-self: flex-end;
-      background-color: #30d158;
-      color: white;
+      background-color: #dcf8c6;
+      border-bottom-right-radius: 0;
     }
 
     .received {
       align-self: flex-start;
-      background-color: #e5e5ea;
-      color: black;
+      background-color: white;
+      border-bottom-left-radius: 0;
     }
 
     .chatInputArea {
       display: flex;
-      padding: 12px;
-      background: #f0f0f0;
-      gap: 10px;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #ccc;
     }
 
     #messageInput {
       flex: 1;
       font-size: 16px;
       padding: 12px;
-      border-radius: 10px;
+      border-radius: 20px;
       border: 1px solid #ccc;
+      outline: none;
     }
 
     #sendButton {
+      margin-left: 10px;
       padding: 12px 16px;
-      font-size: 16px;
+      border: none;
+      border-radius: 20px;
       background-color: #1877f2;
       color: white;
-      border: none;
-      border-radius: 10px;
       cursor: pointer;
     }
 
@@ -130,141 +130,142 @@
       text-align: center;
       font-size: 13px;
       color: #555;
-      margin: 10px;
+      padding: 5px;
     }
   </style>
 </head>
 <body>
 
-  <div id="authContainer">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email" />
-    <input type="password" id="password" placeholder="Password" />
-    <button id="loginBtn" onclick="login()">Log In</button>
-    <div class="link" onclick="resetPassword()">Forgot Password?</div>
-    <button id="createBtn" onclick="register()">Create New Account</button>
+<div id="authContainer">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email"/>
+  <input type="password" id="password" placeholder="Password"/>
+  <button onclick="login()">Login</button>
+  <div class="link" onclick="resetPassword()">Forgot Password?</div>
+  <button id="createBtn" onclick="register()">Create Account</button>
+</div>
+
+<div id="chatContainer">
+  <div id="chatHeader">Welcome: <span id="userEmail"></span></div>
+  <div id="chatBox"></div>
+  <div class="chatInputArea">
+    <input type="text" id="messageInput" placeholder="Type a message..."/>
+    <button id="sendButton" onclick="sendMessage()">Send</button>
   </div>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
+</div>
 
-  <div id="chatContainer">
-    <div id="chatHeader">Welcome: <span id="userEmail"></span></div>
-    <div id="chatBox"></div>
-    <div class="chatInputArea">
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <button id="sendButton" onclick="sendMessage()">Send</button>
-    </div>
-    <button id="logoutBtn" onclick="logout()">Logout</button>
-  </div>
+<div class="footer">Made with ❤️ by Surendra Sonawane</div>
 
-  <div class="footer">Made with ❤️ by Surendra Sonawane</div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    sendEmailVerification,
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    onChildAdded
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      sendPasswordResetEmail,
-      sendEmailVerification,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      onChildAdded
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-      authDomain: "striped-acrobat-342207.firebaseapp.com",
-      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-      projectId: "striped-acrobat-342207",
-      storageBucket: "striped-acrobat-342207.appspot.com",
-      messagingSenderId: "367114842706",
-      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-    };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  let currentUserEmail = "";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    let currentUserEmail = "";
-
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        document.getElementById("authContainer").style.display = "none";
-        document.getElementById("chatContainer").style.display = "flex";
-        document.getElementById("userEmail").innerText = user.email;
-        currentUserEmail = user.email;
-        loadMessages();
-      } else {
-        document.getElementById("authContainer").style.display = "flex";
-        document.getElementById("chatContainer").style.display = "none";
-        if (user && !user.emailVerified) {
-          alert("Please verify your email before logging in.");
-          signOut(auth);
-        }
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.emailVerified) {
+      document.getElementById("authContainer").style.display = "none";
+      document.getElementById("chatContainer").style.display = "flex";
+      document.getElementById("userEmail").innerText = user.email;
+      currentUserEmail = user.email;
+      loadMessages();
+    } else {
+      document.getElementById("authContainer").style.display = "flex";
+      document.getElementById("chatContainer").style.display = "none";
+      if (user && !user.emailVerified) {
+        alert("Please verify your email before logging in.");
+        signOut(auth);
       }
-    });
-
-    window.register = () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      createUserWithEmailAndPassword(auth, email, password)
-        .then(({ user }) => {
-          sendEmailVerification(user).then(() => {
-            alert("Verification email sent. Please verify and then login.");
-            signOut(auth);
-          });
-        })
-        .catch(err => alert("Register error: " + err.message));
-    };
-
-    window.login = () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password)
-        .catch(err => alert("Login failed: " + err.message));
-    };
-
-    window.resetPassword = () => {
-      const email = document.getElementById("email").value;
-      if (!email) return alert("Enter your email.");
-      sendPasswordResetEmail(auth, email)
-        .then(() => alert("Password reset email sent."))
-        .catch(err => alert("Error: " + err.message));
-    };
-
-    window.logout = () => {
-      signOut(auth).then(() => {
-        document.getElementById("chatBox").innerHTML = "";
-        alert("Logged out");
-      });
-    };
-
-    window.sendMessage = () => {
-      const msg = document.getElementById("messageInput").value.trim();
-      if (!msg || !auth.currentUser) return;
-      push(ref(db, "messages"), {
-        user: auth.currentUser.email,
-        text: msg,
-        timestamp: Date.now()
-      });
-      document.getElementById("messageInput").value = "";
-    };
-
-    function loadMessages() {
-      const chatBox = document.getElementById("chatBox");
-      chatBox.innerHTML = "";
-      onChildAdded(ref(db, "messages"), (snapshot) => {
-        const data = snapshot.val();
-        const div = document.createElement("div");
-        div.className = "message " + (data.user === currentUserEmail ? "sent" : "received");
-        div.innerHTML = `<div style="font-size:12px; margin-bottom:4px;">${data.user}</div>${data.text}`;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      });
     }
-  </script>
+  });
+
+  window.register = () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(({ user }) => {
+        sendEmailVerification(user).then(() => {
+          alert("Verification email sent. Please verify and then login.");
+          signOut(auth);
+        });
+      })
+      .catch(err => alert("Register error: " + err.message));
+  };
+
+  window.login = () => {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    signInWithEmailAndPassword(auth, email, password)
+      .catch(err => alert("Login failed: " + err.message));
+  };
+
+  window.resetPassword = () => {
+    const email = document.getElementById("email").value;
+    if (!email) return alert("Enter your email.");
+    sendPasswordResetEmail(auth, email)
+      .then(() => alert("Password reset email sent."))
+      .catch(err => alert("Error: " + err.message));
+  };
+
+  window.logout = () => {
+    signOut(auth).then(() => {
+      document.getElementById("chatBox").innerHTML = "";
+      alert("Logged out");
+    });
+  };
+
+  window.sendMessage = () => {
+    const msg = document.getElementById("messageInput").value.trim();
+    if (!msg || !auth.currentUser) return;
+    push(ref(db, "messages"), {
+      user: auth.currentUser.email,
+      text: msg,
+      timestamp: Date.now()
+    });
+    document.getElementById("messageInput").value = "";
+  };
+
+  function loadMessages() {
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML = "";
+    onChildAdded(ref(db, "messages"), (snapshot) => {
+      const data = snapshot.val();
+      const div = document.createElement("div");
+      div.className = "message " + (data.user === currentUserEmail ? "sent" : "received");
+      div.textContent = data.text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  }
+</script>
+
 </body>
 </html>
