@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat Login</title>
+
+  <!-- Firebase (Email Auth) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      projectId: "striped-acrobat-342207",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    window.login = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => alert("Login successful"))
+        .catch(err => alert("Error: " + err.message));
+    };
+
+    window.register = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => alert("Account created successfully"))
+        .catch(err => alert("Error: " + err.message));
+    };
+
+    window.resetPassword = () => {
+      const email = document.getElementById("email").value;
+      if (!email) return alert("Enter your email first");
+      sendPasswordResetEmail(auth, email)
+        .then(() => alert("Password reset email sent"))
+        .catch(err => alert("Error: " + err.message));
+    };
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fff;
+      color: #000;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 240px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      margin-top: 6px;
+      border: none;
+      border-radius: 4px;
+      background-color: #1877f2;
+      color: white;
+    }
+
+    .link-button {
+      background: none;
+      color: #1877f2;
+      text-decoration: underline;
+      margin-top: 5px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email or mobile number" />
+    <input type="password" id="password" placeholder="Password" />
+
+    <button onclick="login()">Log In</button>
+    <div class="link-button" onclick="resetPassword()">Forgotten password?</div>
+    <button onclick="register()" style="background-color: #42b72a;">Create New Account</button>
+  </div>
+
+  <div class="copyright">
+    Made with ❤️ by Surendra Sonawane
+  </div>
+</body>
+</html>
