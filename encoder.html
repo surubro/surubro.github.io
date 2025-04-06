@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>T9 Encoder and Decoder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 50px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .output {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .image-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .copy-btn {
+      padding: 5px 10px;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .copy-btn:hover {
+      background-color: #007B9E;
+    }
+    .text-box {
+      width: 100%;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      word-wrap: break-word;
+    }
+    .copyright {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <h1>T9 Encoder and Decoder</h1>
+  <label for="textInput">Enter Message (Plain Text or T9 Encoded):</label>
+  <textarea id="textInput" placeholder="Enter a message (e.g., 'hi' or '420_430')"></textarea>
+  <button onclick="convert()">Convert</button>
+
+  <div class="output">
+    <p><strong>Encoded Message (T9):</strong></p>
+    <div id="encodedMessage" class="text-box"></div>
+    <button class="copy-btn" onclick="copyText('encodedMessage')">Copy</button>
+
+    <p><strong>Decoded Message (Plain Text):</strong></p>
+    <div id="decodedMessage" class="text-box"></div>
+    <button class="copy-btn" onclick="copyText('decodedMessage')">Copy</button>
+  </div>
+
+  <!-- Image Section -->
+  <div class="image-container">
+    <img src="https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/t9-t9.png" alt="T9 Encoder and Decoder Example">
+  </div>
+
+  <div class="copyright">
+    Made with ❤️ by Surendra Sonawane
+  </div>
+
+  <script>
+    function convert() {
+      const t9Keys = {
+        "2": ["a", "b", "c"],
+        "3": ["d", "e", "f"],
+        "4": ["g", "h", "i"],
+        "5": ["j", "k", "l"],
+        "6": ["m", "n", "o"],
+        "7": ["p", "q", "r", "s"],
+        "8": ["t", "u", "v"],
+        "9": ["w", "x", "y", "z"]
+      };
+
+      const input = document.getElementById("textInput").value.trim().toLowerCase();
+
+      let encodedMessage = "";
+      let decodedMessage = "";
+
+      if (/^[0-9_]+$/.test(input)) {
+        const words = input.split("_");
+        for (const word of words) {
+          const segments = word.split("0");
+          for (const segment of segments) {
+            if (segment.length >= 2) {
+              const key = segment[0];
+              const index = parseInt(segment[1]) - 1;
+              if (t9Keys[key] && t9Keys[key][index]) {
+                decodedMessage += t9Keys[key][index];
+              } else {
+                decodedMessage += "?";
+              }
+            }
+          }
+          decodedMessage += " ";
+        }
+        decodedMessage = decodedMessage.trim();
+        encodedMessage = input;
+      } else if (/^[a-z\s]+$/.test(input)) {
+        for (const char of input) {
+          if (char === " ") {
+            encodedMessage += "_";
+          } else {
+            for (const [key, letters] of Object.entries(t9Keys)) {
+              const index = letters.indexOf(char);
+              if (index !== -1) {
+                encodedMessage += key + (index + 1) + "0";
+                break;
+              }
+            }
+          }
+        }
+        encodedMessage = encodedMessage.slice(0, -1);
+        decodedMessage = input;
+      } else {
+        decodedMessage = "Invalid input! Please enter only plain text or valid T9 code.";
+        encodedMessage = "Invalid input! Please enter only plain text or valid T9 code.";
+      }
+
+      document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
+      document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+    }
+
+    function copyText(elementId) {
+      const textToCopy = document.getElementById(elementId).innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy)
+          .then(() => alert("Text copied to clipboard!"))
+          .catch(err => alert("Failed to copy text: " + err));
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert("Text copied to clipboard!");
+      }
+    }
+  </script>
+</body>
+</html>
