@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bill Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .bill-item {
+      margin-bottom: 10px;
+    }
+    #total {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bill-item">1. Electricity bill - ₹1000 <button onclick="addToTotal(1000)">Add</button></div>
+  <div class="bill-item">2. GAS bill - ₹1000 <button onclick="addToTotal(1000)">Add</button></div>
+  <div class="bill-item">3. Water bill - ₹150 <button onclick="addToTotal(150)">Add</button></div>
+  <div class="bill-item">4. Property tax - ₹500 <button onclick="addToTotal(500)">Add</button></div>
+  <div class="bill-item">5. Sim card - ₹1000 <button onclick="addToTotal(1000)">Add</button></div>
+  <div class="bill-item">6. DTH - ₹400 <button onclick="addToTotal(400)">Add</button></div>
+  <div class="bill-item">7. Wifi - ₹600 <button onclick="addToTotal(600)">Add</button></div>
+  <div class="bill-item">8. Subscription - ₹200 <button onclick="addToTotal(200)">Add</button></div>
+
+  <div id="total">Total: ₹0</div>
+
+  <script>
+    let total = 0;
+    function addToTotal(amount) {
+      total += amount;
+      document.getElementById("total").innerText = "Total: ₹" + total;
+    }
+  </script>
+
+</body>
+</html>
