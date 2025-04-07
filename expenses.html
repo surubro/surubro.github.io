@@ -10,6 +10,7 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #f2f2f2;
       font-size: 20px;
+      padding-bottom: 120px;
     }
 
     h1 {
@@ -47,11 +48,38 @@
       background-color: #0056b3;
     }
 
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
     #total {
-      margin-top: 30px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: white;
+      padding: 15px;
       font-size: 24px;
       font-weight: bold;
       text-align: center;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-add {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    input[type="number"] {
+      font-size: 18px;
+      padding: 10px;
+      width: 120px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -59,24 +87,44 @@
 
   <h1>Bill Tracker</h1>
 
-  <div class="bill-item"><div class="bill-label">1. Electricity bill - ₹1000</div><button onclick="addToTotal(1000)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">2. GAS bill - ₹1000</div><button onclick="addToTotal(1000)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">3. Water bill - ₹150</div><button onclick="addToTotal(150)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">4. Property tax - ₹500</div><button onclick="addToTotal(500)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">5. Sim My+Mom - ₹600</div><button onclick="addToTotal(1000)">Add</button></div>
-    <div class="bill-item"><div class="bill-label">6. SIM Sumit - ₹350</div><button onclick="addToTotal(1000)">Add</button></div>
-    <div class="bill-item"><div class="bill-label">7. SIM DAD - ₹150</div><button onclick="addToTotal(1000)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">8. DTH - ₹400</div><button onclick="addToTotal(400)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">9. Wifi - ₹600</div><button onclick="addToTotal(600)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">10 Subscription - ₹200</div><button onclick="addToTotal(200)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">1. Electricity bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">2. GAS bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">3. Water bill - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">4. Property tax - ₹500</div><button onclick="addToTotal(this, 500)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">5. Sim My+Mom - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">6. SIM Sumit - ₹350</div><button onclick="addToTotal(this, 350)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">7. SIM DAD - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">8. DTH - ₹400</div><button onclick="addToTotal(this, 400)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">9. Wifi - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">10. Subscription - ₹200</div><button onclick="addToTotal(this, 200)">Add</button></div>
+
+  <div class="custom-add">
+    <input type="number" id="customAmount" placeholder="Enter amount">
+    <button onclick="addCustomAmount()">Add Amount</button>
+  </div>
 
   <div id="total">Total: ₹0</div>
 
   <script>
     let total = 0;
-    function addToTotal(amount) {
+
+    function addToTotal(button, amount) {
       total += amount;
       document.getElementById("total").innerText = "Total: ₹" + total;
+      button.disabled = true;
+      button.innerText = "Added";
+    }
+
+    function addCustomAmount() {
+      const input = document.getElementById("customAmount");
+      const value = parseInt(input.value);
+      if (!isNaN(value) && value > 0) {
+        total += value;
+        document.getElementById("total").innerText = "Total: ₹" + total;
+        input.value = "";
+      } else {
+        alert("Please enter a valid amount.");
+      }
     }
   </script>
 
