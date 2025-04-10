@@ -1,0 +1,47 @@
+{
+  "menu": [
+    {
+      "id": 1,
+      "name": "Spaghetti Bolognese",
+      "category": "Main Course",
+      "ingredients": [
+        "200g spaghetti",
+        "100g minced beef",
+        "1 onion",
+        "2 cloves garlic",
+        "400g canned tomatoes",
+        "Salt",
+        "Pepper",
+        "Olive oil"
+      ],
+      "steps": [
+        "Boil spaghetti according to package instructions.",
+        "Heat olive oil in a pan.",
+        "Add chopped onion and garlic, sauté until golden.",
+        "Add minced beef and cook until browned.",
+        "Add canned tomatoes, salt, and pepper. Simmer for 15 minutes.",
+        "Serve sauce over spaghetti."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Caesar Salad",
+      "category": "Salad",
+      "ingredients": [
+        "1 romaine lettuce",
+        "50g parmesan cheese",
+        "Croutons",
+        "Caesar dressing",
+        "Salt",
+        "Pepper"
+      ],
+      "steps": [
+        "Wash and chop lettuce.",
+        "Toss lettuce with Caesar dressing.",
+        "Add croutons and grated parmesan.",
+        "Season with salt and pepper to taste.",
+        "Serve chilled."
+      ]
+    }
+  ]
+}
