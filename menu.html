@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Search</title>
+  <style>
+    #results div {
+      cursor: pointer;
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+    }
+    #results div:hover {
+      background-color: #f0f0f0;
+    }
+    #steps {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Search Menu</h2>
+  <input type="text" id="search" placeholder="Type a dish name..." />
+  <div id="results"></div>
+  <div id="steps"></div>
+
+  <script>
+    const menuData = {
+      "menu": [
+        {
+          "id": 1,
+          "name": "Spaghetti Bolognese",
+          "category": "Main Course",
+          "ingredients": [
+            "200g spaghetti",
+            "100g minced beef",
+            "1 onion",
+            "2 cloves garlic",
+            "400g canned tomatoes",
+            "Salt",
+            "Pepper",
+            "Olive oil"
+          ],
+          "steps": [
+            "Boil spaghetti according to package instructions.",
+            "Heat olive oil in a pan.",
+            "Add chopped onion and garlic, sauté until golden.",
+            "Add minced beef and cook until browned.",
+            "Add canned tomatoes, salt, and pepper. Simmer for 15 minutes.",
+            "Serve sauce over spaghetti."
+          ]
+        },
+        {
+          "id": 2,
+          "name": "Caesar Salad",
+          "category": "Salad",
+          "ingredients": [
+            "1 romaine lettuce",
+            "50g parmesan cheese",
+            "Croutons",
+            "Caesar dressing",
+            "Salt",
+            "Pepper"
+          ],
+          "steps": [
+            "Wash and chop lettuce.",
+            "Toss lettuce with Caesar dressing.",
+            "Add croutons and grated parmesan.",
+            "Season with salt and pepper to taste.",
+            "Serve chilled."
+          ]
+        }
+      ]
+    };
+
+    const searchInput = document.getElementById('search');
+    const resultsDiv = document.getElementById('results');
+    const stepsDiv = document.getElementById('steps');
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      resultsDiv.innerHTML = '';
+      stepsDiv.innerHTML = '';
+      if (query) {
+        const matches = menuData.menu.filter(item => item.name.toLowerCase().includes(query));
+        matches.forEach(item => {
+          const div = document.createElement('div');
+          div.textContent = item.name;
+          div.addEventListener('click', () => {
+            stepsDiv.innerHTML = `<h3>Steps for ${item.name}</h3><ol>` +
+              item.steps.map(step => `<li>${step}</li>`).join('') + '</ol>';
+          });
+          resultsDiv.appendChild(div);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
