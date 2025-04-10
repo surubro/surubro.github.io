@@ -73,13 +73,15 @@
 
   <script>
     let menuItems = [];
+    let dataLoaded = false;
 
-    const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/menu.json';
+    const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/65acafd4fe9bd08902e1114641f25f85cbac045d/menu.json';
 
     fetch(jsonUrl)
       .then(res => res.json())
       .then(data => {
         menuItems = data.menu;
+        dataLoaded = true;
       })
       .catch(err => {
         document.getElementById('details').innerHTML = 'Failed to load menu data.';
@@ -91,9 +93,12 @@
     const detailsDiv = document.getElementById('details');
 
     searchInput.addEventListener('input', () => {
+      if (!dataLoaded) return;
+
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
+
       if (query) {
         const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
         matches.forEach(item => {
@@ -101,7 +106,7 @@
           div.textContent = item.name;
           div.addEventListener('click', () => {
             detailsDiv.innerHTML = `
-              <div class="category">${item.category}</div>
+              <div class="category">${item.category || 'No category'}</div>
               <h3>${item.name}</h3>
               <h4>Ingredients</h4>
               <ul>${item.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
