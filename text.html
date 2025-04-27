@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Load Text from GitHub</title>
+</head>
+<body>
+
+<h1>Text from GitHub:</h1>
+<pre id="text-content">Loading...</pre>
+
+<script>
+// Replace this URL with your actual GitHub raw URL
+const fileUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/main/text.txt';
+
+fetch(fileUrl)
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById('text-content').textContent = data;
+  })
+  .catch(error => {
+    document.getElementById('text-content').textContent = 'Failed to load file.';
+    console.error('Error fetching file:', error);
+  });
+</script>
+
+</body>
+</html>
