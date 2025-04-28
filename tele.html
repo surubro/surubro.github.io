@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send to Telegram</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Send Message</h2>
+    <input type="text" id="message" placeholder="Enter your message" required>
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+function sendMessage() {
+    var message = document.getElementById("message").value;
+    if (message.trim() === "") {
+        alert("Please enter a message.");
+        return;
+    }
+
+    var botToken = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
+    var chatId = "-1002368470030";
+    var url = "https://api.telegram.org/bot" + botToken + "/sendMessage";
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                alert("✅ Message sent successfully!");
+                document.getElementById("message").value = "";
+            } else {
+                alert("❌ Error sending message.");
+            }
+        }
+    };
+
+    var params = "chat_id=" + encodeURIComponent(chatId) + "&text=" + encodeURIComponent(message);
+    xhr.send(params);
+}
+</script>
+
+</body>
+</html>
