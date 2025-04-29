@@ -468,5 +468,135 @@
         "L": []
       }
     }
+  ],
+  "tea": [
+    {
+      "name": "ask of diff varieties",
+      "sizes": {
+        "R": [
+          "3g tea leaves",
+          "200ml hot water"
+        ],
+        "L": [
+          "6g tea leaves",
+          "400ml hot water"
+        ]
+      }
+    }
+  ],
+  "iced tea": [
+    {
+      "name": "lemon",
+      "sizes": {
+        "R": [
+          "30ml tea syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "45ml tea syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "peach passion",
+      "sizes": {
+        "R": [
+          "30ml peach syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "45ml peach syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "elder flower",
+      "sizes": {
+        "R": [
+          "30ml lemon ice tea syrup",
+          "165ml water",
+          "8-10 ice cubes",
+          "10ml elder flower syrup"
+        ],
+        "L": [
+          "45ml lemon ice tea syrup",
+          "250ml water",
+          "10-12 ice cubes",
+          "15ml elder flower syrup"
+        ]
+      }
+    }
+  ],
+  "speciality latte": [
+    {
+      "name": "cinnamon latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "30ml cinnamon syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "30ml cinnamon syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "choco ginger latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "15ml chocolate sauce",
+          "15ml ginger syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "15ml chocolate sauce",
+          "15ml ginger syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "caramel banana latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "15ml caramel",
+          "15ml banana syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "15ml caramel",
+          "15ml banana syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "chocolate cookie latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "20ml cookie syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "35ml cookie syrup",
+          "200ml milk"
+        ]
+      }
+    }
   ]
 }
