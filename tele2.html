@@ -41,7 +41,7 @@
         }
 
         #messageInput {
-            width: 80%;
+            width: 70%;
             padding: 8px;
         }
 
@@ -52,7 +52,7 @@
 </head>
 <body>
 
-<h2>Telegram xxChat</h2>
+<h2>Telegram Chat</h2>
 
 <div id="chatBox"></div>
 
@@ -62,17 +62,20 @@
 <script>
     const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
     const chat_id = "-1002368470030";
+    const storageKey = "chatMessages";
 
     function sendMessage() {
         const input = document.getElementById("messageInput");
         const message = input.value.trim();
         if (!message) return;
 
+        // Save to localStorage first
+        saveMessage({ text: message, type: 'sent' });
+
         // Send to Telegram
         const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`;
         fetch(url)
             .then(() => {
-                saveMessage({ text: message, type: 'sent' });
                 displayMessages();
                 input.value = "";
             })
@@ -80,14 +83,14 @@
     }
 
     function saveMessage(msg) {
-        const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+        const messages = JSON.parse(localStorage.getItem(storageKey)) || [];
         messages.push(msg);
-        localStorage.setItem("chatMessages", JSON.stringify(messages));
+        localStorage.setItem(storageKey, JSON.stringify(messages));
     }
 
     function displayMessages() {
-        const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
         const chatBox = document.getElementById("chatBox");
+        const messages = JSON.parse(localStorage.getItem(storageKey)) || [];
         chatBox.innerHTML = "";
         messages.forEach(msg => {
             const div = document.createElement("div");
@@ -98,8 +101,8 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // Load messages on page load
-    window.onload = displayMessages;
+    // Show messages on page load
+    window.addEventListener("DOMContentLoaded", displayMessages);
 </script>
 
 </body>
