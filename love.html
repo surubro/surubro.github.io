@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu Search by Name</title>
+  <title>Menu xxSearch by Name</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -33,10 +33,27 @@
       border: 1px solid #ddd;
       border-radius: 6px;
       margin-bottom: 8px;
+      cursor: pointer;
     }
 
     #results div:hover {
       background-color: #f0f0f0;
+    }
+
+    #details {
+      margin-top: 20px;
+      background: #fff;
+      padding: 16px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h3 {
+      margin-top: 0;
+    }
+
+    ul {
+      padding-left: 20px;
     }
   </style>
 </head>
@@ -44,17 +61,24 @@
   <h2>Search by Name</h2>
   <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
+  <div id="details"></div>
 
   <script>
     const searchInput = document.getElementById('search');
     const resultsDiv = document.getElementById('results');
+    const detailsDiv = document.getElementById('details');
     let allItems = [];
 
+    // Fetch and flatten all items with category info
     fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
       .then(response => response.json())
       .then(data => {
-        // Flatten to extract all items with a "name" key from nested structure
-        allItems = Object.values(data).flat().filter(item => item.name);
+        for (const category in data) {
+          const items = data[category];
+          items.forEach(item => {
+            allItems.push({ ...item, category });
+          });
+        }
       })
       .catch(err => {
         resultsDiv.innerHTML = "<div>Error loading data.</div>";
@@ -64,15 +88,33 @@
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
       if (query) {
         const matches = allItems.filter(item => item.name.toLowerCase().includes(query));
         matches.forEach(item => {
           const div = document.createElement('div');
           div.textContent = item.name;
+          div.addEventListener('click', () => showDetails(item));
           resultsDiv.appendChild(div);
         });
       }
     });
+
+    function showDetails(item) {
+      let html = `<h3>${item.name}</h3>`;
+      html += `<strong>Category:</strong> ${item.category}<br><br>`;
+      if (item.sizes) {
+        if (item.sizes.R && item.sizes.R.length > 0) {
+          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(step => `<li>${step}</li>`).join('')}</ul>`;
+        }
+        if (item.sizes.L && item.sizes.L.length > 0) {
+          html += `<strong>Large:</strong><ul>${item.sizes.L.map(step => `<li>${step}</li>`).join('')}</ul>`;
+        }
+      } else if (item.equipments) {
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(eq => `<li>${eq}</li>`).join('')}</ul>`;
+      }
+      detailsDiv.innerHTML = html;
+    }
   </script>
 </body>
 </html>
