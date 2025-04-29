@@ -43,12 +43,15 @@
         input[type="button"]:hover {
             background-color: #218838;
         }
-        .last-sent-message {
-            text-align: center;
-            margin-top: 10px;
-            font-size: 16px;
-            color: #007bff;
-            display: none; /* Hidden by default */
+        .message-history {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #333;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        .message-history div {
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -60,33 +63,50 @@
         <input type="text" id="message" placeholder="Enter your message" required>
         <input type="button" value="Send" onclick="sendTelegram()">
     </form>
-    <div class="last-sent-message" id="lastSentMessage">Last sent message: </div>
+
+    <div class="message-history" id="messageHistory"></div>
 </div>
 
 <script>
-function sendTelegram() {
-    var message = document.getElementById("message").value;
-    if (message.trim() === "") {
-        alert("Please enter a message.");
-        return;
+    var messageHistory = []; // Array to store sent messages
+
+    function sendTelegram() {
+        var message = document.getElementById("message").value;
+        if (message.trim() === "") {
+            alert("Please enter a message.");
+            return;
+        }
+
+        var token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
+        var chat_id = "-1002368470030";
+        var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
+
+        // Create the GET request
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.send();
+
+        // Add the new message to the history array
+        messageHistory.push(message);
+
+        // Display all sent messages
+        displayMessageHistory();
+
+        // Clear the input field after sending
+        document.getElementById("message").value = "";
     }
 
-    var token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
-    var chat_id = "-1002368470030";
-    var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
+    function displayMessageHistory() {
+        var messageHistoryDiv = document.getElementById("messageHistory");
+        messageHistoryDiv.innerHTML = ""; // Clear current message history
 
-    // Create the GET request
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-    xhr.send();
-
-    // Display the last sent message on the page
-    document.getElementById("lastSentMessage").innerHTML = "Last sent message: " + message;
-    document.getElementById("lastSentMessage").style.display = "block";
-
-    // Clear the input field after sending
-    document.getElementById("message").value = "";
-}
+        // Display each message from the history
+        messageHistory.forEach(function(message, index) {
+            var messageDiv = document.createElement("div");
+            messageDiv.textContent = (index + 1) + ". " + message; // Show message with index number
+            messageHistoryDiv.appendChild(messageDiv);
+        });
+    }
 </script>
 
 </body>
