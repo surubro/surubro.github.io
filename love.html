@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Iced Tea Menu Search</title>
+  <title>Menu Search by Name</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 16px;
-      background: #fafafa;
+      background: #f9f9f9;
       max-width: 600px;
       margin: auto;
     }
@@ -20,96 +20,55 @@
 
     #search {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       font-size: 16px;
       margin-bottom: 16px;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
     #results div {
-      cursor: pointer;
-      padding: 12px;
-      margin-bottom: 8px;
-      background-color: #ffffff;
+      padding: 10px;
+      background-color: #fff;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
     }
 
     #results div:hover {
-      background-color: #f1f1f1;
-    }
-
-    #details {
-      margin-top: 24px;
-      background: #fff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    h3 {
-      margin-top: 20px;
-    }
-
-    ul {
-      padding-left: 20px;
+      background-color: #f0f0f0;
     }
   </style>
 </head>
 <body>
-  <h2>Search Iced Tea Menu</h2>
-  <input type="text" id="search" placeholder="Type a flavor name..." disabled />
+  <h2>Search by Name</h2>
+  <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
-  <div id="details"></div>
 
   <script>
-    const menuDataUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json';
-    let menuData = [];
-
     const searchInput = document.getElementById('search');
     const resultsDiv = document.getElementById('results');
-    const detailsDiv = document.getElementById('details');
+    let allItems = [];
 
-    // Load JSON data
-    fetch(menuDataUrl)
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to fetch JSON');
-        return response.json();
-      })
+    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
+      .then(response => response.json())
       .then(data => {
-        menuData = data;
-        searchInput.disabled = false;
+        // Flatten to extract all items with a "name" key from nested structure
+        allItems = Object.values(data).flat().filter(item => item.name);
       })
-      .catch(error => {
-        console.error('Error loading menu data:', error);
-        resultsDiv.innerHTML = 'Failed to load menu data.';
+      .catch(err => {
+        resultsDiv.innerHTML = "<div>Error loading data.</div>";
+        console.error(err);
       });
 
     searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase().trim();
+      const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
-      detailsDiv.innerHTML = '';
-
-      if (query && menuData.length > 0) {
-        const matches = menuData.filter(item =>
-          item.name.toLowerCase().includes(query)
-        );
-
+      if (query) {
+        const matches = allItems.filter(item => item.name.toLowerCase().includes(query));
         matches.forEach(item => {
           const div = document.createElement('div');
           div.textContent = item.name;
-          div.addEventListener('click', () => {
-            const rSteps = item.sizes.R.steps.map(step => `<li>${step}</li>`).join('');
-            const lSteps = item.sizes.L.steps.map(step => `<li>${step}</li>`).join('');
-            detailsDiv.innerHTML = `
-              <h3>${item.name}</h3>
-              <h4>${item.sizes.R.label}</h4>
-              <ul>${rSteps}</ul>
-              <h4>${item.sizes.L.label}</h4>
-              <ul>${lSteps}</ul>
-            `;
-          });
           resultsDiv.appendChild(div);
         });
       }
