@@ -1,52 +1,119 @@
-<script>
-  const menuDataUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json'; // Replace with your actual raw GitHub JSON URL
-  let menuData = [];
-
-  const searchInput = document.getElementById('search');
-  const resultsDiv = document.getElementById('results');
-  const detailsDiv = document.getElementById('details');
-
-  // Disable input until data is loaded
-  searchInput.disabled = true;
-
-  // Fetch data from GitHub raw JSON file
-  fetch(menuDataUrl)
-    .then(response => response.json())
-    .then(data => {
-      menuData = data;
-      searchInput.disabled = false; // Enable input once data is loaded
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
-      resultsDiv.innerHTML = 'Failed to load menu data.';
-    });
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    resultsDiv.innerHTML = '';
-    detailsDiv.innerHTML = '';
-
-    if (query && menuData.length > 0) {
-      const matches = menuData.filter(item =>
-        item.name.toLowerCase().includes(query)
-      );
-
-      matches.forEach(item => {
-        const div = document.createElement('div');
-        div.textContent = item.name;
-        div.addEventListener('click', () => {
-          const rSteps = item.sizes.R.steps.map(step => `<li>${step}</li>`).join('');
-          const lSteps = item.sizes.L.steps.map(step => `<li>${step}</li>`).join('');
-          detailsDiv.innerHTML = `
-            <h3>${item.name}</h3>
-            <h4>${item.sizes.R.label}</h4>
-            <ul>${rSteps}</ul>
-            <h4>${item.sizes.L.label}</h4>
-            <ul>${lSteps}</ul>
-          `;
-        });
-        resultsDiv.appendChild(div);
-      });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Iced Tea Menu Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #fafafa;
+      max-width: 600px;
+      margin: auto;
     }
-  });
-</script>
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    #search {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    #results div {
+      cursor: pointer;
+      padding: 12px;
+      margin-bottom: 8px;
+      background-color: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    #results div:hover {
+      background-color: #f1f1f1;
+    }
+
+    #details {
+      margin-top: 24px;
+      background: #fff;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h3 {
+      margin-top: 20px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Search Iced Tea Menu</h2>
+  <input type="text" id="search" placeholder="Type a flavor name..." disabled />
+  <div id="results"></div>
+  <div id="details"></div>
+
+  <script>
+    const menuDataUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json';
+    let menuData = [];
+
+    const searchInput = document.getElementById('search');
+    const resultsDiv = document.getElementById('results');
+    const detailsDiv = document.getElementById('details');
+
+    // Load JSON data
+    fetch(menuDataUrl)
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to fetch JSON');
+        return response.json();
+      })
+      .then(data => {
+        menuData = data;
+        searchInput.disabled = false;
+      })
+      .catch(error => {
+        console.error('Error loading menu data:', error);
+        resultsDiv.innerHTML = 'Failed to load menu data.';
+      });
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+
+      if (query && menuData.length > 0) {
+        const matches = menuData.filter(item =>
+          item.name.toLowerCase().includes(query)
+        );
+
+        matches.forEach(item => {
+          const div = document.createElement('div');
+          div.textContent = item.name;
+          div.addEventListener('click', () => {
+            const rSteps = item.sizes.R.steps.map(step => `<li>${step}</li>`).join('');
+            const lSteps = item.sizes.L.steps.map(step => `<li>${step}</li>`).join('');
+            detailsDiv.innerHTML = `
+              <h3>${item.name}</h3>
+              <h4>${item.sizes.R.label}</h4>
+              <ul>${rSteps}</ul>
+              <h4>${item.sizes.L.label}</h4>
+              <ul>${lSteps}</ul>
+            `;
+          });
+          resultsDiv.appendChild(div);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
