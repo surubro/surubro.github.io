@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Telegram wPersonal Chat</title>
+  <title>Telegram Personal Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
@@ -59,9 +59,10 @@
 <button onclick="sendMessage()">Send</button>
 
 <script>
-  const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
-  const chatId = "7173458713";
+  const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";  // Your bot token
+  const chatId = "7173458713";  // Your personal chat ID
 
+  // Send the message to Telegram
   function sendMessage() {
     var input = document.getElementById("messageInput");
     var message = input.value.trim();
@@ -78,7 +79,7 @@
     // Clear input
     input.value = "";
 
-    // Send the message to Telegram via simple XMLHttpRequest
+    // Send message to Telegram using XMLHttpRequest
     var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(message);
 
     var xhr = new XMLHttpRequest();
@@ -86,21 +87,24 @@
     xhr.send();
   }
 
+  // Fetch messages from Telegram
   function fetchMessages() {
     var url = "https://api.telegram.org/bot" + token + "/getUpdates";
-    
+
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    
+
     xhr.onload = function() {
       if (xhr.status === 200) {
         var data = JSON.parse(xhr.responseText);
         if (data.ok) {
           var receivedMessages = data.result;
           var chatBox = document.getElementById("chatBox");
-          chatBox.innerHTML = "";  // Clear current chat
+          
+          // Clear current chat before adding new messages
+          chatBox.innerHTML = "";
 
-          // Display received messages
+          // Display received messages from the bot
           for (var i = 0; i < receivedMessages.length; i++) {
             var msg = receivedMessages[i].message;
             if (msg.chat.id === parseInt(chatId) && msg.text) {
@@ -119,10 +123,10 @@
     xhr.send();
   }
 
-  // Load messages when the page loads
+  // Load messages when the page loads and refresh every 5 seconds
   window.onload = function() {
-    fetchMessages();
-    setInterval(fetchMessages, 5000);  // Refresh every 5 seconds
+    fetchMessages();  // Load received messages on page load
+    setInterval(fetchMessages, 5000);  // Fetch new messages every 5 seconds
   };
 </script>
 
