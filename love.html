@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Menu xxSearch by Name</title>
+  <title>Menu Search by Name</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -69,13 +69,12 @@
     const detailsDiv = document.getElementById('details');
     let allItems = [];
 
-    // Fetch and flatten all items with category info
+    // Fetch and structure the data
     fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
       .then(response => response.json())
       .then(data => {
         for (const category in data) {
-          const items = data[category];
-          items.forEach(item => {
+          data[category].forEach(item => {
             allItems.push({ ...item, category });
           });
         }
@@ -94,7 +93,11 @@
         matches.forEach(item => {
           const div = document.createElement('div');
           div.textContent = item.name;
-          div.addEventListener('click', () => showDetails(item));
+          div.addEventListener('click', () => {
+            showDetails(item);
+            searchInput.value = '';           // Clear search box
+            resultsDiv.innerHTML = '';        // Clear search results
+          });
           resultsDiv.appendChild(div);
         });
       }
@@ -104,10 +107,10 @@
       let html = `<h3>${item.name}</h3>`;
       html += `<strong>Category:</strong> ${item.category}<br><br>`;
       if (item.sizes) {
-        if (item.sizes.R && item.sizes.R.length > 0) {
+        if (item.sizes.R?.length) {
           html += `<strong>Regular:</strong><ul>${item.sizes.R.map(step => `<li>${step}</li>`).join('')}</ul>`;
         }
-        if (item.sizes.L && item.sizes.L.length > 0) {
+        if (item.sizes.L?.length) {
           html += `<strong>Large:</strong><ul>${item.sizes.L.map(step => `<li>${step}</li>`).join('')}</ul>`;
         }
       } else if (item.equipments) {
