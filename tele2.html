@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Send Message to Telegram</title>
+    <title>Telegram Message Sender</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
@@ -38,32 +38,51 @@
 </form>
 
 <script>
+function loadMessagesFromStorage() {
+    const messages = JSON.parse(localStorage.getItem('telegramMessages')) || [];
+    const chatBox = document.getElementById("chatBox");
+    chatBox.innerHTML = '';
+    messages.forEach(msg => {
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "received-message";
+        msgDiv.textContent = msg;
+        chatBox.appendChild(msgDiv);
+    });
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function saveMessageToStorage(message) {
+    const messages = JSON.parse(localStorage.getItem('telegramMessages')) || [];
+    messages.push(message);
+    localStorage.setItem('telegramMessages', JSON.stringify(messages));
+}
+
 function sendTelegram() {
-    var messageInput = document.getElementById("message");
-    var message = messageInput.value.trim();
+    const messageInput = document.getElementById("message");
+    const message = messageInput.value.trim();
+
     if (message === "") {
         alert("Please enter a message.");
         return;
     }
 
-    var token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
-    var chat_id = "-1002368470030";
-    var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
+    const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
+    const chat_id = "-1002368470030";
+    const url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
 
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.open("GET", url, true);
-    httpRequest.send();
-
-    // Display received message in chat box
-    var chatBox = document.getElementById("chatBox");
-    var messageDiv = document.createElement("div");
-    messageDiv.className = "received-message";
-    messageDiv.textContent = message;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    messageInput.value = "";
+    fetch(url)
+        .then(() => {
+            saveMessageToStorage(message);
+            loadMessagesFromStorage();
+            messageInput.value = "";
+        })
+        .catch(() => {
+            alert("❌ Failed to send message.");
+        });
 }
+
+// Load stored messages on page load
+loadMessagesFromStorage();
 </script>
 
 </body>
