@@ -1,88 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Telegram Message Sender</title>
+    <title>Simple Telegram Chat</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
         }
+
         #chatBox {
-            width: 240px;
-            max-height: 300px;
+            width: 100%;
+            max-width: 300px;
+            height: 400px;
             border: 1px solid #ccc;
             padding: 10px;
             overflow-y: auto;
+            background-color: #f5f5f5;
             margin-bottom: 10px;
-            background-color: #f9f9f9;
         }
-        .received-message {
+
+        .message {
+            margin: 6px 0;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 80%;
+            clear: both;
+        }
+
+        .sent {
+            background-color: #dcf8c6;
+            float: right;
+            text-align: right;
+        }
+
+        .received {
             background-color: #e0e0e0;
-            padding: 6px 10px;
-            margin: 5px 0;
-            border-radius: 6px;
+            float: left;
             text-align: left;
+        }
+
+        #messageInput {
+            width: 80%;
+            padding: 8px;
+        }
+
+        #sendBtn {
+            padding: 8px 16px;
         }
     </style>
 </head>
 <body>
 
-<h2>Send Message</h2>
+<h2>Telegram xxChat</h2>
 
 <div id="chatBox"></div>
 
-<form id="myForm" onsubmit="return false;">
-    <input type="text" id="message" placeholder="Enter your message" style="width: 200px;" required><br><br>
-    <input type="button" value="Send" onclick="sendTelegram()">
-</form>
+<input type="text" id="messageInput" placeholder="Type a message..." />
+<button id="sendBtn" onclick="sendMessage()">Send</button>
 
 <script>
-function loadMessagesFromStorage() {
-    const messages = JSON.parse(localStorage.getItem('telegramMessages')) || [];
-    const chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = '';
-    messages.forEach(msg => {
-        const msgDiv = document.createElement("div");
-        msgDiv.className = "received-message";
-        msgDiv.textContent = msg;
-        chatBox.appendChild(msgDiv);
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-function saveMessageToStorage(message) {
-    const messages = JSON.parse(localStorage.getItem('telegramMessages')) || [];
-    messages.push(message);
-    localStorage.setItem('telegramMessages', JSON.stringify(messages));
-}
-
-function sendTelegram() {
-    const messageInput = document.getElementById("message");
-    const message = messageInput.value.trim();
-
-    if (message === "") {
-        alert("Please enter a message.");
-        return;
-    }
-
     const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
     const chat_id = "-1002368470030";
-    const url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
 
-    fetch(url)
-        .then(() => {
-            saveMessageToStorage(message);
-            loadMessagesFromStorage();
-            messageInput.value = "";
-        })
-        .catch(() => {
-            alert("❌ Failed to send message.");
+    function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Send to Telegram
+        const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat_id}&text=${encodeURIComponent(message)}`;
+        fetch(url)
+            .then(() => {
+                saveMessage({ text: message, type: 'sent' });
+                displayMessages();
+                input.value = "";
+            })
+            .catch(() => alert("❌ Failed to send message."));
+    }
+
+    function saveMessage(msg) {
+        const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+        messages.push(msg);
+        localStorage.setItem("chatMessages", JSON.stringify(messages));
+    }
+
+    function displayMessages() {
+        const messages = JSON.parse(localStorage.getItem("chatMessages")) || [];
+        const chatBox = document.getElementById("chatBox");
+        chatBox.innerHTML = "";
+        messages.forEach(msg => {
+            const div = document.createElement("div");
+            div.className = "message " + (msg.type === 'sent' ? 'sent' : 'received');
+            div.textContent = msg.text;
+            chatBox.appendChild(div);
         });
-}
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
-// Load stored messages on page load
-loadMessagesFromStorage();
+    // Load messages on page load
+    window.onload = displayMessages;
 </script>
 
 </body>
