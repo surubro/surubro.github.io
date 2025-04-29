@@ -43,16 +43,24 @@
         input[type="button"]:hover {
             background-color: #218838;
         }
+        .last-sent-message {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            color: #007bff;
+            display: none; /* Hidden by default */
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Send Message</h2>
-    <form id="myForm">
+    <form id="myForm" onsubmit="sendTelegram(); return false;">
         <input type="text" id="message" placeholder="Enter your message" required>
         <input type="button" value="Send" onclick="sendTelegram()">
     </form>
+    <div class="last-sent-message" id="lastSentMessage">Last sent message: </div>
 </div>
 
 <script>
@@ -67,11 +75,16 @@ function sendTelegram() {
     var chat_id = "-1002368470030";
     var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
 
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.open("GET", url, true);
-    httpRequest.send();
+    // Create the GET request
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.send();
 
-    alert("✅ Message sent!");
+    // Display the last sent message on the page
+    document.getElementById("lastSentMessage").innerHTML = "Last sent message: " + message;
+    document.getElementById("lastSentMessage").style.display = "block";
+
+    // Clear the input field after sending
     document.getElementById("message").value = "";
 }
 </script>
