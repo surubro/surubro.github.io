@@ -61,69 +61,69 @@
 <script>
   const token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
   const chatId = "7173458713";
-  const sentMessages = [];
 
   function sendMessage() {
-    const input = document.getElementById("messageInput");
-    const message = input.value.trim();
+    var input = document.getElementById("messageInput");
+    var message = input.value.trim();
     if (!message) return;
 
-    // Show the message immediately in chat
-    sentMessages.push(message);
-    displayMessages();
+    // Display sent message immediately
+    var chatBox = document.getElementById("chatBox");
+    var div = document.createElement("div");
+    div.className = "message sent";
+    div.textContent = message;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-    const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+    // Clear input
+    input.value = "";
 
-    fetch(url)
-      .then(() => {
-        input.value = "";
-        setTimeout(fetchMessages, 1000);
-      })
-      .catch(() => alert("❌ Failed to send"));
+    // Send the message to Telegram via simple XMLHttpRequest
+    var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(message);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.send();
   }
 
   function fetchMessages() {
-    fetch(`https://api.telegram.org/bot${token}/getUpdates`)
-      .then(res => res.json())
-      .then(data => {
-        const received = [];
+    var url = "https://api.telegram.org/bot" + token + "/getUpdates";
+    
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
         if (data.ok) {
-          data.result.forEach(update => {
-            const msg = update.message;
-            if (msg && msg.chat && msg.chat.id == chatId && msg.text) {
-              received.push(msg.text);
+          var receivedMessages = data.result;
+          var chatBox = document.getElementById("chatBox");
+          chatBox.innerHTML = "";  // Clear current chat
+
+          // Display received messages
+          for (var i = 0; i < receivedMessages.length; i++) {
+            var msg = receivedMessages[i].message;
+            if (msg.chat.id === parseInt(chatId) && msg.text) {
+              var div = document.createElement("div");
+              div.className = "message received";
+              div.textContent = msg.text;
+              chatBox.appendChild(div);
             }
-          });
+          }
+
+          chatBox.scrollTop = chatBox.scrollHeight;
         }
-        displayMessages(received);
-      });
+      }
+    };
+
+    xhr.send();
   }
 
-  function displayMessages(receivedMessages = []) {
-    const chatBox = document.getElementById("chatBox");
-    chatBox.innerHTML = "";
-
-    // Display received messages
-    receivedMessages.forEach(text => {
-      const div = document.createElement("div");
-      div.className = "message received";
-      div.textContent = text;
-      chatBox.appendChild(div);
-    });
-
-    // Display sent messages
-    sentMessages.forEach(text => {
-      const div = document.createElement("div");
-      div.className = "message sent";
-      div.textContent = text;
-      chatBox.appendChild(div);
-    });
-
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  // Load received messages on page load
-  window.onload = fetchMessages;
+  // Load messages when the page loads
+  window.onload = function() {
+    fetchMessages();
+    setInterval(fetchMessages, 5000);  // Refresh every 5 seconds
+  };
 </script>
 
 </body>
