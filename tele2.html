@@ -50,8 +50,16 @@
             border-top: 1px solid #ccc;
             padding-top: 10px;
         }
-        .message-history div {
-            margin-bottom: 8px;
+        .message-item {
+            background-color: #28a745;
+            color: white;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .message-item.received {
+            background-color: #ccc;
+            color: black;
         }
     </style>
 </head>
@@ -87,7 +95,7 @@
         xhr.send();
 
         // Add the new message to the history array
-        messageHistory.push(message);
+        messageHistory.push({ text: message, type: 'sent' });
 
         // Display all sent messages
         displayMessageHistory();
@@ -101,9 +109,17 @@
         messageHistoryDiv.innerHTML = ""; // Clear current message history
 
         // Display each message from the history
-        messageHistory.forEach(function(message, index) {
+        messageHistory.forEach(function(messageObj) {
             var messageDiv = document.createElement("div");
-            messageDiv.textContent = (index + 1) + ". " + message; // Show message with index number
+            messageDiv.textContent = messageObj.text; // Display the message text
+
+            // Apply different styles based on the type of message
+            if (messageObj.type === 'sent') {
+                messageDiv.classList.add("message-item"); // Sent messages are green
+            } else {
+                messageDiv.classList.add("message-item", "received"); // Received messages are gray
+            }
+
             messageHistoryDiv.appendChild(messageDiv);
         });
     }
