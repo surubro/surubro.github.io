@@ -1,0 +1,67 @@
+[
+  {
+    "name": "lemon",
+    "sizes": {
+      "R": {
+        "label": "Regular",
+        "steps": [
+          "30ml tea syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ]
+      },
+      "L": {
+        "label": "Large",
+        "steps": [
+          "45ml tea syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    }
+  },
+  {
+    "name": "peach passion",
+    "sizes": {
+      "R": {
+        "label": "Regular",
+        "steps": [
+          "30ml peach syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ]
+      },
+      "L": {
+        "label": "Large",
+        "steps": [
+          "45ml peach syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    }
+  },
+  {
+    "name": "elder flower",
+    "sizes": {
+      "R": {
+        "label": "Regular",
+        "steps": [
+          "30ml lemon ice tea syrup",
+          "165ml water",
+          "8-10 ice cubes",
+          "10ml elder flower syrup"
+        ]
+      },
+      "L": {
+        "label": "Large",
+        "steps": [
+          "45ml lemon ice tea syrup",
+          "250ml water",
+          "10-12 ice cubes",
+          "15ml elder flower syrup"
+        ]
+      }
+    }
+  }
+]
