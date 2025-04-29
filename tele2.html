@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Send Message to Telegram</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chatBox {
+            width: 240px;
+            max-height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .received-message {
+            background-color: #e0e0e0;
+            padding: 6px 10px;
+            margin: 5px 0;
+            border-radius: 6px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Send Message</h2>
+
+<div id="chatBox"></div>
+
+<form id="myForm" onsubmit="return false;">
+    <input type="text" id="message" placeholder="Enter your message" style="width: 200px;" required><br><br>
+    <input type="button" value="Send" onclick="sendTelegram()">
+</form>
+
+<script>
+function sendTelegram() {
+    var messageInput = document.getElementById("message");
+    var message = messageInput.value.trim();
+    if (message === "") {
+        alert("Please enter a message.");
+        return;
+    }
+
+    var token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
+    var chat_id = "-1002368470030";
+    var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
+
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.open("GET", url, true);
+    httpRequest.send();
+
+    // Display received message in chat box
+    var chatBox = document.getElementById("chatBox");
+    var messageDiv = document.createElement("div");
+    messageDiv.className = "received-message";
+    messageDiv.textContent = message;
+    chatBox.appendChild(messageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    messageInput.value = "";
+}
+</script>
+
+</body>
+</html>
