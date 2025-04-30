@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Search Menu</title>
+  <title>Menu Browser</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,7 +27,7 @@
       border-radius: 6px;
     }
 
-    #results div {
+    .item, .category {
       padding: 10px;
       background-color: #fff;
       border: 1px solid #ddd;
@@ -36,7 +36,7 @@
       cursor: pointer;
     }
 
-    #results div:hover {
+    .item:hover, .category:hover {
       background-color: #f0f0f0;
     }
 
@@ -77,94 +77,69 @@
     const resultsDiv = document.getElementById('results');
     const detailsDiv = document.getElementById('details');
     let allItems = [];
+    let fullData = {};
 
-    // ✅ FIXED fetch URL
     fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/master/love.json')
-      .then(response => {
-        if (!response.ok) throw new Error('Network response was not ok');
-        return response.json();
-      })
+      .then(res => res.json())
       .then(data => {
-        for (const category in data) {
-          const items = data[category];
-
-          if (Array.isArray(items)) {
-            items.forEach(item => {
-              allItems.push({
-                name: formatName(item.name || ''),
-                category,
-                ...item
-              });
-            });
-          } else {
-            for (const name in items) {
-              const entry = items[name];
-              const formatted = {
-                name: formatName(name),
-                category
-              };
-
-              if (entry.R || entry.L) {
-                formatted.sizes = {
-                  R: Array.isArray(entry.R) ? entry.R : [entry.R],
-                  L: Array.isArray(entry.L) ? entry.L : [entry.L]
-                };
-              } else if (entry.regular || entry.large) {
-                formatted.sizes = {
-                  R: Array.isArray(entry.regular) ? entry.regular : [entry.regular],
-                  L: Array.isArray(entry.large) ? entry.large : [entry.large]
-                };
-              } else if (Array.isArray(entry)) {
-                formatted.details = entry;
-              } else if (entry.equipments) {
-                formatted.equipments = entry.equipments;
-              }
-
-              allItems.push(formatted);
-            }
-          }
-        }
+        fullData = data;
+        displayCategories(Object.keys(data));
       })
       .catch(err => {
         resultsDiv.innerHTML = "<div>Error loading menu.</div>";
         console.error(err);
       });
 
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase();
+    function displayCategories(categories) {
+      resultsDiv.innerHTML = '';
+      categories.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'category';
+        div.textContent = formatName(cat);
+        div.addEventListener('click', () => showItems(cat));
+        resultsDiv.appendChild(div);
+      });
+    }
+
+    function showItems(category) {
+      const data = fullData[category];
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
-
-      if (query) {
-        const matches = allItems.filter(item => item.name.toLowerCase().includes(query));
-        matches.forEach(item => {
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          const name = item.name || item.title || "Unnamed";
           const div = document.createElement('div');
-          div.textContent = item.name;
-          div.addEventListener('click', () => {
-            showDetails(item);
-            searchInput.value = '';
-            resultsDiv.innerHTML = '';
-          });
+          div.className = 'item';
+          div.textContent = formatName(name);
+          div.addEventListener('click', () => showDetails(item, category));
           resultsDiv.appendChild(div);
         });
+      } else {
+        for (const key in data) {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.textContent = formatName(key);
+          div.addEventListener('click', () => showDetails(data[key], category, key));
+          resultsDiv.appendChild(div);
+        }
       }
-    });
+    }
 
-    function showDetails(item) {
-      let html = `<h3>${item.name}</h3>`;
-      html += `<strong>Category:</strong> ${item.category}<br><br>`;
+    function showDetails(item, category, keyName = '') {
+      let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
+      html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      if (item.sizes) {
-        if (item.sizes.R?.length) {
-          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(i => `<li>${i}</li>`).join('')}</ul>`;
-        }
-        if (item.sizes.L?.length) {
-          html += `<strong>Large:</strong><ul>${item.sizes.L.map(i => `<li>${i}</li>`).join('')}</ul>`;
-        }
-      } else if (item.details) {
-        html += `<ul>${item.details.map(i => `<li>${i}</li>`).join('')}</ul>`;
+      if (item.R || item.L || item.regular || item.large) {
+        const R = item.R || item.regular;
+        const L = item.L || item.large;
+        if (R) html += `<strong>Regular:</strong><ul>${(Array.isArray(R) ? R : [R]).map(v => `<li>${v}</li>`).join('')}</ul>`;
+        if (L) html += `<strong>Large:</strong><ul>${(Array.isArray(L) ? L : [L]).map(v => `<li>${v}</li>`).join('')}</ul>`;
+      } else if (Array.isArray(item)) {
+        html += `<ul>${item.map(v => `<li>${v}</li>`).join('')}</ul>`;
       } else if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(i => `<li>${i}</li>`).join('')}</ul>`;
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
+      } else {
+        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
       }
 
       detailsDiv.innerHTML = html;
@@ -173,6 +148,43 @@
     function formatName(str) {
       return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+
+      if (query) {
+        const matches = [];
+        for (const category in fullData) {
+          const items = fullData[category];
+          if (Array.isArray(items)) {
+            items.forEach(item => {
+              const name = item.name || item.title || '';
+              if (name.toLowerCase().includes(query)) {
+                matches.push({ ...item, name, category });
+              }
+            });
+          } else {
+            for (const key in items) {
+              if (key.toLowerCase().includes(query)) {
+                matches.push({ ...items[key], name: key, category });
+              }
+            }
+          }
+        }
+
+        matches.forEach(match => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.textContent = formatName(match.name);
+          div.addEventListener('click', () => showDetails(match, match.category, match.name));
+          resultsDiv.appendChild(div);
+        });
+      } else {
+        displayCategories(Object.keys(fullData));
+      }
+    });
   </script>
 </body>
 </html>
