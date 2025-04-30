@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
       padding: 16px;
+      background: #f9f9f9;
       max-width: 600px;
       margin: auto;
     }
@@ -27,23 +27,23 @@
       border-radius: 6px;
     }
 
-    .category, .item {
-      background: #fff;
+    .item, .category {
+      padding: 10px;
+      background-color: #fff;
       border: 1px solid #ddd;
       border-radius: 6px;
-      padding: 10px;
       margin-bottom: 8px;
       cursor: pointer;
     }
 
-    .category:hover, .item:hover {
-      background: #f0f0f0;
+    .item:hover, .category:hover {
+      background-color: #f0f0f0;
     }
 
     #details {
       margin-top: 20px;
-      padding: 16px;
       background: #fff;
+      padding: 16px;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
@@ -58,7 +58,7 @@
 
     #footer {
       text-align: center;
-      margin-top: 30px;
+      margin-top: 20px;
       font-size: 14px;
       color: #888;
     }
@@ -69,6 +69,7 @@
   <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
   <div id="details"></div>
+
   <div id="footer">Made with ❤️ by Surendra Sonawane</div>
 
   <script>
@@ -77,7 +78,7 @@
     const detailsDiv = document.getElementById('details');
     let fullData = {};
 
-    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/master/love.json')
+    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
       .then(res => res.json())
       .then(data => {
         fullData = data;
@@ -88,117 +89,4 @@
       });
 
     function formatName(str) {
-      return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    }
-
-    function renderCategories(categories) {
-      resultsDiv.innerHTML = '';
-      categories.forEach(cat => {
-        const div = document.createElement('div');
-        div.className = 'category';
-        div.textContent = formatName(cat);
-        div.onclick = () => renderItems(cat);
-        resultsDiv.appendChild(div);
-      });
-    }
-
-    function renderItems(category) {
-      const data = fullData[category];
-      resultsDiv.innerHTML = '';
-      detailsDiv.innerHTML = '';
-
-      if (Array.isArray(data)) {
-        data.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = formatName(item.name || item.title || 'Unnamed');
-          div.onclick = () => renderDetails(item, category);
-          resultsDiv.appendChild(div);
-        });
-      } else {
-        Object.keys(data).forEach(key => {
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = formatName(key);
-          div.onclick = () => renderDetails(data[key], category, key);
-          resultsDiv.appendChild(div);
-        });
-      }
-    }
-
-    function renderDetails(item, category, key = '') {
-      const title = formatName(key || item.name || item.title || 'Unnamed');
-      let html = `<h3>${title}</h3>`;
-      html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
-
-      if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
-      }
-
-      const sizes = ['R', 'L', 'regular', 'large'];
-      sizes.forEach(size => {
-        if (item[size]) {
-          const label = size === 'R' || size === 'regular' ? 'Regular' : 'Large';
-          const steps = Array.isArray(item[size]) ? item[size] : [item[size]];
-          html += `<strong>${label}:</strong><ul>${steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
-        }
-      });
-
-      if (item.steps) {
-        html += `<strong>Preparation Steps:</strong><ul>${item.steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
-      }
-
-      if (!item.equipments && !sizes.some(s => item[s]) && !item.steps) {
-        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
-      }
-
-      detailsDiv.innerHTML = html;
-    }
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      resultsDiv.innerHTML = '';
-      detailsDiv.innerHTML = '';
-
-      if (!query) {
-        renderCategories(Object.keys(fullData));
-        return;
-      }
-
-      const matches = [];
-
-      for (const category in fullData) {
-        const entries = fullData[category];
-
-        if (Array.isArray(entries)) {
-          entries.forEach(item => {
-            const name = item.name || item.title || '';
-            if (name.toLowerCase().includes(query)) {
-              matches.push({ ...item, name, category });
-            }
-          });
-        } else {
-          for (const key in entries) {
-            if (key.toLowerCase().includes(query)) {
-              matches.push({ ...entries[key], name: key, category });
-            }
-          }
-        }
-      }
-
-      if (matches.length === 0) {
-        resultsDiv.innerHTML = '<div>No matches found.</div>';
-        return;
-      }
-
-      matches.forEach(match => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.textContent = formatName(match.name);
-        div.onclick = () => renderDetails(match, match.category, match.name);
-        resultsDiv.appendChild(div);
-      });
-    });
-  </script>
-</body>
-</html>
+      return str.replace(/_/g, '_
