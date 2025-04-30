@@ -89,4 +89,117 @@
       });
 
     function formatName(str) {
-      return str.replace(/_/g, '_
+      return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderCategories(categories) {
+      resultsDiv.innerHTML = '';
+      categories.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'category';
+        div.textContent = formatName(cat);
+        div.onclick = () => renderItems(cat);
+        resultsDiv.appendChild(div);
+      });
+    }
+
+    function renderItems(category) {
+      const data = fullData[category];
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.textContent = formatName(item.name || item.title || 'Unnamed');
+          div.onclick = () => renderDetails(item, category);
+          resultsDiv.appendChild(div);
+        });
+      } else {
+        Object.keys(data).forEach(key => {
+          const div = document.createElement('div');
+          div.className = 'item';
+          div.textContent = formatName(key);
+          div.onclick = () => renderDetails(data[key], category, key);
+          resultsDiv.appendChild(div);
+        });
+      }
+    }
+
+    function renderDetails(item, category, key = '') {
+      const title = formatName(key || item.name || item.title || 'Unnamed');
+      let html = `<h3>${title}</h3>`;
+      html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
+
+      if (item.equipments) {
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
+      }
+
+      const sizes = ['R', 'L', 'regular', 'large'];
+      sizes.forEach(size => {
+        if (item[size]) {
+          const label = size === 'R' || size === 'regular' ? 'Regular' : 'Large';
+          const steps = Array.isArray(item[size]) ? item[size] : [item[size]];
+          html += `<strong>${label}:</strong><ul>${steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
+        }
+      });
+
+      if (item.steps) {
+        html += `<strong>Preparation Steps:</strong><ul>${item.steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
+      }
+
+      if (!item.equipments && !sizes.some(s => item[s]) && !item.steps) {
+        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
+      }
+
+      detailsDiv.innerHTML = html;
+    }
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+
+      if (!query) {
+        renderCategories(Object.keys(fullData));
+        return;
+      }
+
+      const matches = [];
+
+      for (const category in fullData) {
+        const entries = fullData[category];
+
+        if (Array.isArray(entries)) {
+          entries.forEach(item => {
+            const name = item.name || item.title || '';
+            if (name.toLowerCase().includes(query)) {
+              matches.push({ ...item, name, category });
+            }
+          });
+        } else {
+          for (const key in entries) {
+            if (key.toLowerCase().includes(query)) {
+              matches.push({ ...entries[key], name: key, category });
+            }
+          }
+        }
+      }
+
+      if (matches.length === 0) {
+        resultsDiv.innerHTML = '<div>No matches found.</div>';
+        return;
+      }
+
+      matches.forEach(match => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = formatName(match.name);
+        div.onclick = () => renderDetails(match, match.category, match.name);
+        resultsDiv.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>
