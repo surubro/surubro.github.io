@@ -128,21 +128,36 @@
       let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
       html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      // Add detailed steps for preparation
-      html += `<strong>Preparation Steps:</strong><ul>`;
+      // Show preparation steps for Regular and Large
+      html += `<strong>Preparation Steps:</strong><br>`;
+
       if (item.regular) {
-        html += `<li><strong>Regular:</strong> ${item.regular.join(', ')}</li>`;
+        html += `<strong>Regular:</strong><br>`;
+        item.regular.forEach(step => {
+          html += `<span>- ${step}</span><br>`;
+        });
       }
+
       if (item.large) {
-        html += `<li><strong>Large:</strong> ${item.large.join(', ')}</li>`;
+        html += `<strong>Large:</strong><br>`;
+        item.large.forEach(step => {
+          html += `<span>- ${step}</span><br>`;
+        });
       }
+
       if (item.ingredients) {
-        html += `<li><strong>Ingredients:</strong> ${item.ingredients.join(', ')}</li>`;
+        html += `<strong>Ingredients:</strong><br>`;
+        item.ingredients.forEach(ingredient => {
+          html += `<span>- ${ingredient}</span><br>`;
+        });
       }
+
       if (item.additional) {
-        html += `<li><strong>Additional Steps:</strong> ${item.additional.join(', ')}</li>`;
+        html += `<strong>Additional Steps:</strong><br>`;
+        item.additional.forEach(additionalStep => {
+          html += `<span>- ${additionalStep}</span><br>`;
+        });
       }
-      html += `</ul>`;
 
       detailsDiv.innerHTML = html;
     }
