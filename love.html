@@ -45,7 +45,7 @@
       background: #fff;
       padding: 16px;
       border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     h3 {
@@ -78,25 +78,40 @@
     const detailsDiv = document.getElementById('details');
     let allItems = [];
 
-    // Fetch and structure the data
+    // Fetch the menu data
     fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
       .then(response => response.json())
       .then(data => {
         for (const category in data) {
-          data[category].forEach(item => {
-            allItems.push({ ...item, category });
-          });
+          const items = data[category];
+          if (Array.isArray(items)) {
+            // List of items (most categories)
+            items.forEach(item => {
+              allItems.push({ name: formatName(item), category, ...wrapItem(item) });
+            });
+          } else {
+            // Special case: dictionary-based (e.g., hot_coffee, iced_tea)
+            for (const itemName in items) {
+              const itemValue = items[itemName];
+              allItems.push({
+                name: formatName(itemName),
+                category,
+                ...wrapItem(itemValue)
+              });
+            }
+          }
         }
       })
-      .catch(err => {
-        resultsDiv.innerHTML = "<div>Error loading data.</div>";
-        console.error(err);
+      .catch(error => {
+        resultsDiv.innerHTML = "<div>Error loading menu.</div>";
+        console.error("Menu fetch error:", error);
       });
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
+
       if (query) {
         const matches = allItems.filter(item => item.name.toLowerCase().includes(query));
         matches.forEach(item => {
@@ -104,8 +119,8 @@
           div.textContent = item.name;
           div.addEventListener('click', () => {
             showDetails(item);
-            searchInput.value = '';           // Clear search box
-            resultsDiv.innerHTML = '';        // Clear search results
+            searchInput.value = '';
+            resultsDiv.innerHTML = '';
           });
           resultsDiv.appendChild(div);
         });
@@ -115,17 +130,49 @@
     function showDetails(item) {
       let html = `<h3>${item.name}</h3>`;
       html += `<strong>Category:</strong> ${item.category}<br><br>`;
+
       if (item.sizes) {
-        if (item.sizes.R?.length) {
-          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(step => `<li>${step}</li>`).join('')}</ul>`;
+        if (item.sizes.R) {
+          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(v => `<li>${v}</li>`).join('')}</ul>`;
         }
-        if (item.sizes.L?.length) {
-          html += `<strong>Large:</strong><ul>${item.sizes.L.map(step => `<li>${step}</li>`).join('')}</ul>`;
+        if (item.sizes.L) {
+          html += `<strong>Large:</strong><ul>${item.sizes.L.map(v => `<li>${v}</li>`).join('')}</ul>`;
         }
+      } else if (item.details) {
+        html += `<ul>${item.details.map(v => `<li>${v}</li>`).join('')}</ul>`;
       } else if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(eq => `<li>${eq}</li>`).join('')}</ul>`;
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
       }
+
       detailsDiv.innerHTML = html;
+    }
+
+    function formatName(str) {
+      return str
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function wrapItem(item) {
+      if (item.regular || item.large) {
+        return {
+          sizes: {
+            R: Array.isArray(item.regular) ? item.regular : [item.regular],
+            L: Array.isArray(item.large) ? item.large : [item.large]
+          }
+        };
+      } else if (item.R || item.L) {
+        return {
+          sizes: {
+            R: item.R,
+            L: item.L
+          }
+        };
+      } else if (Array.isArray(item)) {
+        return { details: item };
+      } else {
+        return item;
+      }
     }
   </script>
 </body>
