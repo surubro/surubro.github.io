@@ -65,7 +65,7 @@
   </style>
 </head>
 <body>
-  <h2>Search L&L Menu.</h2>
+  <h2>Search Menu</h2>
   <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
   <div id="details"></div>
@@ -76,10 +76,9 @@
     const searchInput = document.getElementById('search');
     const resultsDiv = document.getElementById('results');
     const detailsDiv = document.getElementById('details');
-    let allItems = [];
     let fullData = {};
 
-    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/master/love.json')
+    fetch('menu.json')
       .then(res => res.json())
       .then(data => {
         fullData = data;
@@ -129,9 +128,9 @@
       let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
       html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      if (item.R || item.L || item.regular || item.large) {
-        const R = item.R || item.regular;
-        const L = item.L || item.large;
+      if (item.regular || item.large) {
+        const R = item.regular;
+        const L = item.large;
         if (R) html += `<strong>Regular:</strong><ul>${(Array.isArray(R) ? R : [R]).map(v => `<li>${v}</li>`).join('')}</ul>`;
         if (L) html += `<strong>Large:</strong><ul>${(Array.isArray(L) ? L : [L]).map(v => `<li>${v}</li>`).join('')}</ul>`;
       } else if (Array.isArray(item)) {
