@@ -1,47 +1,189 @@
 {
-  "menu": [
-    {
-      "id": 1,
-      "name": "Spaghetti Bolognese",
-      "category": "Main Course",
-      "ingredients": [
-        "200g spaghetti",
-        "100g minced beef",
-        "1 onion",
-        "2 cloves garlic",
-        "400g canned tomatoes",
-        "Salt",
-        "Pepper",
-        "Olive oil"
-      ],
-      "steps": [
-        "Boil spaghetti according to package instructions.",
-        "Heat olive oil in a pan.",
-        "Add chopped onion and garlic, sauté until golden.",
-        "Add minced beef and cook until browned.",
-        "Add canned tomatoes, salt, and pepper. Simmer for 15 minutes.",
-        "Serve sauce over spaghetti."
-      ]
+  "cold_coffee": {
+    "caramel_frappe": {
+      "regular": ["30ml shot", "15ml caramel syp", "10ml caramel sauce", "50ml milk", "10 ice", "30g frappe premix"],
+      "large": ["60ml shot", "20ml caramel syp", "15ml caramel sauce", "80ml milk", "15 ice", "40g frappe premix"]
     },
-    {
-      "id": 2,
-      "name": "Caesar Salad",
-      "category": "Salad",
-      "ingredients": [
-        "1 romaine lettuce",
-        "50g parmesan cheese",
-        "Croutons",
-        "Caesar dressing",
-        "Salt",
-        "Pepper"
-      ],
-      "steps": [
-        "Wash and chop lettuce.",
-        "Toss lettuce with Caesar dressing.",
-        "Add croutons and grated parmesan.",
-        "Season with salt and pepper to taste.",
-        "Serve chilled."
-      ]
+    "hazelnut_blast": {
+      "regular": ["30ml shot", "25ml hazelnut syp", "50ml milk", "10 ice", "30g frappe premix"],
+      "large": ["60ml shot", "30ml hazelnut syp", "80ml milk", "15 ice", "40g frappe premix"]
+    },
+    "coffee_tiramisu": {
+      "regular": ["30ml shot", "25ml tiramisu syp", "50ml milk", "10 ice", "30g frappe premix"],
+      "large": ["60ml shot", "30ml tiramisu syp", "80ml milk", "15 ice", "40g frappe premix"]
+    },
+    "mocha_frappe": {
+      "regular": ["30ml shot", "50ml milk", "10 ice", "30g frappe premix", "20g chocolate powder"],
+      "large": ["60ml shot", "80ml milk", "15 ice", "40g frappe premix", "40g chocolate powder"]
     }
-  ]
+  },
+  "filter_coffee": {
+    "south_indian_coffee": {
+      "regular": ["60ml shot", "150ml milk"],
+      "large": ["80ml shot", "210ml milk"]
+    }
+  },
+  "smoothies": {
+    "mango_pineapple": {
+      "regular": ["30ml mango crush", "20ml pineapple crush", "1 scoop vanilla ice cream", "50ml milk", "6-8 ice cubes", "150g fresh yogurt"]
+    },
+    "berry_blast": {
+      "regular": ["40ml berry blast crush", "1 scoop vanilla ice cream", "50ml milk", "6-8 ice cubes", "150g fresh yogurt"]
+    },
+    "kiwi_mint": {
+      "regular": ["40ml kiwi crush", "5ml mint syrup", "1 scoop vanilla ice cream", "50ml milk", "6-8 ice cubes", "150g fresh yogurt", "10-15 mint leaves"]
+    }
+  },
+  "mojito": {
+    "lemon_mojito": {
+      "regular": ["20ml mint syrup", "20 mint leaves", "3 lemon slices", "15ml lemoneez", "6-8 ice cubes", "150ml soda", "1 sugar"],
+      "large": ["20ml mint syrup", "20 mint leaves", "3 lemon slices", "20ml lemoneez", "8-10 ice cubes", "250ml soda", "1 sugar"]
+    },
+    "grenadine_mojito": {
+      "regular": ["30ml grenadine syrup", "10ml mint syrup", "20 mint leaves", "3 lemon slices", "5ml lemoneez", "6-8 ice cubes", "150ml soda", "1 sugar"],
+      "large": ["40ml grenadine syrup", "20ml mint syrup", "20 mint leaves", "3 lemon slices", "10ml lemoneez", "8-10 ice cubes", "250ml soda", "1 sugar"]
+    },
+    "green_apple": {
+      "regular": ["30ml green apple", "10ml mint syrup", "20 mint leaves", "3 lemon slices", "5ml lemoneez", "6-8 ice cubes", "150ml soda", "1 sugar"],
+      "large": ["40ml green apple", "20ml mint syrup", "20 mint leaves", "3 lemon slices", "10ml lemoneez", "8-10 ice cubes", "250ml soda", "1 sugar"]
+    },
+    "pink_grapefruit_lychee": {
+      "regular": ["40ml syrup", "5ml lemoneez", "150ml soda", "1 slice lemon garnish", "8-10 ice cubes"],
+      "large": ["60ml syrup", "10ml lemoneez", "250ml soda", "1 slice lemon garnish", "10-12 ice cubes"]
+    },
+    "tropical_bliss_cooler": {
+      "regular": ["30ml pineapple crush", "15ml coconut syrup", "10ml lemoneez", "120ml soda", "8-10 ice cubes"],
+      "large": ["40ml pineapple crush", "20ml coconut syrup", "15ml lemoneez", "160ml soda", "10-12 ice cubes"]
+    }
+  },
+  "on_the_rocks": {
+    "iced_americano": {
+      "regular": ["60ml shot", "6-8 ice cubes", "165ml water"],
+      "large": ["80ml shot", "10-12 ice cubes", "250ml water"]
+    },
+    "vietnamese_styled": {
+      "regular": ["60ml shot", "40g condensed milk", "150ml milk", "6-8 ice cubes"],
+      "large": ["80ml shot", "50g condensed milk", "200ml milk", "8-10 ice cubes"]
+    },
+    "iced_vanilla_latte": {
+      "regular": ["60ml shot", "25ml vanilla syrup", "200ml milk", "10 ice cubes", "5g frappe premix"],
+      "large": ["80ml shot", "30ml vanilla syrup", "250ml milk", "12 ice cubes", "10g frappe premix"]
+    },
+    "iced_caramel_cappuccino": {
+      "regular": ["60ml shot", "10 ice cubes", "25ml caramel syrup", "50ml milk", "50ml unwhipped cream"],
+      "large": ["80ml shot", "12 ice cubes", "30ml caramel syrup", "80ml milk", "60ml unwhipped cream"]
+    },
+    "iced_hazelnut_mocha": {
+      "regular": ["30ml shot", "25ml hazelnut syrup", "200ml milk", "20ml chocolate sauce", "10 ice cubes", "10g frappe premix"],
+      "large": ["50ml shot", "30ml hazelnut syrup", "250ml milk", "20ml chocolate sauce", "12 ice cubes", "10g frappe premix"]
+    }
+  },
+  "tea": {
+    "ask_of_diff_varieties": {
+      "regular": "3g tea leaves + 200ml hot water",
+      "large": "6g tea leaves + 400ml hot water"
+    }
+  },
+  "iced_tea": {
+    "lemon": {
+      "regular": "30ml tea syrup / 165ml water / 8-10 ice cubes",
+      "large": "45ml tea syrup / 250ml water / 10-12 ice cubes"
+    },
+    "peach_passion": {
+      "regular": "30ml peach syrup / 165ml water / 8-10 ice cubes",
+      "large": "45ml peach syrup / 250ml water / 10-12 ice cubes"
+    },
+    "elder_flower": {
+      "regular": "30ml lemon ice tea syrup / 165ml water / 8-10 ice cubes / 10ml elder flower syrup",
+      "large": "45ml lemon ice tea syrup / 250ml water / 10-12 ice cubes / 15ml elder flower syrup"
+    }
+  },
+  "hot_chocolate": {
+    "dark": {
+      "regular": ["40g chocolate powder", "150ml milk"],
+      "large": ["50g chocolate powder", "250ml milk"]
+    },
+    "tiramisu": {
+      "regular": ["40g chocolate powder", "10ml tiramisu syrup", "150ml milk"],
+      "large": ["50g chocolate powder", "10ml tiramisu syrup", "250ml milk"]
+    },
+    "nutella": {
+      "regular": ["40g nutella", "150ml milk"],
+      "large": ["50g nutella", "250ml milk"]
+    }
+  },
+  "speciality_latte": {
+    "cinnamon_latte": {
+      "regular": ["30ml shot", "30ml cinnamon syrup", "160ml milk"],
+      "large": ["60ml shot", "30ml cinnamon syrup", "200ml milk"]
+    },
+    "choco_ginger_latte": {
+      "regular": ["30ml shot", "15ml chocolate sauce", "15ml ginger syrup", "160ml milk"],
+      "large": ["60ml shot", "15ml chocolate sauce", "15ml ginger syrup", "200ml milk"]
+    },
+    "caramel_banana_latte": {
+      "regular": ["30ml shot", "15ml caramel", "15ml banana syrup", "160ml milk"],
+      "large": ["60ml shot", "15ml caramel", "15ml banana syrup", "200ml milk"]
+    },
+    "chocolate_cookie_latte": {
+      "regular": ["30ml shot", "20ml cookie syrup", "160ml milk"],
+      "large": ["60ml shot", "35ml cookie syrup", "200ml milk"]
+    }
+  },
+  "brew_it_your_way": {
+    "arabica_authentica": ["Pour Over", "Moka Pot", "French Press", "Vietnamese"],
+    "into_the_dark_wood": ["Pour Over", "Moka Pot", "French Press", "Vietnamese"],
+    "solido_merlot": ["Pour Over", "Moka Pot", "French Press", "Vietnamese"],
+    "mysore_nuggets_extra_bold": ["Pour Over", "Moka Pot", "French Press", "Vietnamese"]
+  },
+  "hot_coffee": {
+    "espresso": {
+      "regular": "30ml",
+      "large": "60ml"
+    },
+    "espresso_macchiato": {
+      "regular": "30ml with 1 tbsp foam",
+      "large": "60ml with 1 tbsp foam"
+    },
+    "americano": {
+      "regular": "30ml shot + 120ml water",
+      "large": "60ml shot + 240ml water"
+    },
+    "cappuccino": {
+      "regular": "30ml shot + 130ml milk",
+      "large": "60ml shot + 260ml milk"
+    },
+    "cafe_latte": {
+      "regular": "30ml shot + 190ml milk",
+      "large": "60ml shot + 320ml milk"
+    },
+    "cafe_mocha": {
+      "regular": "30ml shot + 30ml chocolate sauce + 150ml milk",
+      "large": "60ml shot + 40ml chocolate sauce + 200ml milk"
+    },
+    "flat_white": {
+      "regular": "60ml shot + 190ml milk",
+      "large": "80ml shot + 300ml milk"
+    },
+    "irish_coffee": {
+      "regular": {
+        "shot": "30ml",
+        "water": "140ml",
+        "irish_syrup": "15ml",
+        "whipped_cream": "32g",
+        "sugar_sachet": 1
+      },
+      "large": {
+        "shot": "40ml",
+        "water": "200ml",
+        "irish_syrup": "20ml",
+        "whipped_cream": "32g",
+        "sugar_sachet": 1
+      }
+    },
+    "affogato_with_icecream": {
+      "regular": "30ml shot + 1 scoop choice of ice cream",
+      "large": "60ml shot + 1 scoop choice of ice cream"
+    }
+  }
 }
