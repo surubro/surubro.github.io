@@ -65,7 +65,7 @@
   </style>
 </head>
 <body>
-  <h2>Search Menu</h2>
+  <h2>Search L&L Menu</h2>
   <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
   <div id="details"></div>
@@ -78,7 +78,7 @@
     const detailsDiv = document.getElementById('details');
     let fullData = {};
 
-    fetch('menu.json')
+    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/master/love.json')
       .then(res => res.json())
       .then(data => {
         fullData = data;
@@ -91,6 +91,13 @@
 
     function displayCategories(categories) {
       resultsDiv.innerHTML = '';
+      if (categories.includes('Tea')) {
+        categories.push('Tea'); // Ensure Tea is displayed
+      }
+      if (categories.includes('Iced Tea')) {
+        categories.push('Iced Tea'); // Ensure Iced Tea is displayed
+      }
+
       categories.forEach(cat => {
         const div = document.createElement('div');
         div.className = 'category';
@@ -128,35 +135,25 @@
       let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
       html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      // Show preparation steps for Regular and Large
-      html += `<strong>Preparation Steps:</strong><br>`;
-
-      if (item.regular) {
-        html += `<strong>Regular:</strong><br>`;
-        item.regular.forEach(step => {
-          html += `<span>- ${step}</span><br>`;
-        });
+      if (item.R || item.L || item.regular || item.large) {
+        const R = item.R || item.regular;
+        const L = item.L || item.large;
+        if (R) html += `<strong>Regular:</strong><ul>${(Array.isArray(R) ? R : [R]).map(v => `<li>${v}</li>`).join('')}</ul>`;
+        if (L) html += `<strong>Large:</strong><ul>${(Array.isArray(L) ? L : [L]).map(v => `<li>${v}</li>`).join('')}</ul>`;
+      } else if (Array.isArray(item)) {
+        html += `<ul>${item.map(v => `<li>${v}</li>`).join('')}</ul>`;
+      } else if (item.equipments) {
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
+      } else {
+        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
       }
 
-      if (item.large) {
-        html += `<strong>Large:</strong><br>`;
-        item.large.forEach(step => {
-          html += `<span>- ${step}</span><br>`;
+      if (item.steps) {
+        html += `<strong>Preparation Steps:</strong><ul>`;
+        item.steps.forEach(step => {
+          html += `<li>${step}</li>`;
         });
-      }
-
-      if (item.ingredients) {
-        html += `<strong>Ingredients:</strong><br>`;
-        item.ingredients.forEach(ingredient => {
-          html += `<span>- ${ingredient}</span><br>`;
-        });
-      }
-
-      if (item.additional) {
-        html += `<strong>Additional Steps:</strong><br>`;
-        item.additional.forEach(additionalStep => {
-          html += `<span>- ${additionalStep}</span><br>`;
-        });
+        html += `</ul>`;
       }
 
       detailsDiv.innerHTML = html;
