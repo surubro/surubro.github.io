@@ -128,18 +128,21 @@
       let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
       html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      if (item.regular || item.large) {
-        const R = item.regular;
-        const L = item.large;
-        if (R) html += `<strong>Regular:</strong><ul>${(Array.isArray(R) ? R : [R]).map(v => `<li>${v}</li>`).join('')}</ul>`;
-        if (L) html += `<strong>Large:</strong><ul>${(Array.isArray(L) ? L : [L]).map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else if (Array.isArray(item)) {
-        html += `<ul>${item.map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else {
-        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
+      // Add detailed steps for preparation
+      html += `<strong>Preparation Steps:</strong><ul>`;
+      if (item.regular) {
+        html += `<li><strong>Regular:</strong> ${item.regular.join(', ')}</li>`;
       }
+      if (item.large) {
+        html += `<li><strong>Large:</strong> ${item.large.join(', ')}</li>`;
+      }
+      if (item.ingredients) {
+        html += `<li><strong>Ingredients:</strong> ${item.ingredients.join(', ')}</li>`;
+      }
+      if (item.additional) {
+        html += `<li><strong>Additional Steps:</strong> ${item.additional.join(', ')}</li>`;
+      }
+      html += `</ul>`;
 
       detailsDiv.innerHTML = html;
     }
