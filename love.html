@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 16px;
       background: #f9f9f9;
+      padding: 16px;
       max-width: 600px;
       margin: auto;
     }
@@ -27,23 +27,23 @@
       border-radius: 6px;
     }
 
-    .item, .category {
-      padding: 10px;
-      background-color: #fff;
+    .category, .item {
+      background: #fff;
       border: 1px solid #ddd;
       border-radius: 6px;
+      padding: 10px;
       margin-bottom: 8px;
       cursor: pointer;
     }
 
-    .item:hover, .category:hover {
-      background-color: #f0f0f0;
+    .category:hover, .item:hover {
+      background: #f0f0f0;
     }
 
     #details {
       margin-top: 20px;
-      background: #fff;
       padding: 16px;
+      background: #fff;
       border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
@@ -58,7 +58,7 @@
 
     #footer {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 30px;
       font-size: 14px;
       color: #888;
     }
@@ -69,7 +69,6 @@
   <input type="text" id="search" placeholder="Type a name..." />
   <div id="results"></div>
   <div id="details"></div>
-
   <div id="footer">Made with ❤️ by Surendra Sonawane</div>
 
   <script>
@@ -82,122 +81,123 @@
       .then(res => res.json())
       .then(data => {
         fullData = data;
-        displayCategories(Object.keys(data));
+        renderCategories(Object.keys(data));
       })
-      .catch(err => {
+      .catch(() => {
         resultsDiv.innerHTML = "<div>Error loading menu.</div>";
-        console.error(err);
       });
 
-    function displayCategories(categories) {
-      resultsDiv.innerHTML = '';
-      if (categories.includes('Tea')) {
-        categories.push('Tea'); // Ensure Tea is displayed
-      }
-      if (categories.includes('Iced Tea')) {
-        categories.push('Iced Tea'); // Ensure Iced Tea is displayed
-      }
+    function formatName(str) {
+      return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
 
+    function renderCategories(categories) {
+      resultsDiv.innerHTML = '';
       categories.forEach(cat => {
         const div = document.createElement('div');
         div.className = 'category';
         div.textContent = formatName(cat);
-        div.addEventListener('click', () => showItems(cat));
+        div.onclick = () => renderItems(cat);
         resultsDiv.appendChild(div);
       });
     }
 
-    function showItems(category) {
+    function renderItems(category) {
       const data = fullData[category];
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
+
       if (Array.isArray(data)) {
         data.forEach(item => {
-          const name = item.name || item.title || "Unnamed";
           const div = document.createElement('div');
           div.className = 'item';
-          div.textContent = formatName(name);
-          div.addEventListener('click', () => showDetails(item, category));
+          div.textContent = formatName(item.name || item.title || 'Unnamed');
+          div.onclick = () => renderDetails(item, category);
           resultsDiv.appendChild(div);
         });
       } else {
-        for (const key in data) {
+        Object.keys(data).forEach(key => {
           const div = document.createElement('div');
           div.className = 'item';
           div.textContent = formatName(key);
-          div.addEventListener('click', () => showDetails(data[key], category, key));
+          div.onclick = () => renderDetails(data[key], category, key);
           resultsDiv.appendChild(div);
-        }
+        });
       }
     }
 
-    function showDetails(item, category, keyName = '') {
-      let html = `<h3>${formatName(keyName || item.name || 'Unnamed')}</h3>`;
+    function renderDetails(item, category, key = '') {
+      const title = formatName(key || item.name || item.title || 'Unnamed');
+      let html = `<h3>${title}</h3>`;
       html += `<strong>Category:</strong> ${formatName(category)}<br><br>`;
 
-      if (item.R || item.L || item.regular || item.large) {
-        const R = item.R || item.regular;
-        const L = item.L || item.large;
-        if (R) html += `<strong>Regular:</strong><ul>${(Array.isArray(R) ? R : [R]).map(v => `<li>${v}</li>`).join('')}</ul>`;
-        if (L) html += `<strong>Large:</strong><ul>${(Array.isArray(L) ? L : [L]).map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else if (Array.isArray(item)) {
-        html += `<ul>${item.map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
-      } else {
-        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
+      if (item.equipments) {
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
       }
 
+      const sizes = ['R', 'L', 'regular', 'large'];
+      sizes.forEach(size => {
+        if (item[size]) {
+          const label = size === 'R' || size === 'regular' ? 'Regular' : 'Large';
+          const steps = Array.isArray(item[size]) ? item[size] : [item[size]];
+          html += `<strong>${label}:</strong><ul>${steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
+        }
+      });
+
       if (item.steps) {
-        html += `<strong>Preparation Steps:</strong><ul>`;
-        item.steps.forEach(step => {
-          html += `<li>${step}</li>`;
-        });
-        html += `</ul>`;
+        html += `<strong>Preparation Steps:</strong><ul>${item.steps.map(s => `<li>${s}</li>`).join('')}</ul>`;
+      }
+
+      if (!item.equipments && !sizes.some(s => item[s]) && !item.steps) {
+        html += `<pre>${JSON.stringify(item, null, 2)}</pre>`;
       }
 
       detailsDiv.innerHTML = html;
     }
 
-    function formatName(str) {
-      return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-
     searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase();
+      const query = searchInput.value.trim().toLowerCase();
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
 
-      if (query) {
-        const matches = [];
-        for (const category in fullData) {
-          const items = fullData[category];
-          if (Array.isArray(items)) {
-            items.forEach(item => {
-              const name = item.name || item.title || '';
-              if (name.toLowerCase().includes(query)) {
-                matches.push({ ...item, name, category });
-              }
-            });
-          } else {
-            for (const key in items) {
-              if (key.toLowerCase().includes(query)) {
-                matches.push({ ...items[key], name: key, category });
-              }
+      if (!query) {
+        renderCategories(Object.keys(fullData));
+        return;
+      }
+
+      const matches = [];
+
+      for (const category in fullData) {
+        const entries = fullData[category];
+
+        if (Array.isArray(entries)) {
+          entries.forEach(item => {
+            const name = item.name || item.title || '';
+            if (name.toLowerCase().includes(query)) {
+              matches.push({ ...item, name, category });
+            }
+          });
+        } else {
+          for (const key in entries) {
+            if (key.toLowerCase().includes(query)) {
+              matches.push({ ...entries[key], name: key, category });
             }
           }
         }
-
-        matches.forEach(match => {
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = formatName(match.name);
-          div.addEventListener('click', () => showDetails(match, match.category, match.name));
-          resultsDiv.appendChild(div);
-        });
-      } else {
-        displayCategories(Object.keys(fullData));
       }
+
+      if (matches.length === 0) {
+        resultsDiv.innerHTML = '<div>No matches found.</div>';
+        return;
+      }
+
+      matches.forEach(match => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.textContent = formatName(match.name);
+        div.onclick = () => renderDetails(match, match.category, match.name);
+        resultsDiv.appendChild(div);
+      });
     });
   </script>
 </body>
