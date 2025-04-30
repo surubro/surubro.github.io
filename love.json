@@ -1,206 +1,670 @@
 {
-  "Hot Coffee": {
-    "Espresso": {
-      "R": [
-        "30ml"
-      ],
-      "L": [
-        "60ml"
+  "brew it your way": [
+    {
+      "name": "arabica authentica",
+      "equipments": [
+        "Pour Over",
+        "Moka Pot",
+        "French Press",
+        "Vietnamese"
       ]
     },
-    "Espresso Macchiato": {
-      "R": [
-        "30ml with 1tbsp foam"
-      ],
-      "L": [
-        "60ml with 1tbsp foam"
+    {
+      "name": "into the dark wood (blend 80/20)",
+      "equipments": [
+        "Pour Over",
+        "Moka Pot",
+        "French Press",
+        "Vietnamese"
       ]
     },
-    "Americano": {
-      "R": [
-        "30ml shot + 120ml water"
-      ],
-      "L": [
-        "60ml shot + 240ml water"
+    {
+      "name": "solido merlot (blend 80/20)",
+      "equipments": [
+        "Pour Over",
+        "Moka Pot",
+        "French Press",
+        "Vietnamese"
       ]
     },
-    "Cappuccino": {
-      "R": [
-        "30ml shot + 130ml milk"
-      ],
-      "L": [
-        "60ml shot + 260ml milk"
-      ]
-    },
-    "Cafe Latte": {
-      "R": [
-        "30ml shot + 190ml milk"
-      ],
-      "L": [
-        "60ml shot + 320ml milk"
-      ]
-    },
-    "Cafe Mocha": {
-      "R": [
-        "30ml shot + 30ml choc sauce + 150ml milk"
-      ],
-      "L": [
-        "60ml shot + 40ml choc sauce + 200ml milk"
-      ]
-    },
-    "Flat White": {
-      "R": [
-        "60ml shot + 190ml milk"
-      ],
-      "L": [
-        "80ml shot + 300ml milk"
-      ]
-    },
-    "Irish Coffee": {
-      "R": [
-        "30ml shot",
-        "140ml water",
-        "15ml irish syrup",
-        "32g whipped cream",
-        "1 sugar sachet"
-      ],
-      "L": [
-        "40ml shot",
-        "200ml water",
-        "20ml irish syrup",
-        "32g whipped cream",
-        "1 sugar sachet"
-      ]
-    },
-    "Affogato with choice of ice cream": {
-      "R": [
-        "30ml shot + 1 scoop choice of ice cream"
-      ],
-      "L": [
-        "60ml shot + 1 scoop choice of ice cream"
+    {
+      "name": "mysore nuggets extra bold",
+      "equipments": [
+        "Pour Over",
+        "Moka Pot",
+        "French Press",
+        "Vietnamese"
       ]
     }
-  },
-  "Iced Coffee": {
-    "Iced Espresso": {
-      "R": [
-        "30ml espresso shot + ice cubes"
-      ],
-      "L": [
-        "60ml espresso shot + ice cubes"
-      ]
+  ],
+  "cold coffee": [
+    {
+      "name": "caramel frappe",
+      "sizes": {
+        "R": [
+          "30ml short",
+          "15ml caramel syp",
+          "10ml caremal sauce",
+          "50ml milk",
+          "10 ice",
+          "30g frappe"
+        ],
+        "L": [
+          "60ml short",
+          "20ml caramel syp",
+          "15ml caremal sauce",
+          "80ml milk",
+          "15 ice",
+          "40g frappe"
+        ]
+      }
     },
-    "Iced Latte": {
-      "R": [
-        "30ml shot + 190ml milk + ice cubes"
-      ],
-      "L": [
-        "60ml shot + 320ml milk + ice cubes"
-      ]
+    {
+      "name": "hazelnut blast",
+      "sizes": {
+        "R": [
+          "30ml short",
+          "25ml hazelnut syp",
+          "50ml milk",
+          "10 ice",
+          "30g frappe"
+        ],
+        "L": [
+          "60ml short",
+          "30ml hazelnut syp",
+          "80ml milk",
+          "15 ice",
+          "40g frappe"
+        ]
+      }
     },
-    "Iced Mocha": {
-      "R": [
-        "30ml shot + 30ml choc sauce + 150ml milk + ice cubes"
-      ],
-      "L": [
-        "60ml shot + 40ml choc sauce + 200ml milk + ice cubes"
-      ]
+    {
+      "name": "cofee tiramisu",
+      "sizes": {
+        "R": [
+          "30ml short",
+          "25ml tiramisu syp",
+          "50ml milk",
+          "10 ice",
+          "30g frappe"
+        ],
+        "L": [
+          "60ml short",
+          "30ml tiramisu syp",
+          "80ml milk",
+          "15 ice",
+          "40g frappe"
+        ]
+      }
+    },
+    {
+      "name": "mocha frappe",
+      "sizes": {
+        "R": [
+          "30ml short",
+          "50ml milk",
+          "10 ice",
+          "30g frappe",
+          "20g chocolate powder"
+        ],
+        "L": [
+          "60ml short",
+          "80ml milk",
+          "15 ice",
+          "40g frappe",
+          "40g chocolate powder"
+        ]
+      }
     }
-  },
-  "Tea": {
-    "Black Tea": {
-      "R": [
-        "1 tea bag + 150ml hot water"
-      ],
-      "L": [
-        "1 tea bag + 300ml hot water"
-      ]
+  ],
+  "hot chocolate": [
+    {
+      "name": "dark",
+      "sizes": {
+        "R": [
+          "40g chocolate powder",
+          "150ml milk"
+        ],
+        "L": [
+          "50g chocolate powder",
+          "250ml milk"
+        ]
+      }
     },
-    "Green Tea": {
-      "R": [
-        "1 tea bag + 150ml hot water"
-      ],
-      "L": [
-        "1 tea bag + 300ml hot water"
-      ]
+    {
+      "name": "tiramisu",
+      "sizes": {
+        "R": [
+          "40g chocolate powder",
+          "10ml tiramisu syrup",
+          "150ml milk"
+        ],
+        "L": [
+          "50g chocolate powder",
+          "10ml tiramisu syrup",
+          "250ml milk"
+        ]
+      }
     },
-    "Herbal Tea": {
-      "R": [
-        "1 tea bag + 150ml hot water"
-      ],
-      "L": [
-        "1 tea bag + 300ml hot water"
-      ]
+    {
+      "name": "nutella",
+      "sizes": {
+        "R": [
+          "40g nutella",
+          "150ml milk"
+        ],
+        "L": [
+          "50g nutella",
+          "250ml milk"
+        ]
+      }
     }
-  },
-  "Iced Tea": {
-    "Iced Black Tea": {
-      "R": [
-        "1 tea bag + 150ml water + ice cubes"
-      ],
-      "L": [
-        "1 tea bag + 300ml water + ice cubes"
-      ]
+  ],
+  "mojito": [
+    {
+      "name": "lemon mojito",
+      "sizes": {
+        "R": [
+          "20ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "15ml lemoneez",
+          "6-8 ice cubes",
+          "150ml soda",
+          "1 sugar"
+        ],
+        "L": [
+          "20ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "20ml lemoneez",
+          "8-10 ice cubes",
+          "250ml soda",
+          "1 sugar"
+        ]
+      }
     },
-    "Iced Green Tea": {
-      "R": [
-        "1 tea bag + 150ml water + ice cubes"
-      ],
-      "L": [
-        "1 tea bag + 300ml water + ice cubes"
-      ]
+    {
+      "name": "grenadine mojito",
+      "sizes": {
+        "R": [
+          "30ml grenadine syrup",
+          "10ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "5ml lemoneez",
+          "6-8 ice cubes",
+          "150ml soda",
+          "1 sugar"
+        ],
+        "L": [
+          "40ml grenadine syrup",
+          "20ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "10ml lemoneez",
+          "8-10 ice cubes",
+          "250ml soda",
+          "1 sugar"
+        ]
+      }
     },
-    "Iced Herbal Tea": {
-      "R": [
-        "1 tea bag + 150ml water + ice cubes"
-      ],
-      "L": [
-        "1 tea bag + 300ml water + ice cubes"
-      ]
-    }
-  },
-  "Mojito": {
-    "Tropical Bliss Cooler": {
-      "R": [
-        "30ml pineapple crush",
-        "15ml coconut syrup",
-        "10ml lemoneez",
-        "120ml soda",
-        "8-10 ice cubes"
-      ],
-      "L": [
-        "40ml pineapple crush",
-        "20ml coconut syrup",
-        "15ml lemoneez",
-        "160ml soda",
-        "10-12 ice cubes"
-      ]
-    }
-  },
-  "Smoothies": {
-    "Mango Tango": {
-      "R": [
-        "100g mango pulp",
-        "150ml yogurt",
-        "5-6 ice cubes"
-      ],
-      "L": [
-        "200g mango pulp",
-        "250ml yogurt",
-        "8-10 ice cubes"
-      ]
+    {
+      "name": "green apple",
+      "sizes": {
+        "R": [
+          "30ml green apple",
+          "10ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "5ml lemoneez",
+          "6-8 ice cubes",
+          "150ml soda",
+          "1 sugar"
+        ],
+        "L": [
+          "40ml green apple",
+          "20ml mint syrup",
+          "20 mint leaves",
+          "3 lemon slices",
+          "10ml lemoneez",
+          "8-10 ice cubes",
+          "250ml soda",
+          "1 sugar"
+        ]
+      }
     },
-    "Berry Blast": {
-      "R": [
-        "100g mixed berries",
-        "150ml yogurt",
-        "5-6 ice cubes"
-      ],
-      "L": [
-        "200g mixed berries",
-        "250ml yogurt",
-        "8-10 ice cubes"
-      ]
+    {
+      "name": "pink grapefruit & lychee",
+      "sizes": {
+        "R": [
+          "40ml pink grapefruit & lychee syrup",
+          "5ml lemoneez",
+          "150ml soda",
+          "1 slice lemon for garnish",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "60ml pink grapefruit & lychee syrup",
+          "10ml lemoneez",
+          "250ml soda",
+          "1 slice lemon for garnish",
+          "10-12 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "tropical bliss cooler",
+      "sizes": {
+        "R": [
+          "30ml pineapple crush",
+          "15ml coconut syrup",
+          "10ml lemoneez",
+          "120ml soda",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "40ml pineapple crush",
+          "20ml coconut syrup",
+          "15ml lemoneez",
+          "160ml soda",
+          "10-12 ice cubes"
+        ]
+      }
     }
-  }
+  ],
+  "on the rocks": [
+    {
+      "name": "iced americano",
+      "sizes": {
+        "R": [
+          "60ml shot",
+          "6-8 ice cubes",
+          "165ml water"
+        ],
+        "L": [
+          "80ml shot",
+          "10-12 ice cubes",
+          "250ml water"
+        ]
+      }
+    },
+    {
+      "name": "vietnamese styled",
+      "sizes": {
+        "R": [
+          "60ml shot",
+          "40g condensed milk",
+          "150ml milk",
+          "6-8 ice cubes"
+        ],
+        "L": [
+          "80ml shot",
+          "50g condensed milk",
+          "200ml milk",
+          "8-10 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "iced vanilla latte",
+      "sizes": {
+        "R": [
+          "60ml shot",
+          "25ml vanilla syrup",
+          "200ml milk",
+          "10 ice cubes",
+          "5g frappe premix"
+        ],
+        "L": [
+          "80ml shot",
+          "30ml vanilla syrup",
+          "250ml milk",
+          "12 ice cubes",
+          "10g frappe premix"
+        ]
+      }
+    },
+    {
+      "name": "iced caramel cappuccino",
+      "sizes": {
+        "R": [
+          "60ml shot",
+          "10 ice cubes",
+          "25ml caramel syrup",
+          "50ml milk",
+          "50ml unwhipped cream"
+        ],
+        "L": [
+          "80ml shot",
+          "12 ice cubes",
+          "30ml caramel syrup",
+          "80ml milk",
+          "60ml unwhipped cream"
+        ]
+      }
+    },
+    {
+      "name": "iced hazelnut mocha",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "25ml hazelnut syrup",
+          "200ml milk",
+          "20ml chocolate sauce",
+          "10 ice cubes",
+          "10g frappe premix"
+        ],
+        "L": [
+          "50ml shot",
+          "30ml hazelnut syrup",
+          "250ml milk",
+          "20ml chocolate sauce",
+          "12 ice cubes",
+          "10g frappe premix"
+        ]
+      }
+    }
+  ],
+  "signature cold coffee": [
+    {
+      "name": "vintage cold",
+      "sizes": {
+        "R": [
+          "60ml short",
+          "60ml milk",
+          "4 scoop vanilla"
+        ],
+        "L": [
+          "75ml short",
+          "80ml milk",
+          "5 scoop vanilla"
+        ]
+      }
+    },
+    {
+      "name": "bronze frost",
+      "sizes": {
+        "R": [
+          "60ml short",
+          "60ml milk",
+          "2 scoop vanilla",
+          "2 scoop chocolate",
+          "10ml choc sauce",
+          "10g choc chips",
+          "0.3 choc cookie",
+          "1 shot whipped creame"
+        ],
+        "L": [
+          "90ml short",
+          "80ml milk",
+          "3 scoop vanilla",
+          "3 scoop chocolate",
+          "15ml choc sauce",
+          "15g choc chips",
+          "0.5 choc cookie",
+          "1 shot whipped creame"
+        ]
+      }
+    },
+    {
+      "name": "vintage dark",
+      "sizes": {
+        "R": [
+          "60ml short",
+          "60ml milk",
+          "4 scoop vanilla",
+          "3drop brown colour"
+        ],
+        "L": [
+          "75ml short",
+          "80ml milk",
+          "5 scoop vanilla",
+          "6 drop brown colour"
+        ]
+      }
+    }
+  ],
+  "smoothies": [
+    {
+      "name": "mango pineapple",
+      "sizes": {
+        "R": [
+          "30ml mango crush",
+          "20ml pineapple crush",
+          "1 scoop vanilla ice cream",
+          "50ml milk",
+          "6-8 ice cubes",
+          "150g fresh yogurt"
+        ],
+        "L": []
+      }
+    },
+    {
+      "name": "berry blast",
+      "sizes": {
+        "R": [
+          "40ml berry blast crush",
+          "1 scoop vanilla ice cream",
+          "50ml milk",
+          "6-8 ice cubes",
+          "150g fresh yogurt"
+        ],
+        "L": []
+      }
+    },
+    {
+      "name": "kiwi mint",
+      "sizes": {
+        "R": [
+          "40ml kiwi crush",
+          "5ml mint syrup",
+          "1 scoop vanilla ice cream",
+          "50ml milk",
+          "6-8 ice cubes",
+          "150g fresh yogurt",
+          "10-15 mint leaves"
+        ],
+        "L": []
+      }
+    }
+  ],
+  "tea": [
+    {
+      "name": "ask of diff varieties",
+      "sizes": {
+        "R": [
+          "3g tea leaves",
+          "200ml hot water"
+        ],
+        "L": [
+          "6g tea leaves",
+          "400ml hot water"
+        ]
+      }
+    }
+  ],
+  "iced tea": [
+    {
+      "name": "lemon",
+      "sizes": {
+        "R": [
+          "30ml tea syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "45ml tea syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "peach passion",
+      "sizes": {
+        "R": [
+          "30ml peach syrup",
+          "165ml water",
+          "8-10 ice cubes"
+        ],
+        "L": [
+          "45ml peach syrup",
+          "250ml water",
+          "10-12 ice cubes"
+        ]
+      }
+    },
+    {
+      "name": "elder flower",
+      "sizes": {
+        "R": [
+          "30ml lemon ice tea syrup",
+          "165ml water",
+          "8-10 ice cubes",
+          "10ml elder flower syrup"
+        ],
+        "L": [
+          "45ml lemon ice tea syrup",
+          "250ml water",
+          "10-12 ice cubes",
+          "15ml elder flower syrup"
+        ]
+      }
+    }
+  ],
+  "speciality latte": [
+    {
+      "name": "cinnamon latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "30ml cinnamon syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "30ml cinnamon syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "choco ginger latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "15ml chocolate sauce",
+          "15ml ginger syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "15ml chocolate sauce",
+          "15ml ginger syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "caramel banana latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "15ml caramel",
+          "15ml banana syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "15ml caramel",
+          "15ml banana syrup",
+          "200ml milk"
+        ]
+      }
+    },
+    {
+      "name": "chocolate cookie latte",
+      "sizes": {
+        "R": [
+          "30ml shot",
+          "20ml cookie syrup",
+          "160ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "35ml cookie syrup",
+          "200ml milk"
+        ]
+      }
+    }
+  ]
+}
+
+{
+  "hot coffee": [
+    {
+      "name": "espresso",
+      "sizes": {
+        "R": ["30ml espresso"],
+        "L": ["60ml espresso"]
+      }
+    },
+    {
+      "name": "espresso macchiato",
+      "sizes": {
+        "R": ["30ml espresso", "1 tbsp foam"],
+        "L": ["60ml espresso", "1 tbsp foam"]
+      }
+    },
+    {
+      "name": "americano",
+      "sizes": {
+        "R": ["30ml shot", "120ml water"],
+        "L": ["60ml shot", "240ml water"]
+      }
+    },
+    {
+      "name": "cappuccino",
+      "sizes": {
+        "R": ["30ml shot", "130ml milk"],
+        "L": ["60ml shot", "260ml milk"]
+      }
+    },
+    {
+      "name": "cafe latte",
+      "sizes": {
+        "R": ["30ml shot", "190ml milk"],
+        "L": ["60ml shot", "320ml milk"]
+      }
+    },
+    {
+      "name": "cafe mocha",
+      "sizes": {
+        "R": ["30ml shot", "30ml chocolate sauce", "150ml milk"],
+        "L": ["60ml shot", "40ml chocolate sauce", "200ml milk"]
+      }
+    },
+    {
+      "name": "flat white",
+      "sizes": {
+        "R": ["60ml shot", "190ml milk"],
+        "L": ["80ml shot", "300ml milk"]
+      }
+    },
+    {
+      "name": "irish coffee",
+      "sizes": {
+        "R": ["30ml shot", "140ml water", "15ml irish syrup", "32g whipped cream", "1 sugar sachet"],
+        "L": ["40ml shot", "200ml water", "20ml irish syrup", "32g whipped cream", "1 sugar sachet"]
+      }
+    },
+    {
+      "name": "affogato with choice of icecream",
+      "sizes": {
+        "R": ["30ml shot", "1 scoop ice cream of choice"],
+        "L": ["60ml shot", "1 scoop ice cream of choice"]
+      }
+    }
+  ]
 }
