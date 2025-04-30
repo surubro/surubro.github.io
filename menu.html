@@ -64,64 +64,28 @@
   <div id="details"></div>
 
   <script>
-    const menuData = {
-      "menu": [
-        {
-          "id": 1,
-          "name": "Spaghetti Bolognese",
-          "category": "Main Course",
-          "ingredients": [
-            "200g spaghetti",
-            "100g minced beef",
-            "1 onion",
-            "2 cloves garlic",
-            "400g canned tomatoes",
-            "Salt",
-            "Pepper",
-            "Olive oil"
-          ],
-          "steps": [
-            "Boil spaghetti according to package instructions.",
-            "Heat olive oil in a pan.",
-            "Add chopped onion and garlic, sauté until golden.",
-            "Add minced beef and cook until browned.",
-            "Add canned tomatoes, salt, and pepper. Simmer for 15 minutes.",
-            "Serve sauce over spaghetti."
-          ]
-        },
-        {
-          "id": 2,
-          "name": "Caesar Salad",
-          "category": "Salad",
-          "ingredients": [
-            "1 romaine lettuce",
-            "50g parmesan cheese",
-            "Croutons",
-            "Caesar dressing",
-            "Salt",
-            "Pepper"
-          ],
-          "steps": [
-            "Wash and chop lettuce.",
-            "Toss lettuce with Caesar dressing.",
-            "Add croutons and grated parmesan.",
-            "Season with salt and pepper to taste.",
-            "Serve chilled."
-          ]
-        }
-      ]
-    };
-
     const searchInput = document.getElementById('search');
     const resultsDiv = document.getElementById('results');
     const detailsDiv = document.getElementById('details');
+    let menuData = [];
+
+    // Fetch the menu JSON data from the URL
+    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
+      .then(response => response.json())
+      .then(data => {
+        menuData = data.menu || [];  // Assuming menu data is inside "menu" key
+      })
+      .catch(error => {
+        console.error('Error fetching menu:', error);
+      });
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
+
       if (query) {
-        const matches = menuData.menu.filter(item => item.name.toLowerCase().includes(query));
+        const matches = menuData.filter(item => item.name.toLowerCase().includes(query));
         matches.forEach(item => {
           const div = document.createElement('div');
           div.textContent = item.name;
