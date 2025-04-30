@@ -78,33 +78,56 @@
     const detailsDiv = document.getElementById('details');
     let allItems = [];
 
-    // Fetch the menu data
-    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
-      .then(response => response.json())
+    // ✅ FIXED fetch URL
+    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/master/love.json')
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
       .then(data => {
         for (const category in data) {
           const items = data[category];
+
           if (Array.isArray(items)) {
-            // List of items (most categories)
             items.forEach(item => {
-              allItems.push({ name: formatName(item), category, ...wrapItem(item) });
+              allItems.push({
+                name: formatName(item.name || ''),
+                category,
+                ...item
+              });
             });
           } else {
-            // Special case: dictionary-based (e.g., hot_coffee, iced_tea)
-            for (const itemName in items) {
-              const itemValue = items[itemName];
-              allItems.push({
-                name: formatName(itemName),
-                category,
-                ...wrapItem(itemValue)
-              });
+            for (const name in items) {
+              const entry = items[name];
+              const formatted = {
+                name: formatName(name),
+                category
+              };
+
+              if (entry.R || entry.L) {
+                formatted.sizes = {
+                  R: Array.isArray(entry.R) ? entry.R : [entry.R],
+                  L: Array.isArray(entry.L) ? entry.L : [entry.L]
+                };
+              } else if (entry.regular || entry.large) {
+                formatted.sizes = {
+                  R: Array.isArray(entry.regular) ? entry.regular : [entry.regular],
+                  L: Array.isArray(entry.large) ? entry.large : [entry.large]
+                };
+              } else if (Array.isArray(entry)) {
+                formatted.details = entry;
+              } else if (entry.equipments) {
+                formatted.equipments = entry.equipments;
+              }
+
+              allItems.push(formatted);
             }
           }
         }
       })
-      .catch(error => {
+      .catch(err => {
         resultsDiv.innerHTML = "<div>Error loading menu.</div>";
-        console.error("Menu fetch error:", error);
+        console.error(err);
       });
 
     searchInput.addEventListener('input', () => {
@@ -132,47 +155,23 @@
       html += `<strong>Category:</strong> ${item.category}<br><br>`;
 
       if (item.sizes) {
-        if (item.sizes.R) {
-          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(v => `<li>${v}</li>`).join('')}</ul>`;
+        if (item.sizes.R?.length) {
+          html += `<strong>Regular:</strong><ul>${item.sizes.R.map(i => `<li>${i}</li>`).join('')}</ul>`;
         }
-        if (item.sizes.L) {
-          html += `<strong>Large:</strong><ul>${item.sizes.L.map(v => `<li>${v}</li>`).join('')}</ul>`;
+        if (item.sizes.L?.length) {
+          html += `<strong>Large:</strong><ul>${item.sizes.L.map(i => `<li>${i}</li>`).join('')}</ul>`;
         }
       } else if (item.details) {
-        html += `<ul>${item.details.map(v => `<li>${v}</li>`).join('')}</ul>`;
+        html += `<ul>${item.details.map(i => `<li>${i}</li>`).join('')}</ul>`;
       } else if (item.equipments) {
-        html += `<strong>Equipments:</strong><ul>${item.equipments.map(v => `<li>${v}</li>`).join('')}</ul>`;
+        html += `<strong>Equipments:</strong><ul>${item.equipments.map(i => `<li>${i}</li>`).join('')}</ul>`;
       }
 
       detailsDiv.innerHTML = html;
     }
 
     function formatName(str) {
-      return str
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
-    }
-
-    function wrapItem(item) {
-      if (item.regular || item.large) {
-        return {
-          sizes: {
-            R: Array.isArray(item.regular) ? item.regular : [item.regular],
-            L: Array.isArray(item.large) ? item.large : [item.large]
-          }
-        };
-      } else if (item.R || item.L) {
-        return {
-          sizes: {
-            R: item.R,
-            L: item.L
-          }
-        };
-      } else if (Array.isArray(item)) {
-        return { details: item };
-      } else {
-        return item;
-      }
+      return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   </script>
 </body>
