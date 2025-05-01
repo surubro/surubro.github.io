@@ -3,7 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Bot</title>
+    <title>Telegram Bot Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #chat {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            height: 400px;
+            overflow-y: scroll;
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            clear: both;
+        }
+
+        .message.sent {
+            background-color: #e0f7fa; /* Sent message color (your message) */
+            float: right;
+        }
+
+        .message.received {
+            background-color: #f1f1f1; /* Received message color (bot's message) */
+            float: left;
+        }
+
+        #message {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #response {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center;">Telegram Bot Chat</h1>
+
+    <div id="chat"></div>
+
+    <div style="text-align: center;">
+        <input type="text" id="message" placeholder="Type your message here" />
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <div id="response" style="text-align: center; margin-top: 20px;"></div>
+
     <script>
         const botToken = '7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc';  // Replace with your bot token
         const chatId = '7173458713';  // Replace with your chat ID
@@ -12,51 +79,40 @@
             const message = document.getElementById("message").value;
             if (message.trim() === "") return;
 
+            // Display the message you sent
+            const chat = document.getElementById("chat");
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "sent");
+            userMessage.innerText = message;
+            chat.appendChild(userMessage);
+
+            // Clear the input
+            document.getElementById("message").value = "";
+
+            // Send message to the bot
             fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.ok) {
-                        document.getElementById("response").innerHTML = "Message sent!";
+                        // Wait for the bot's response and display it
+                        setTimeout(() => {
+                            const botMessage = document.createElement("div");
+                            botMessage.classList.add("message", "received");
+                            botMessage.innerText = `Bot: ${data.result.text}`;
+                            chat.appendChild(botMessage);
+                            chat.scrollTop = chat.scrollHeight;  // Scroll to bottom
+                        }, 1000);
                     } else {
-                        document.getElementById("response").innerHTML = "Error sending message.";
+                        document.getElementById("response").innerText = "Error sending message.";
                     }
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    document.getElementById("response").innerHTML = "Error sending message.";
+                    document.getElementById("response").innerText = "Error sending message.";
                 });
-        }
 
-        function receiveMessages() {
-            fetch(`https://api.telegram.org/bot${botToken}/getUpdates`)
-                .then(response => response.json())
-                .then(data => {
-                    const messages = data.result.map(update => update.message.text);
-                    document.getElementById("receivedMessages").innerHTML = messages.join("<br>");
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                });
+            chat.scrollTop = chat.scrollHeight;  // Scroll to bottom
         }
     </script>
-</head>
-<body>
-    <h1>Telegram Bot Interaction</h1>
-
-    <div>
-        <h3>Send a Message to the Bot</h3>
-        <input type="text" id="message" placeholder="Type your message here">
-        <button onclick="sendMessage()">Send Message</button>
-    </div>
-
-    <div id="response" style="margin-top: 10px;"></div>
-
-    <hr>
-
-    <div>
-        <h3>Received Messages:</h3>
-        <button onclick="receiveMessages()">Get Messages</button>
-        <div id="receivedMessages" style="margin-top: 10px;"></div>
-    </div>
 </body>
 </html>
