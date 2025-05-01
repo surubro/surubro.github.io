@@ -2,143 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Menu Search</title>
+  <title>Beverage Search</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      background: #fafafa;
-      max-width: 600px;
-      margin: auto;
+      font-family: sans-serif;
+      margin: 20px;
     }
-
-    h2 {
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-
-    #search {
+    input[type="text"] {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       font-size: 16px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
     }
-
-    #results div {
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 10px 0;
+      padding: 8px;
+      background-color: #f0f0f0;
       cursor: pointer;
-      padding: 12px;
-      margin-bottom: 8px;
-      background-color: #ffffff;
-      border: 1px solid #ddd;
-      border-radius: 8px;
     }
-
-    #results div:hover {
-      background-color: #f1f1f1;
+    .steps {
+      margin-top: 20px;
     }
-
-    #details {
-      margin-top: 24px;
-      background: #fff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    .steps h3 {
+      margin-bottom: 5px;
     }
-
-    ol, ul {
+    .steps ul {
       padding-left: 20px;
-    }
-
-    h3 {
-      margin-top: 20px;
-    }
-
-    .category-title {
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    .no-results {
-      color: #888;
-      font-style: italic;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      font-size: 14px;
-      color: #888;
     }
   </style>
 </head>
 <body>
-  <h2>Search Menu</h2>
-  <input type="text" id="search" placeholder="Type a dish name..." />
-  <div id="results"></div>
-  <div id="details"></div>
 
-  <footer>
-    Made with ❤️ by Surendra Sonawane
-  </footer>
+  <h1>Search Menu Items</h1>
+  <input type="text" id="search" placeholder="Search for a beverage...">
+  <ul id="results"></ul>
+
+  <div class="steps" id="steps"></div>
 
   <script>
-    const searchInput = document.getElementById('search');
-    const resultsDiv = document.getElementById('results');
-    const detailsDiv = document.getElementById('details');
+    const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json';
     let menuData = [];
 
-    // Fetch the menu JSON data from the URL
-    fetch('https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json')
+    // Fetch and flatten data
+    fetch(jsonUrl)
       .then(response => response.json())
       .then(data => {
-        menuData = data.menu || [];  // Assuming menu data is inside "menu" key
-      })
-      .catch(error => {
-        console.error('Error fetching menu:', error);
+        for (const category in data) {
+          data[category].forEach(item => {
+            menuData.push({ ...item, category });
+          });
+        }
       });
 
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.toLowerCase();
-      resultsDiv.innerHTML = '';
-      detailsDiv.innerHTML = '';
+    document.getElementById('search').addEventListener('input', function () {
+      const searchTerm = this.value.toLowerCase();
+      const resultsEl = document.getElementById('results');
+      const stepsEl = document.getElementById('steps');
+      resultsEl.innerHTML = '';
+      stepsEl.innerHTML = '';
 
-      if (query) {
-        let matches = [];
-        
-        // Iterate through categories and items
-        menuData.forEach(category => {
-          category.items.forEach(item => {
-            if (item.name.toLowerCase().includes(query)) {
-              matches.push({ item, category });
-            }
-          });
-        });
+      if (searchTerm.length === 0) return;
 
-        if (matches.length > 0) {
-          matches.forEach(({ item, category }) => {
-            const div = document.createElement('div');
-            div.textContent = `${category.name} - ${item.name}`;
-            div.addEventListener('click', () => {
-              detailsDiv.innerHTML = `
-                <h3>${item.name}</h3>
-                <p><strong>Category:</strong> ${category.name}</p>
-                <h4>Available Sizes</h4>
-                <ul>
-                  <li><strong>R (Regular)</strong>: ${item.sizes.R.ingredients.join(', ')}</li>
-                  <li><strong>L (Large)</strong>: ${item.sizes.L.ingredients.join(', ')}</li>
-                </ul>
-              `;
-            });
-            resultsDiv.appendChild(div);
-          });
-        } else {
-          resultsDiv.innerHTML = `<p class="no-results">No results found for "${query}".</p>`;
-        }
-      }
+      const filtered = menuData.filter(item => item.name.toLowerCase().includes(searchTerm));
+
+      filtered.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.name} (${item.category})`;
+        li.onclick = () => showSteps(item);
+        resultsEl.appendChild(li);
+      });
     });
+
+    function showSteps(item) {
+      const stepsEl = document.getElementById('steps');
+      stepsEl.innerHTML = `<h3>${item.name} (${item.category})</h3>`;
+
+      if (item.equipments) {
+        const ul = document.createElement('ul');
+        item.equipments.forEach(step => {
+          const li = document.createElement('li');
+          li.textContent = step;
+          ul.appendChild(li);
+        });
+        stepsEl.appendChild(ul);
+      } else if (item.sizes) {
+        for (const size in item.sizes) {
+          const section = document.createElement('div');
+          section.innerHTML = `<strong>${size} Size:</strong>`;
+          const ul = document.createElement('ul');
+          item.sizes[size].forEach(step => {
+            const li = document.createElement('li');
+            li.textContent = step;
+            ul.appendChild(li);
+          });
+          section.appendChild(ul);
+          stepsEl.appendChild(section);
+        }
+      } else {
+        stepsEl.innerHTML += "<p>No preparation steps available.</p>";
+      }
+    }
   </script>
+
 </body>
 </html>
