@@ -598,72 +598,129 @@
         ]
       }
     }
-  ]
-}
-
-{
+  ],
   "hot coffee": [
     {
       "name": "espresso",
       "sizes": {
-        "R": ["30ml espresso"],
-        "L": ["60ml espresso"]
+        "R": [
+          "30ml espresso"
+        ],
+        "L": [
+          "60ml espresso"
+        ]
       }
     },
     {
       "name": "espresso macchiato",
       "sizes": {
-        "R": ["30ml espresso", "1 tbsp foam"],
-        "L": ["60ml espresso", "1 tbsp foam"]
+        "R": [
+          "30ml espresso",
+          "1 tbsp foam"
+        ],
+        "L": [
+          "60ml espresso",
+          "1 tbsp foam"
+        ]
       }
     },
     {
       "name": "americano",
       "sizes": {
-        "R": ["30ml shot", "120ml water"],
-        "L": ["60ml shot", "240ml water"]
+        "R": [
+          "30ml shot",
+          "120ml water"
+        ],
+        "L": [
+          "60ml shot",
+          "240ml water"
+        ]
       }
     },
     {
       "name": "cappuccino",
       "sizes": {
-        "R": ["30ml shot", "130ml milk"],
-        "L": ["60ml shot", "260ml milk"]
+        "R": [
+          "30ml shot",
+          "130ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "260ml milk"
+        ]
       }
     },
     {
       "name": "cafe latte",
       "sizes": {
-        "R": ["30ml shot", "190ml milk"],
-        "L": ["60ml shot", "320ml milk"]
+        "R": [
+          "30ml shot",
+          "190ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "320ml milk"
+        ]
       }
     },
     {
       "name": "cafe mocha",
       "sizes": {
-        "R": ["30ml shot", "30ml chocolate sauce", "150ml milk"],
-        "L": ["60ml shot", "40ml chocolate sauce", "200ml milk"]
+        "R": [
+          "30ml shot",
+          "30ml chocolate sauce",
+          "150ml milk"
+        ],
+        "L": [
+          "60ml shot",
+          "40ml chocolate sauce",
+          "200ml milk"
+        ]
       }
     },
     {
       "name": "flat white",
       "sizes": {
-        "R": ["60ml shot", "190ml milk"],
-        "L": ["80ml shot", "300ml milk"]
+        "R": [
+          "60ml shot",
+          "190ml milk"
+        ],
+        "L": [
+          "80ml shot",
+          "300ml milk"
+        ]
       }
     },
     {
       "name": "irish coffee",
       "sizes": {
-        "R": ["30ml shot", "140ml water", "15ml irish syrup", "32g whipped cream", "1 sugar sachet"],
-        "L": ["40ml shot", "200ml water", "20ml irish syrup", "32g whipped cream", "1 sugar sachet"]
+        "R": [
+          "30ml shot",
+          "140ml water",
+          "15ml irish syrup",
+          "32g whipped cream",
+          "1 sugar sachet"
+        ],
+        "L": [
+          "40ml shot",
+          "200ml water",
+          "20ml irish syrup",
+          "32g whipped cream",
+          "1 sugar sachet"
+        ]
       }
     },
     {
       "name": "affogato with choice of icecream",
       "sizes": {
-        "R": ["30ml shot", "1 scoop ice cream of choice"],
-        "L": ["60ml shot", "1 scoop ice cream of choice"]
+        "R": [
+          "30ml shot",
+          "1 scoop ice cream of choice"
+        ],
+        "L": [
+          "60ml shot",
+          "1 scoop ice cream of choice"
+        ]
       }
     }
   ]
