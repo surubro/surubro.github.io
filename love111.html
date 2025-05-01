@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Full Menu Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 16px;
+      background: #fafafa;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .clickable {
+      cursor: pointer;
+      padding: 10px;
+      background: #fff;
+      margin-bottom: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .clickable:hover {
+      background: #f1f1f1;
+    }
+
+    #details {
+      background: #fff;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+
+    ul, ol {
+      padding-left: 20px;
+    }
+
+    h3 {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Beverage Menu</h2>
+
+  <div id="categories" class="section"></div>
+  <div id="items" class="section"></div>
+  <div id="details"></div>
+
+  <script>
+    const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/master/love_merged.json';
+    let menuData = {};
+
+    const categoriesDiv = document.getElementById('categories');
+    const itemsDiv = document.getElementById('items');
+    const detailsDiv = document.getElementById('details');
+
+    fetch(jsonUrl)
+      .then(res => res.json())
+      .then(data => {
+        menuData = data;
+        showCategories();
+      })
+      .catch(err => {
+        categoriesDiv.innerHTML = 'Failed to load menu data.';
+        console.error(err);
+      });
+
+    function showCategories() {
+      categoriesDiv.innerHTML = '<h3>Select a category:</h3>';
+      Object.keys(menuData).forEach(cat => {
+        const div = document.createElement('div');
+        div.className = 'clickable';
+        div.textContent = cat;
+        div.onclick = () => showItems(cat);
+        categoriesDiv.appendChild(div);
+      });
+      itemsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+    }
+
+    function showItems(category) {
+      itemsDiv.innerHTML = `<h3>${category} Items:</h3>`;
+      menuData[category].forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'clickable';
+        div.textContent = item.name;
+        div.onclick = () => showDetails(item, category);
+        itemsDiv.appendChild(div);
+      });
+      detailsDiv.innerHTML = '';
+    }
+
+    function showDetails(item, category) {
+      let html = `<h3>${item.name}</h3><p><strong>Category:</strong> ${category}</p>`;
+
+      if (item.equipments) {
+        html += `<h4>Equipments</h4><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
+      } else if (item.sizes) {
+        html += `<h4>Preparation</h4>`;
+        for (const size in item.sizes) {
+          html += `<strong>${size} Size:</strong><ul>${item.sizes[size].map(step => `<li>${step}</li>`).join('')}</ul>`;
+        }
+      } else {
+        html += `<p>No preparation steps available.</p>`;
+      }
+
+      detailsDiv.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
