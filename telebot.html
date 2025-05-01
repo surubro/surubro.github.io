@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot</title>
+    <script>
+        const botToken = '7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc';  // Replace with your bot token
+        const chatId = '7173458713';  // Replace with your chat ID
+
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (message.trim() === "") return;
+
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        document.getElementById("response").innerHTML = "Message sent!";
+                    } else {
+                        document.getElementById("response").innerHTML = "Error sending message.";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("response").innerHTML = "Error sending message.";
+                });
+        }
+
+        function receiveMessages() {
+            fetch(`https://api.telegram.org/bot${botToken}/getUpdates`)
+                .then(response => response.json())
+                .then(data => {
+                    const messages = data.result.map(update => update.message.text);
+                    document.getElementById("receivedMessages").innerHTML = messages.join("<br>");
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>Telegram Bot Interaction</h1>
+
+    <div>
+        <h3>Send a Message to the Bot</h3>
+        <input type="text" id="message" placeholder="Type your message here">
+        <button onclick="sendMessage()">Send Message</button>
+    </div>
+
+    <div id="response" style="margin-top: 10px;"></div>
+
+    <hr>
+
+    <div>
+        <h3>Received Messages:</h3>
+        <button onclick="receiveMessages()">Get Messages</button>
+        <div id="receivedMessages" style="margin-top: 10px;"></div>
+    </div>
+</body>
+</html>
