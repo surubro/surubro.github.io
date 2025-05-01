@@ -30,11 +30,13 @@
         .message.sent {
             background-color: #e0f7fa; /* Sent message color (your message) */
             float: right;
+            text-align: right;
         }
 
         .message.received {
             background-color: #f1f1f1; /* Received message color (bot's message) */
             float: left;
+            text-align: left;
         }
 
         #message {
@@ -85,11 +87,15 @@
 
                     data.result.forEach(update => {
                         const message = update.message.text;
-                        const isBotMessage = update.message.from.id !== parseInt(chatId);  // Check if the message is from the bot
+                        const senderId = update.message.from.id;
 
+                        // Display bot's message or user's message
                         const messageDiv = document.createElement("div");
+                        const isBotMessage = senderId !== parseInt(chatId);  // Check if the message is from the bot
+
                         messageDiv.classList.add("message", isBotMessage ? "received" : "sent");
                         messageDiv.innerText = isBotMessage ? `Bot: ${message}` : message;
+
                         chat.appendChild(messageDiv);
                     });
 
