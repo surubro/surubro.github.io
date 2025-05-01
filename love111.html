@@ -40,7 +40,7 @@
       background-color: #f1f1f1;
     }
 
-    #results, #details {
+    #results, #details, #categories {
       background: #fff;
       padding: 16px;
       border-radius: 8px;
@@ -55,11 +55,25 @@
     h3 {
       margin-top: 20px;
     }
+
+    .category {
+      padding: 10px;
+      background: #fff;
+      margin-bottom: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .category:hover {
+      background-color: #f1f1f1;
+    }
   </style>
 </head>
 <body>
   <h2>Search Menu</h2>
   <input type="text" id="search" placeholder="Type a beverage name..." />
+  <div id="categories"></div>
   <div id="results"></div>
   <div id="details"></div>
 
@@ -75,6 +89,8 @@
             menuItems.push({ ...item, category });
           });
         }
+
+        displayCategories();  // Display categories when data is loaded
       })
       .catch(err => {
         document.getElementById('results').innerHTML = 'Failed to load menu data.';
@@ -84,11 +100,13 @@
     const searchInput = document.getElementById('search');
     const resultsDiv = document.getElementById('results');
     const detailsDiv = document.getElementById('details');
+    const categoriesDiv = document.getElementById('categories');
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
+      categoriesDiv.innerHTML = '';
 
       if (query) {
         const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
@@ -101,6 +119,32 @@
         });
       }
     });
+
+    function displayCategories() {
+      const categories = [...new Set(menuItems.map(item => item.category))];
+      categories.forEach(category => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'category';
+        categoryDiv.textContent = category;
+        categoryDiv.onclick = () => showCategoryItems(category);
+        categoriesDiv.appendChild(categoryDiv);
+      });
+    }
+
+    function showCategoryItems(category) {
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+      categoriesDiv.innerHTML = '';  // Clear categories when an item is selected
+
+      const categoryItems = menuItems.filter(item => item.category === category);
+      categoryItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'clickable';
+        div.textContent = item.name;
+        div.onclick = () => showDetails(item);
+        resultsDiv.appendChild(div);
+      });
+    }
 
     function showDetails(item) {
       let html = `<h3>${item.name}</h3><p><strong>Category:</strong> ${item.category}</p>`;
