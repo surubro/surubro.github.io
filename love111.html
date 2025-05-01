@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Full Menu Viewer</title>
+  <title>Menu Search</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -18,8 +18,13 @@
       margin-bottom: 16px;
     }
 
-    .section {
-      margin-bottom: 24px;
+    #search {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
 
     .clickable {
@@ -32,10 +37,10 @@
     }
 
     .clickable:hover {
-      background: #f1f1f1;
+      background-color: #f1f1f1;
     }
 
-    #details {
+    #results, #details {
       background: #fff;
       padding: 16px;
       border-radius: 8px;
@@ -53,58 +58,52 @@
   </style>
 </head>
 <body>
-  <h2>Beverage Menu</h2>
-
-  <div id="categories" class="section"></div>
-  <div id="items" class="section"></div>
+  <h2>Search Menu</h2>
+  <input type="text" id="search" placeholder="Type a beverage name..." />
+  <div id="results"></div>
   <div id="details"></div>
 
   <script>
     const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json';
-    let menuData = {};
-
-    const categoriesDiv = document.getElementById('categories');
-    const itemsDiv = document.getElementById('items');
-    const detailsDiv = document.getElementById('details');
+    let menuItems = [];
 
     fetch(jsonUrl)
       .then(res => res.json())
       .then(data => {
-        menuData = data;
-        showCategories();
+        for (const category in data) {
+          data[category].forEach(item => {
+            menuItems.push({ ...item, category });
+          });
+        }
       })
       .catch(err => {
-        categoriesDiv.innerHTML = 'Failed to load menu data.';
-        console.error(err);
+        document.getElementById('results').innerHTML = 'Failed to load menu data.';
+        console.error('Error loading JSON:', err);
       });
 
-    function showCategories() {
-      categoriesDiv.innerHTML = '<h3>Select a category:</h3>';
-      Object.keys(menuData).forEach(cat => {
-        const div = document.createElement('div');
-        div.className = 'clickable';
-        div.textContent = cat;
-        div.onclick = () => showItems(cat);
-        categoriesDiv.appendChild(div);
-      });
-      itemsDiv.innerHTML = '';
+    const searchInput = document.getElementById('search');
+    const resultsDiv = document.getElementById('results');
+    const detailsDiv = document.getElementById('details');
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
-    }
 
-    function showItems(category) {
-      itemsDiv.innerHTML = `<h3>${category} Items:</h3>`;
-      menuData[category].forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'clickable';
-        div.textContent = item.name;
-        div.onclick = () => showDetails(item, category);
-        itemsDiv.appendChild(div);
-      });
-      detailsDiv.innerHTML = '';
-    }
+      if (query) {
+        const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
+        matches.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'clickable';
+          div.textContent = `${item.name} (${item.category})`;
+          div.onclick = () => showDetails(item);
+          resultsDiv.appendChild(div);
+        });
+      }
+    });
 
-    function showDetails(item, category) {
-      let html = `<h3>${item.name}</h3><p><strong>Category:</strong> ${category}</p>`;
+    function showDetails(item) {
+      let html = `<h3>${item.name}</h3><p><strong>Category:</strong> ${item.category}</p>`;
 
       if (item.equipments) {
         html += `<h4>Equipments</h4><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
