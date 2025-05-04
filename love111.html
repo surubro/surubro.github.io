@@ -11,6 +11,9 @@
       background: #fafafa;
       max-width: 600px;
       margin: auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
     h2 {
@@ -68,6 +71,14 @@
     .category:hover {
       background-color: #f1f1f1;
     }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      padding: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -76,6 +87,8 @@
   <div id="categories"></div>
   <div id="results"></div>
   <div id="details"></div>
+
+  <footer>Made with ❤️ by Surendra Sonawane</footer>
 
   <script>
     const jsonUrl = 'https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/love.json';
