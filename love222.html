@@ -21,6 +21,11 @@
       margin-bottom: 16px;
     }
 
+    #reload {
+      cursor: pointer;
+      color: #007BFF;
+    }
+
     #search {
       width: 100%;
       padding: 12px;
@@ -82,11 +87,9 @@
   </style>
 </head>
 <body>
-  <h2>Search Menu</h2>
+  <h2><span id="reload">Search Menu</span></h2>
   <input type="text" id="search" placeholder="Type a beverage name..." />
   <div id="categories"></div>
-
-  <!-- Display order reversed: details first, then results -->
   <div id="details"></div>
   <div id="results"></div>
 
@@ -105,7 +108,7 @@
           });
         }
 
-        displayCategories();
+        displayCategories();  // Display categories when data is loaded
       })
       .catch(err => {
         document.getElementById('results').innerHTML = 'Failed to load menu data.';
@@ -117,6 +120,8 @@
     const detailsDiv = document.getElementById('details');
     const categoriesDiv = document.getElementById('categories');
 
+    document.getElementById('reload').onclick = () => location.reload();
+
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
       resultsDiv.innerHTML = '';
@@ -125,19 +130,22 @@
 
       if (query) {
         const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
-
+        
         if (matches.length > 0) {
+          // Show the first matched item details
           showDetails(matches[0]);
-        }
 
-        matches.forEach((item, index) => {
-          if (index === 0) return; // Skip first shown in details
-          const div = document.createElement('div');
-          div.className = 'clickable';
-          div.textContent = `${item.name} (${item.category})`;
-          div.onclick = () => showDetails(item);
-          resultsDiv.appendChild(div);
-        });
+          // Show all matched items list
+          matches.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'clickable';
+            div.textContent = `${item.name} (${item.category})`;
+            div.onclick = () => showDetails(item);
+            resultsDiv.appendChild(div);
+          });
+        } else {
+          detailsDiv.innerHTML = '<p>No matching items found.</p>';
+        }
       }
     });
 
@@ -155,16 +163,10 @@
     function showCategoryItems(category) {
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
-      categoriesDiv.innerHTML = '';
+      categoriesDiv.innerHTML = '';  // Clear categories when an item is selected
 
       const categoryItems = menuItems.filter(item => item.category === category);
-
-      if (categoryItems.length > 0) {
-        showDetails(categoryItems[0]);
-      }
-
-      categoryItems.forEach((item, index) => {
-        if (index === 0) return;
+      categoryItems.forEach(item => {
         const div = document.createElement('div');
         div.className = 'clickable';
         div.textContent = item.name;
