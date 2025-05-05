@@ -29,11 +29,13 @@
     .search-container {
       position: relative;
       margin-bottom: 16px;
+      display: flex;
+      align-items: center;
     }
 
     #search {
       width: 100%;
-      padding: 12px 40px 12px 12px;
+      padding: 12px 44px 12px 12px; /* Add right padding for clear button */
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -41,15 +43,24 @@
 
     #clearBtn {
       position: absolute;
-      right: 12px;
+      right: 8px;
       top: 50%;
       transform: translateY(-50%);
-      background: transparent;
+      background: #eee;
       border: none;
-      font-size: 18px;
+      font-size: 24px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       cursor: pointer;
-      color: #999;
+      color: #555;
       display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #clearBtn:hover {
+      background-color: #ddd;
     }
 
     .clickable {
@@ -129,7 +140,6 @@
             menuItems.push({ ...item, category });
           });
         }
-
         displayCategories();
       })
       .catch(err => {
@@ -151,11 +161,10 @@
       detailsDiv.innerHTML = '';
       categoriesDiv.innerHTML = '';
 
-      clearBtn.style.display = query ? 'block' : 'none';
+      clearBtn.style.display = query ? 'flex' : 'none';
 
       if (query) {
         const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
-
         if (matches.length > 0) {
           showDetails(matches[0]);
           matches.forEach(item => {
@@ -171,13 +180,14 @@
       }
     });
 
-    clearBtn.onclick = () => {
+    clearBtn.addEventListener('click', () => {
       searchInput.value = '';
       clearBtn.style.display = 'none';
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
       displayCategories();
-    };
+      searchInput.focus();
+    });
 
     function displayCategories() {
       categoriesDiv.innerHTML = '';
@@ -195,7 +205,6 @@
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
       categoriesDiv.innerHTML = '';
-
       const categoryItems = menuItems.filter(item => item.category === category);
       categoryItems.forEach(item => {
         const div = document.createElement('div');
@@ -208,7 +217,6 @@
 
     function showDetails(item) {
       let html = `<h3>${item.name}</h3><p><strong>Category:</strong> ${item.category}</p>`;
-
       if (item.equipments) {
         html += `<h4>Equipments</h4><ul>${item.equipments.map(e => `<li>${e}</li>`).join('')}</ul>`;
       } else if (item.sizes) {
@@ -219,7 +227,6 @@
       } else {
         html += `<p>No preparation steps available.</p>`;
       }
-
       detailsDiv.innerHTML = html;
     }
   </script>
