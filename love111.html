@@ -21,13 +21,35 @@
       margin-bottom: 16px;
     }
 
+    #reload {
+      cursor: pointer;
+      color: #007BFF;
+    }
+
+    .search-container {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
     #search {
       width: 100%;
-      padding: 12px;
+      padding: 12px 40px 12px 12px;
       font-size: 16px;
-      margin-bottom: 16px;
       border: 1px solid #ccc;
       border-radius: 8px;
+    }
+
+    #clearBtn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #999;
+      display: none;
     }
 
     .clickable {
@@ -82,11 +104,16 @@
   </style>
 </head>
 <body>
-  <h2>Search Menu</h2>
-  <input type="text" id="search" placeholder="Type a beverage name..." />
+  <h2><span id="reload">Search Menu</span></h2>
+
+  <div class="search-container">
+    <input type="text" id="search" placeholder="Type a beverage name..." />
+    <button id="clearBtn">&times;</button>
+  </div>
+
   <div id="categories"></div>
-  <div id="results"></div>
   <div id="details"></div>
+  <div id="results"></div>
 
   <footer>Made with ❤️ by Surendra Sonawane</footer>
 
@@ -103,7 +130,7 @@
           });
         }
 
-        displayCategories();  // Display categories when data is loaded
+        displayCategories();
       })
       .catch(err => {
         document.getElementById('results').innerHTML = 'Failed to load menu data.';
@@ -114,6 +141,9 @@
     const resultsDiv = document.getElementById('results');
     const detailsDiv = document.getElementById('details');
     const categoriesDiv = document.getElementById('categories');
+    const clearBtn = document.getElementById('clearBtn');
+
+    document.getElementById('reload').onclick = () => location.reload();
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase();
@@ -121,19 +151,36 @@
       detailsDiv.innerHTML = '';
       categoriesDiv.innerHTML = '';
 
+      clearBtn.style.display = query ? 'block' : 'none';
+
       if (query) {
         const matches = menuItems.filter(item => item.name.toLowerCase().includes(query));
-        matches.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'clickable';
-          div.textContent = `${item.name} (${item.category})`;
-          div.onclick = () => showDetails(item);
-          resultsDiv.appendChild(div);
-        });
+
+        if (matches.length > 0) {
+          showDetails(matches[0]);
+          matches.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'clickable';
+            div.textContent = `${item.name} (${item.category})`;
+            div.onclick = () => showDetails(item);
+            resultsDiv.appendChild(div);
+          });
+        } else {
+          detailsDiv.innerHTML = '<p>No matching items found.</p>';
+        }
       }
     });
 
+    clearBtn.onclick = () => {
+      searchInput.value = '';
+      clearBtn.style.display = 'none';
+      resultsDiv.innerHTML = '';
+      detailsDiv.innerHTML = '';
+      displayCategories();
+    };
+
     function displayCategories() {
+      categoriesDiv.innerHTML = '';
       const categories = [...new Set(menuItems.map(item => item.category))];
       categories.forEach(category => {
         const categoryDiv = document.createElement('div');
@@ -147,7 +194,7 @@
     function showCategoryItems(category) {
       resultsDiv.innerHTML = '';
       detailsDiv.innerHTML = '';
-      categoriesDiv.innerHTML = '';  // Clear categories when an item is selected
+      categoriesDiv.innerHTML = '';
 
       const categoryItems = menuItems.filter(item => item.category === category);
       categoryItems.forEach(item => {
