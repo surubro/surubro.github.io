@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>T9 Encoder and Decoder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 50px;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .section {
+      margin-bottom: 40px;
+    }
+    .output-box {
+      background-color: #f1f1f1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+      word-wrap: break-word;
+    }
+    .copy-btn {
+      padding: 5px 10px;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .copy-btn:hover {
+      background-color: #007B9E;
+    }
+    .image-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .copyright {
+      margin-top: 40px;
+      text-align: center;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <h1>T9 Encoder and Decoder</h1>
+
+  <!-- Encoding Section -->
+  <div class="section">
+    <h2>Encode (Plain Text ➜ T9)</h2>
+    <textarea id="encodeInput" placeholder="Enter plain text like 'hi@#'"></textarea>
+    <button onclick="encode()">Encode</button>
+    <div id="encodedResult" class="output-box"></div>
+    <button class="copy-btn" onclick="copyText('encodedResult')">Copy</button>
+  </div>
+
+  <!-- Decoding Section -->
+  <div class="section">
+    <h2>Decode (T9 ➜ Plain Text)</h2>
+    <textarea id="decodeInput" placeholder="Enter T9 like '420430@#'"></textarea>
+    <button onclick="decode()">Decode</button>
+    <div id="decodedResult" class="output-box"></div>
+    <button class="copy-btn" onclick="copyText('decodedResult')">Copy</button>
+  </div>
+
+  <div class="image-container">
+    <img src="https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/t9-t9.png" alt="T9 Encoder and Decoder Example">
+  </div>
+
+  <div class="copyright">
+    Made with ❤️ by Surendra Sonawane
+  </div>
+
+  <script>
+    const t9Keys = {
+      "2": ["a", "b", "c"],
+      "3": ["d", "e", "f"],
+      "4": ["g", "h", "i"],
+      "5": ["j", "k", "l"],
+      "6": ["m", "n", "o"],
+      "7": ["p", "q", "r", "s"],
+      "8": ["t", "u", "v"],
+      "9": ["w", "x", "y", "z"]
+    };
+
+    function encode() {
+      const input = document.getElementById("encodeInput").value;
+      let encoded = "";
+
+      for (const char of input) {
+        const lowerChar = char.toLowerCase();
+        if (lowerChar === " ") {
+          encoded += "_";
+        } else if (/[a-z]/.test(lowerChar)) {
+          let matched = false;
+          for (const [key, letters] of Object.entries(t9Keys)) {
+            const index = letters.indexOf(lowerChar);
+            if (index !== -1) {
+              encoded += key + (index + 1) + "0";
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) encoded += char;
+        } else {
+          encoded += char; // leave symbols as-is
+        }
+      }
+
+      if (encoded.endsWith("0")) {
+        encoded = encoded.slice(0, -1);
+      }
+
+      document.getElementById("encodedResult").innerText = encoded || "No encoded message";
+    }
+
+    function decode() {
+      const input = document.getElementById("decodeInput").value;
+      let decoded = "";
+      let i = 0;
+
+      while (i < input.length) {
+        const ch = input[i];
+
+        if (ch === "_") {
+          decoded += " ";
+          i++;
+        } else if (/[2-9]/.test(ch) && i + 2 < input.length && /[1-4]/.test(input[i + 1]) && input[i + 2] === "0") {
+          const key = ch;
+          const index = parseInt(input[i + 1]) - 1;
+          if (t9Keys[key] && t9Keys[key][index]) {
+            decoded += t9Keys[key][index];
+          } else {
+            decoded += "?";
+          }
+          i += 3;
+        } else {
+          decoded += ch; // preserve unknown/special characters
+          i++;
+        }
+      }
+
+      document.getElementById("decodedResult").innerText = decoded || "No decoded message";
+    }
+
+    function copyText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text)
+          .then(() => alert("Text copied to clipboard!"))
+          .catch(err => alert("Failed to copy: " + err));
+      } else {
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        alert("Text copied to clipboard!");
+      }
+    }
+  </script>
+</body>
+</html>
