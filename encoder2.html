@@ -1,0 +1,63 @@
+function convert() {
+  const t9Keys = {
+    "2": ["a", "b", "c"],
+    "3": ["d", "e", "f"],
+    "4": ["g", "h", "i"],
+    "5": ["j", "k", "l"],
+    "6": ["m", "n", "o"],
+    "7": ["p", "q", "r", "s"],
+    "8": ["t", "u", "v"],
+    "9": ["w", "x", "y", "z"]
+  };
+
+  const input = document.getElementById("textInput").value.trim();
+  let encodedMessage = "";
+  let decodedMessage = "";
+
+  if (/^[0-9_]+$/.test(input)) {
+    // Input is T9 encoded - decode it
+    const words = input.split("_");
+    for (const word of words) {
+      const segments = word.split("0");
+      for (const segment of segments) {
+        if (segment.length >= 2) {
+          const key = segment[0];
+          const index = parseInt(segment[1]) - 1;
+          if (t9Keys[key] && t9Keys[key][index]) {
+            decodedMessage += t9Keys[key][index];
+          } else {
+            decodedMessage += "?";
+          }
+        }
+      }
+      decodedMessage += " ";
+    }
+    encodedMessage = input;
+    decodedMessage = decodedMessage.trim();
+  } else {
+    // Input is text - encode
+    for (const char of input.toLowerCase()) {
+      if (char === " ") {
+        encodedMessage += "_";
+        decodedMessage += " ";
+      } else if (/[a-z]/.test(char)) {
+        decodedMessage += char;
+        for (const [key, letters] of Object.entries(t9Keys)) {
+          const index = letters.indexOf(char);
+          if (index !== -1) {
+            encodedMessage += key + (index + 1) + "0";
+            break;
+          }
+        }
+      } else {
+        // Invalid symbol: use as-is in decoded, encode to Unicode
+        decodedMessage += char;
+        encodedMessage += `[U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}]`;
+      }
+    }
+    encodedMessage = encodedMessage.endsWith("0") ? encodedMessage.slice(0, -1) : encodedMessage;
+  }
+
+  document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
+  document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+}
