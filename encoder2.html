@@ -84,87 +84,74 @@
 
   <script>
     function convert() {
-      const t9Keys = {
-        "2": ["a", "b", "c"],
-        "3": ["d", "e", "f"],
-        "4": ["g", "h", "i"],
-        "5": ["j", "k", "l"],
-        "6": ["m", "n", "o"],
-        "7": ["p", "q", "r", "s"],
-        "8": ["t", "u", "v"],
-        "9": ["w", "x", "y", "z"]
-      };
+  const t9Keys = {
+    "2": ["a", "b", "c"],
+    "3": ["d", "e", "f"],
+    "4": ["g", "h", "i"],
+    "5": ["j", "k", "l"],
+    "6": ["m", "n", "o"],
+    "7": ["p", "q", "r", "s"],
+    "8": ["t", "u", "v"],
+    "9": ["w", "x", "y", "z"]
+  };
 
-      const input = document.getElementById("textInput").value.trim();
-      let encodedMessage = "";
-      let decodedMessage = "";
+  const input = document.getElementById("textInput").value.trim();
+  let encodedMessage = "";
+  let decodedMessage = "";
 
-      if (/^[0-9_]+$/.test(input)) {
-        // Decode from T9
-        const words = input.split("_");
-        for (const word of words) {
-          const segments = word.split("0");
-          for (const segment of segments) {
-            if (segment.length >= 2) {
-              const key = segment[0];
-              const index = parseInt(segment[1]) - 1;
-              if (t9Keys[key] && t9Keys[key][index]) {
-                decodedMessage += t9Keys[key][index];
-              } else {
-                decodedMessage += "?";
-              }
-            }
-          }
-          decodedMessage += " ";
-        }
-        encodedMessage = input;
-        decodedMessage = decodedMessage.trim();
-      } else {
-        // Encode plain text, but leave non-letters as-is
-        for (const char of input.toLowerCase()) {
-          if (char === " ") {
-            encodedMessage += "_";
-            decodedMessage += " ";
-          } else if (/[a-z]/.test(char)) {
-            decodedMessage += char;
-            for (const [key, letters] of Object.entries(t9Keys)) {
-              const index = letters.indexOf(char);
-              if (index !== -1) {
-                encodedMessage += key + (index + 1) + "0";
-                break;
-              }
-            }
+  // Detect if input contains T9 sequences (e.g., has "digit+digit+0")
+  const isLikelyT9 = /^[0-9_]+$/.test(input);
+
+  if (isLikelyT9) {
+    // Try to decode T9 input
+    const words = input.split("_");
+    for (const word of words) {
+      const segments = word.split("0");
+      for (const segment of segments) {
+        if (segment.length >= 2) {
+          const key = segment[0];
+          const index = parseInt(segment[1]) - 1;
+          if (t9Keys[key] && t9Keys[key][index]) {
+            decodedMessage += t9Keys[key][index];
           } else {
-            // Just keep the character as-is
-            decodedMessage += char;
-            encodedMessage += char;
+            decodedMessage += "?";
           }
         }
-        if (encodedMessage.endsWith("0")) {
-          encodedMessage = encodedMessage.slice(0, -1);
+      }
+      decodedMessage += " ";
+    }
+    decodedMessage = decodedMessage.trim();
+    encodedMessage = input;
+  } else {
+    // Encode input text
+    for (const char of input.toLowerCase()) {
+      if (char === " ") {
+        encodedMessage += "_";
+        decodedMessage += " ";
+      } else if (/[a-z]/.test(char)) {
+        decodedMessage += char;
+        for (const [key, letters] of Object.entries(t9Keys)) {
+          const index = letters.indexOf(char);
+          if (index !== -1) {
+            encodedMessage += key + (index + 1) + "0";
+            break;
+          }
         }
-      }
-
-      document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
-      document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
-    }
-
-    function copyText(elementId) {
-      const textToCopy = document.getElementById(elementId).innerText;
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(textToCopy)
-          .then(() => alert("Text copied to clipboard!"))
-          .catch(err => alert("Failed to copy text: " + err));
       } else {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textArea);
-        alert("Text copied to clipboard!");
+        // Keep other characters as-is
+        decodedMessage += char;
+        encodedMessage += char;
       }
     }
+    if (encodedMessage.endsWith("0")) {
+      encodedMessage = encodedMessage.slice(0, -1);
+    }
+  }
+
+  document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
+  document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+}
+
   </script>
 </body>
 </html>
