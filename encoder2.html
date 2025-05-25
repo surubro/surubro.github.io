@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>T9 Encoder and Decoder</title>
+  <title>T9X Encoder and Decoder</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -59,8 +59,8 @@
 </head>
 <body>
   <h1>T9 Encoder and Decoder</h1>
-  <label for="textInput">Enter Message (Plain Text or T9 Encoded):</label>
-  <textarea id="textInput" placeholder="Enter a message (e.g., 'hi' or '420_430')"></textarea>
+  <label for="textInput">Enter Message (Plain Text, T9 Code, or Mixed):</label>
+  <textarea id="textInput" placeholder="Enter a message like 'hi', '420430', or 'hi@#'"></textarea>
   <button onclick="convert()">Convert</button>
 
   <div class="output">
@@ -73,7 +73,6 @@
     <button class="copy-btn" onclick="copyText('decodedMessage')">Copy</button>
   </div>
 
-  <!-- Image Section -->
   <div class="image-container">
     <img src="https://raw.githubusercontent.com/surubro/surubro.github.io/refs/heads/master/t9-t9.png" alt="T9 Encoder and Decoder Example">
   </div>
@@ -84,74 +83,90 @@
 
   <script>
     function convert() {
-  const t9Keys = {
-    "2": ["a", "b", "c"],
-    "3": ["d", "e", "f"],
-    "4": ["g", "h", "i"],
-    "5": ["j", "k", "l"],
-    "6": ["m", "n", "o"],
-    "7": ["p", "q", "r", "s"],
-    "8": ["t", "u", "v"],
-    "9": ["w", "x", "y", "z"]
-  };
+      const t9Keys = {
+        "2": ["a", "b", "c"],
+        "3": ["d", "e", "f"],
+        "4": ["g", "h", "i"],
+        "5": ["j", "k", "l"],
+        "6": ["m", "n", "o"],
+        "7": ["p", "q", "r", "s"],
+        "8": ["t", "u", "v"],
+        "9": ["w", "x", "y", "z"]
+      };
 
-  const input = document.getElementById("textInput").value.trim();
-  let encodedMessage = "";
-  let decodedMessage = "";
+      const input = document.getElementById("textInput").value.trim();
+      let encodedMessage = "";
+      let decodedMessage = "";
 
-  // Detect if input contains T9 sequences (e.g., has "digit+digit+0")
-  const isLikelyT9 = /^[0-9_]+$/.test(input);
+      const isT9 = /^[0-9_0]+$/.test(input.replace(/[^0-9_]/g, ''));
 
-  if (isLikelyT9) {
-    // Try to decode T9 input
-    const words = input.split("_");
-    for (const word of words) {
-      const segments = word.split("0");
-      for (const segment of segments) {
-        if (segment.length >= 2) {
-          const key = segment[0];
-          const index = parseInt(segment[1]) - 1;
-          if (t9Keys[key] && t9Keys[key][index]) {
-            decodedMessage += t9Keys[key][index];
-          } else {
-            decodedMessage += "?";
+      if (isT9 && !/[a-zA-Z]/.test(input)) {
+        // Try decoding T9 format
+        const words = input.split("_");
+        for (const word of words) {
+          const segments = word.split("0");
+          for (const segment of segments) {
+            if (segment.length >= 2) {
+              const key = segment[0];
+              const index = parseInt(segment[1]) - 1;
+              if (t9Keys[key] && t9Keys[key][index]) {
+                decodedMessage += t9Keys[key][index];
+              } else {
+                decodedMessage += "?";
+              }
+            }
           }
+          decodedMessage += " ";
         }
-      }
-      decodedMessage += " ";
-    }
-    decodedMessage = decodedMessage.trim();
-    encodedMessage = input;
-  } else {
-    // Encode input text
-    for (const char of input.toLowerCase()) {
-      if (char === " ") {
-        encodedMessage += "_";
-        decodedMessage += " ";
-      } else if (/[a-z]/.test(char)) {
-        decodedMessage += char;
-        for (const [key, letters] of Object.entries(t9Keys)) {
-          const index = letters.indexOf(char);
-          if (index !== -1) {
-            encodedMessage += key + (index + 1) + "0";
-            break;
-          }
-        }
+        decodedMessage = decodedMessage.trim();
+        encodedMessage = input;
       } else {
-        // Keep other characters as-is
-        decodedMessage += char;
-        encodedMessage += char;
+        // Try encoding plain text
+        for (const char of input) {
+          const lowerChar = char.toLowerCase();
+          if (lowerChar === " ") {
+            encodedMessage += "_";
+          } else if (/[a-z]/.test(lowerChar)) {
+            let found = false;
+            for (const [key, letters] of Object.entries(t9Keys)) {
+              const index = letters.indexOf(lowerChar);
+              if (index !== -1) {
+                encodedMessage += key + (index + 1) + "0";
+                found = true;
+                break;
+              }
+            }
+            if (!found) encodedMessage += char;
+          } else {
+            encodedMessage += char; // Keep special characters
+          }
+        }
+        if (encodedMessage.endsWith("0")) {
+          encodedMessage = encodedMessage.slice(0, -1);
+        }
+        decodedMessage = input;
+      }
+
+      document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
+      document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
+    }
+
+    function copyText(elementId) {
+      const textToCopy = document.getElementById(elementId).innerText;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy)
+          .then(() => alert("Text copied to clipboard!"))
+          .catch(err => alert("Failed to copy text: " + err));
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        alert("Text copied to clipboard!");
       }
     }
-    if (encodedMessage.endsWith("0")) {
-      encodedMessage = encodedMessage.slice(0, -1);
-    }
-  }
-
-  document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
-  document.getElementById("decodedMessage").innerText = decodedMessage || "No decoded message";
-}
-
   </script>
 </body>
 </html>
