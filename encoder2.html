@@ -100,7 +100,7 @@
       let decodedMessage = "";
 
       if (/^[0-9_]+$/.test(input)) {
-        // Decode T9
+        // Decode from T9
         const words = input.split("_");
         for (const word of words) {
           const segments = word.split("0");
@@ -117,10 +117,10 @@
           }
           decodedMessage += " ";
         }
-        decodedMessage = decodedMessage.trim();
         encodedMessage = input;
+        decodedMessage = decodedMessage.trim();
       } else {
-        // Encode plain text
+        // Encode plain text, but leave non-letters as-is
         for (const char of input.toLowerCase()) {
           if (char === " ") {
             encodedMessage += "_";
@@ -135,11 +135,14 @@
               }
             }
           } else {
+            // Just keep the character as-is
             decodedMessage += char;
-            encodedMessage += `[U+${char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')}]`;
+            encodedMessage += char;
           }
         }
-        encodedMessage = encodedMessage.endsWith("0") ? encodedMessage.slice(0, -1) : encodedMessage;
+        if (encodedMessage.endsWith("0")) {
+          encodedMessage = encodedMessage.slice(0, -1);
+        }
       }
 
       document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
