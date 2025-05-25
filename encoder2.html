@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>T9X Encoder and Decoder</title>
+  <title>T9 Encoder and Decoder</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -98,53 +98,54 @@
       let encodedMessage = "";
       let decodedMessage = "";
 
-      const isT9 = /^[0-9_0]+$/.test(input.replace(/[^0-9_]/g, ''));
+      // === Encoding ===
+      for (const char of input) {
+        const lowerChar = char.toLowerCase();
+        if (lowerChar === " ") {
+          encodedMessage += "_";
+        } else if (/[a-z]/.test(lowerChar)) {
+          let found = false;
+          for (const [key, letters] of Object.entries(t9Keys)) {
+            const index = letters.indexOf(lowerChar);
+            if (index !== -1) {
+              encodedMessage += key + (index + 1) + "0";
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            encodedMessage += char;
+          }
+        } else {
+          encodedMessage += char; // Preserve special characters
+        }
+      }
+      if (encodedMessage.endsWith("0")) {
+        encodedMessage = encodedMessage.slice(0, -1);
+      }
 
-      if (isT9 && !/[a-zA-Z]/.test(input)) {
-        // Try decoding T9 format
-        const words = input.split("_");
-        for (const word of words) {
-          const segments = word.split("0");
-          for (const segment of segments) {
-            if (segment.length >= 2) {
-              const key = segment[0];
-              const index = parseInt(segment[1]) - 1;
-              if (t9Keys[key] && t9Keys[key][index]) {
-                decodedMessage += t9Keys[key][index];
-              } else {
-                decodedMessage += "?";
-              }
-            }
-          }
+      // === Decoding ===
+      let temp = "";
+      let i = 0;
+      while (i < input.length) {
+        const ch = input[i];
+
+        if (ch === "_") {
           decodedMessage += " ";
-        }
-        decodedMessage = decodedMessage.trim();
-        encodedMessage = input;
-      } else {
-        // Try encoding plain text
-        for (const char of input) {
-          const lowerChar = char.toLowerCase();
-          if (lowerChar === " ") {
-            encodedMessage += "_";
-          } else if (/[a-z]/.test(lowerChar)) {
-            let found = false;
-            for (const [key, letters] of Object.entries(t9Keys)) {
-              const index = letters.indexOf(lowerChar);
-              if (index !== -1) {
-                encodedMessage += key + (index + 1) + "0";
-                found = true;
-                break;
-              }
-            }
-            if (!found) encodedMessage += char;
+          i++;
+        } else if (/[2-9]/.test(ch) && i + 2 < input.length && /[1-4]/.test(input[i + 1]) && input[i + 2] === "0") {
+          const key = ch;
+          const index = parseInt(input[i + 1]) - 1;
+          if (t9Keys[key] && t9Keys[key][index]) {
+            decodedMessage += t9Keys[key][index];
           } else {
-            encodedMessage += char; // Keep special characters
+            decodedMessage += "?";
           }
+          i += 3;
+        } else {
+          decodedMessage += ch; // Preserve unknown/special characters
+          i++;
         }
-        if (encodedMessage.endsWith("0")) {
-          encodedMessage = encodedMessage.slice(0, -1);
-        }
-        decodedMessage = input;
       }
 
       document.getElementById("encodedMessage").innerText = encodedMessage || "No encoded message";
