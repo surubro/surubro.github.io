@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-T">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel 2XL to Termux Server Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: Step-by-step Termux guide for Pixel 2XL. Goal: Guide user through server setup.
+        - Presentation Methods: Textual explanations for each step, `<pre><code>` blocks for commands for easy viewing and copying, HTML/CSS for conceptual diagrams described in the source.
+        - Interactions: Clickable navigation to switch between guide sections (steps). "Copy to Clipboard" buttons for all Termux commands.
+        - Justification: To enhance the readability, usability, and interactivity of the original markdown guide, making it easier for users to follow instructions and execute commands.
+        - Library/Method: Vanilla JavaScript for navigation logic and copy-to-clipboard functionality. All visual styling and layout by Tailwind CSS. HTML and CSS for any conceptual diagrams.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. NO Chart.js/Plotly.js used as source material has no quantitative chartable data.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .tab-active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+        }
+        .tab-inactive {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #374151; /* gray-700 */
+        }
+        .tab-inactive:hover {
+            background-color: #d1d5db; /* gray-300 */
+        }
+        /* Simple responsive adjustments */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .nav-sidebar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+                margin-bottom: 1rem;
+                border-right-width: 0;
+                border-bottom-width: 2px;
+            }
+            .nav-sidebar button {
+                white-space: nowrap;
+                margin-right: 0.5rem; /* Space between horizontal tabs */
+            }
+            .content-area {
+                width: 100%;
+                padding-left: 0;
+            }
+        }
+
+        .command-block {
+            background-color: #f3f4f6; /* gray-100 */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            padding: 0.75rem; /* p-3 */
+            margin-bottom: 1rem; /* mb-4 */
+            position: relative;
+        }
+        .command-block pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #1f2937; /* gray-800 */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem; /* text-sm */
+        }
+        .copy-button {
+            position: absolute;
+            top: 0.5rem; /* top-2 */
+            right: 0.5rem; /* right-2 */
+            background-color: #38bdf8; /* sky-400 */
+            color: white;
+            padding: 0.25rem 0.5rem; /* px-2 py-1 */
+            border-radius: 0.25rem; /* rounded */
+            font-size: 0.75rem; /* text-xs */
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .copy-button:hover {
+            background-color: #0ea5e9; /* sky-500 */
+        }
+        .tooltip {
+            position: absolute;
+            background-color: #1f2937; /* gray-800 */
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            z-index: 10;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+        .copy-button:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .conceptual-diagram {
+            background-color: #e0f2fe; /* sky-100 */
+            border: 1px dashed #7dd3fc; /* sky-300 */
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.375rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            color: #0c4a6e; /* sky-800 */
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800 antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-sky-700">Pixel 2XL to Termux Server Guide 📱➡️☁️</h1>
+            <p class="text-stone-600 mt-2 text-sm md:text-base">Your interactive guide to turning an old phone into a mini-server!</p>
+        </header>
+
+        <div class="main-layout md:flex bg-white shadow-xl rounded-lg overflow-hidden">
+            <nav class="nav-sidebar md:w-1/4 bg-stone-50 p-4 border-r border-stone-200">
+                <ul class="space-y-2 md:space-y-1">
+                    <li><button data-target="intro" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-active">🚀 Introduction</button></li>
+                    <li><button data-target="step1" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">🛠️ Step 1: Foundation</button></li>
+                    <li><button data-target="step2" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">🧰 Step 2: Essential Tools</button></li>
+                    <li><button data-target="step3" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">📂 Step 3: File Server</button></li>
+                    <li><button data-target="step4" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">🔄 Step 4: Seedbox</button></li>
+                    <li><button data-target="step5" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">🔋 Step 5: Keep Alive</button></li>
+                    <li><button data-target="reminders" class="w-full text-left p-3 rounded-md text-sm font-medium transition-colors duration-150 tab-inactive">💡 Final Reminders</button></li>
+                </ul>
+            </nav>
+
+            <main class="content-area md:w-3/4 p-6 md:p-8 overflow-y-auto" style="max-height: 80vh;">
+                <section id="intro" class="content-section">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Welcome! From Old Phone to Mini-Server</h2>
+                    <p class="mb-4 text-stone-700">So you've got that Pixel 2XL and a cool idea: turn it into a server using Termux for things like local cloud storage or a seedbox. Awesome! This guide will walk you through the basics step-by-step.</p>
+                    <h3 class="text-lg font-medium text-stone-700 mt-6 mb-2">Visual Concept:</h3>
+                    <div class="conceptual-diagram">
+                        <pre>
+[Your Pixel 2XL] ----&gt; [Termux App Installed] ----&gt; [Various Server Apps Inside Termux]
+                                                                |
+                                                                +-- Simple File Server (local cloud)
+                                                                |
+                                                                +-- Seedbox (for torrents)
+                                                                |
+                                                                +-- (Other possibilities!)
+                        </pre>
+                    </div>
+                    <p class="mt-4 text-stone-700">Let's get started by navigating through the steps using the menu on the left (or above on mobile devices).</p>
+                </section>
+
+                <section id="step1" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Step 1: Laying the Foundation - Install and Prep Termux 🛠️</h2>
+                    <p class="mb-4 text-stone-700">This is where it all begins. Termux is your gateway to transforming your phone.</p>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">1. Get Termux</h3>
+                        <p class="text-stone-600 mb-1">If you haven't already, download and install <strong>Termux</strong> from <strong>F-Droid</strong>. It's the recommended source for the latest, most stable version.</p>
+                        <p class="text-xs text-stone-500 italic mb-2">Visual: Your phone screen showing the F-Droid app store page for Termux, then the Termux app icon.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">2. Open Termux</h3>
+                        <p class="text-stone-600 mb-1">You'll be greeted by a command-line interface (a black screen with a blinking cursor).</p>
+                        <p class="text-xs text-stone-500 italic mb-2">Visual: A clean Termux terminal window on your phone.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">3. Update Termux's Software Sources</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Refresh Package Lists & Upgrade Software</p>
+                        <p class="text-stone-600 mb-2">This is super important! <code class="bg-stone-200 px-1 rounded">pkg update</code> fetches the latest list of available software packages. <code class="bg-stone-200 px-1 rounded">pkg upgrade</code> then upgrades all your currently installed packages to their newest versions. You might be asked to confirm some prompts – usually, typing 'Y' and pressing Enter is what you need to do.</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg update && pkg upgrade</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-xs text-stone-500 italic">Visual: The Termux terminal showing lines of text as packages are updated.</p>
+                    </div>
+                </section>
+
+                <section id="step2" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Step 2: Essential Tools for Your Server Toolkit 🧰</h2>
+                    <p class="mb-4 text-stone-700">A couple of tools will make your life much easier when managing your server.</p>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">1. Install a Text Editor (Nano)</h3>
+                        <p class="text-stone-600 mb-1">You'll need to edit configuration files. <code class="bg-stone-200 px-1 rounded">nano</code> is a user-friendly option.</p>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Install Nano Text Editor</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg install nano</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This installs <code class="bg-stone-200 px-1 rounded">nano</code>. To use it, type <code class="bg-stone-200 px-1 rounded">nano &lt;filename&gt;</code>.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">2. Install OpenSSH (for Remote Access)</h3>
+                        <p class="text-stone-600 mb-1">This lets you control your Termux server from your computer, which is much more comfortable for typing!</p>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Install OpenSSH Server</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg install openssh</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This installs the Secure Shell (SSH) server.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">3. Set Up SSH</h3>
+                        <p class="text-stone-600 mb-1"><strong>Set a password for SSH:</strong></p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">passwd</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2">Follow the prompts to create a password.</p>
+                        
+                        <p class="text-stone-600 mb-1"><strong>Start the SSH server:</strong></p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">sshd</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2">This starts the SSH daemon (server program).</p>
+
+                        <p class="text-stone-600 mb-1"><strong>Find your phone's IP address and SSH port:</strong></p>
+                        <p class="text-stone-600 mb-1">Command to find IP (look for <code class="bg-stone-200 px-1 rounded">wlan0</code> and the <code class="bg-stone-200 px-1 rounded">inet</code> address, e.g., <code class="bg-stone-200 px-1 rounded">192.168.1.105</code>):</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">ifconfig</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2"><strong>Note:</strong> Termux's SSH server usually runs on port <strong>8022</strong> (not the standard 22).</p>
+                        <p class="text-stone-600 mb-1"><strong>To connect from your PC/Laptop:</strong> Use a command like <code class="bg-stone-200 px-1 rounded">ssh your_phone_ip_address -p 8022</code> and enter the password you set.</p>
+                        <h4 class="text-md font-medium text-stone-700 mt-4 mb-1">Visual Diagram (SSH Connection):</h4>
+                        <div class="conceptual-diagram">
+                            <pre>
+[Your Computer (with SSH client)]  &lt;---- WiFi/Local Network ----&gt;  [Pixel 2XL (Termux running sshd)]
+   (e.g., PuTTY or Terminal)                                         (IP: 192.168.1.105, Port: 8022)
+                            </pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="step3" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Step 3: Your First Server App - Local Cloud Storage 📂↔️💻</h2>
+                    <p class="mb-4 text-stone-700">Let's set up a basic way to access files on your phone from other devices on your network. Python has a handy built-in web server for this.</p>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">1. Install Python</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Install Python</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg install python</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This installs Python. We'll use its simple HTTP server module.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">2. Create a Folder for Shared Files</h3>
+                        <div class="command-block">
+                            <pre><code class="language-bash">mkdir ~/mycloud</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">You can name <code class="bg-stone-200 px-1 rounded">mycloud</code> whatever you like. This creates a directory in your Termux home folder (<code class="bg-stone-200 px-1 rounded">~</code>). Put files you want to share in here.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">3. Navigate into Your Shared Folder</h3>
+                        <div class="command-block">
+                            <pre><code class="language-bash">cd ~/mycloud</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">4. Start the Simple Web Server</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Start Python File Server</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">python -m http.server 8000</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This makes files in <code class="bg-stone-200 px-1 rounded">~/mycloud</code> accessible on port <code class="bg-stone-200 px-1 rounded">8000</code>. You can choose another port if <code class="bg-stone-200 px-1 rounded">8000</code> is busy.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">5. Access Your Files</h3>
+                        <p class="text-stone-600 mb-1">On another device on the <strong>same Wi-Fi network</strong>, open a web browser. Go to: <code class="bg-stone-200 px-1 rounded">http://your_phone_ip_address:8000</code> (e.g., <code class="bg-stone-200 px-1 rounded">http://192.168.1.105:8000</code>).</p>
+                        <p class="text-stone-600 mb-2">You should see a list of files from your <code class="bg-stone-200 px-1 rounded">~/mycloud</code> folder!</p>
+                        <p class="text-stone-600 mb-1"><strong>To stop the server:</strong> Go back to the Termux session and press <code class="bg-stone-200 px-1 rounded">Ctrl</code> + <code class="bg-stone-200 px-1 rounded">C</code>.</p>
+                        <p class="mt-2 p-3 bg-amber-100 border-l-4 border-amber-500 text-amber-700 text-sm rounded-md"><strong>Important:</strong> This Python server is very basic and <strong>not secure for access from the internet</strong>. It's great for your trusted local network.</p>
+                        <h4 class="text-md font-medium text-stone-700 mt-4 mb-1">Visual Diagram (File Server):</h4>
+                        <div class="conceptual-diagram">
+                            <pre>
+[Computer/Other Device Browser] &lt;---- HTTP (Port 8000) ----&gt; [Pixel 2XL (Termux running Python HTTP server)]
+                                                                    (Serving files from ~/mycloud)
+                            </pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="step4" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Step 4: Level Up - Setting up a Seedbox (using Transmission) 🔄📥</h2>
+                    <p class="mb-4 text-stone-700">A seedbox is used for downloading and uploading torrents. This is a bit more involved. We'll use Transmission, a popular torrent client.</p>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">1. Install Transmission</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Install Transmission BitTorrent Client</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg install transmission</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This installs the Transmission command-line tools and daemon.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">2. Initial Configuration (Simplified)</h3>
+                        <p class="text-stone-600 mb-1">Transmission uses a settings file. First, run the daemon once to generate it, then stop it:</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">transmission-daemon -f</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2">(Let it run for a few seconds, then press <code class="bg-stone-200 px-1 rounded">Ctrl</code> + <code class="bg-stone-200 px-1 rounded">C</code> to stop it).</p>
+                        <p class="text-stone-600 mb-1">The settings file is usually at <code class="bg-stone-200 px-1 rounded">~/.config/transmission-daemon/settings.json</code>.</p>
+                        <p class="text-stone-600 mb-1"><strong>Edit the settings file:</strong></p>
+                        <div class="command-block">
+                             <pre><code class="language-bash">nano ~/.config/transmission-daemon/settings.json</code></pre>
+                             <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2"><strong>Key settings to look for and potentially change:</strong></p>
+                        <ul class="list-disc list-inside text-stone-600 space-y-1 text-sm mb-2">
+                            <li><code class="bg-stone-200 px-1 rounded">"download-dir"</code>: Set to where downloads go (e.g., <code class="bg-stone-200 px-1 rounded">"/data/data/com.termux/files/home/torrents/completed"</code>). Make sure directory exists: <code class="bg-stone-200 px-1 rounded">mkdir -p ~/torrents/completed</code>.</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"incomplete-dir"</code>: For partial downloads (e.g., <code class="bg-stone-200 px-1 rounded">"/data/data/com.termux/files/home/torrents/incomplete"</code>). Create it: <code class="bg-stone-200 px-1 rounded">mkdir -p ~/torrents/incomplete</code>.</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"rpc-authentication-required"</code>: Set to <code class="bg-stone-200 px-1 rounded">true</code> for security.</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"rpc-username"</code>: Choose a username.</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"rpc-password"</code>: Set a password. <strong>Important:</strong> Hash this. After saving with plain text, run <code class="bg-stone-200 px-1 rounded">transmission-daemon</code> once; it will hash it. Then stop and check file.</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"rpc-whitelist-enabled"</code>: For local network simplicity, set to <code class="bg-stone-200 px-1 rounded">false</code> initially. For better security, enable and add local network range (e.g., <code class="bg-stone-200 px-1 rounded">"192.168.1.*"</code>).</li>
+                            <li><code class="bg-stone-200 px-1 rounded">"rpc-port"</code>: Default is <code class="bg-stone-200 px-1 rounded">9091</code> (web interface port).</li>
+                        </ul>
+                        <p class="text-xs text-stone-500 italic">Visual: The nano editor showing the settings.json file with highlighted key fields.</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">3. Start the Transmission Daemon</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Start Transmission Seedbox Server</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">transmission-daemon</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600">This starts the Transmission server in the background.</p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">4. Access the Transmission Web Interface</h3>
+                        <p class="text-stone-600 mb-1">On another device on your network, open a web browser. Go to: <code class="bg-stone-200 px-1 rounded">http://your_phone_ip_address:9091</code>.</p>
+                        <p class="text-stone-600 mb-2">You should see the Transmission web UI. You'll be prompted for username/password if authentication is enabled.</p>
+                        <p class="mt-2 p-3 bg-amber-100 border-l-4 border-amber-500 text-amber-700 text-sm rounded-md">
+                            <strong>Important for Seedbox:</strong>
+                            <ul class="list-disc list-inside mt-1">
+                                <li><strong>Storage:</strong> Torrents can take up a LOT of space!</li>
+                                <li><strong>ISP Terms:</strong> Be aware of your Internet Service Provider's policies.</li>
+                                <li><strong>Security:</strong> If RPC auth is false or whitelist is too open, anyone on network could access.</li>
+                            </ul>
+                        </p>
+                        <h4 class="text-md font-medium text-stone-700 mt-4 mb-1">Visual Diagram (Seedbox):</h4>
+                        <div class="conceptual-diagram">
+                            <pre>
+[Computer/Other Device Browser] &lt;---- HTTP (Port 9091) ----&gt; [Pixel 2XL (Termux running Transmission daemon)]
+                                                                        (Managing torrents)
+                            </pre>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="step5" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">Step 5: Keeping Your Server Alive 🔋🔌</h2>
+                    <p class="mb-4 text-stone-700">Android likes to save battery by closing background apps. Here's how to help keep Termux (and your servers) running.</p>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">1. Termux Wake Lock</h3>
+                        <p class="text-stone-600 mb-1"><strong>Action:</strong> Prevent Termux from Sleeping</p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">termux-wake-lock</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600 mb-2">Run this in a Termux session. It tells Android to try and keep Termux active. To release it, open a new session and run <code class="bg-stone-200 px-1 rounded">termux-wake-unlock</code> or press <code class="bg-stone-200 px-1 rounded">Ctrl</code> + <code class="bg-stone-200 px-1 rounded">C</code> in the wake lock session.</p>
+                        <p class="text-xs text-stone-500 italic">Visual: A phone with a power cable plugged in, and a "wake lock active" notification or icon.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-medium text-stone-700 mb-2">2. Consider <code class="bg-stone-200 px-1 rounded">tmux</code> or <code class="bg-stone-200 px-1 rounded">screen</code> (Advanced)</h3>
+                        <p class="text-stone-600 mb-1">These are "terminal multiplexers." They let you run multiple terminal sessions, detach from them (e.g., close SSH or Termux app window), and keep commands (like servers) running.</p>
+                        <p class="text-stone-600 mb-1"><strong>Install tmux:</strong></p>
+                        <div class="command-block">
+                            <pre><code class="language-bash">pkg install tmux</code></pre>
+                            <button class="copy-button">Copy <span class="tooltip">Copy to clipboard</span></button>
+                        </div>
+                        <p class="text-stone-600"><strong>To use:</strong> Type <code class="bg-stone-200 px-1 rounded">tmux</code> to start. Learn basic commands (e.g., <code class="bg-stone-200 px-1 rounded">Ctrl+b</code> then <code class="bg-stone-200 px-1 rounded">d</code> to detach; <code class="bg-stone-200 px-1 rounded">tmux attach</code> to reattach).</p>
+                    </div>
+                </section>
+
+                <section id="reminders" class="content-section hidden">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-4">💡 Important Final Reminders</h2>
+                    <ul class="list-disc list-inside space-y-3 text-stone-700">
+                        <li><strong>Battery Drain:</strong> Running servers will use more battery. Keep your Pixel 2XL plugged in if possible.</li>
+                        <li><strong>Heat:</strong> The phone might get warmer than usual. Ensure it has some ventilation.</li>
+                        <li><strong>Security:</strong> The simple Python server is not secure for the open internet. For Transmission, ensure you set strong passwords. If you want to access these services from outside your home network, that's a more advanced topic involving port forwarding on your router and dynamic DNS, which comes with significant security considerations.</li>
+                        <li><strong>Termux Wiki:</strong> The official <a href="https://wiki.termux.com/wiki/Main_Page" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:text-sky-700 hover:underline font-medium">Termux Wiki</a> is your best friend for more detailed information and troubleshooting!</li>
+                    </ul>
+                    <p class="mt-6 text-stone-700">Good luck turning that Pixel 2XL into a handy little server! It's a great learning experience. Start simple, and gradually explore more complex setups as you get comfortable.</p>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navButtons = document.querySelectorAll('.nav-sidebar button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const copyButtons = document.querySelectorAll('.copy-button');
+
+            // Tab navigation
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Deactivate all buttons and hide all sections
+                    navButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                    });
+                    contentSections.forEach(section => {
+                        section.classList.add('hidden');
+                    });
+
+                    // Activate clicked button and show target section
+                    button.classList.add('tab-active');
+                    button.classList.remove('tab-inactive');
+                    const targetId = button.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.classList.remove('hidden');
+                    }
+                    // Scroll content area to top
+                    document.querySelector('.content-area').scrollTop = 0;
+                });
+            });
+
+            // Copy to clipboard
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const commandBlock = button.previousElementSibling; // Assuming <pre> is sibling
+                    const textToCopy = commandBlock.innerText || commandBlock.textContent;
+                    
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        const tooltip = button.querySelector('.tooltip');
+                        if (tooltip) { // Check if tooltip exists
+                            const originalText = tooltip.textContent;
+                            tooltip.textContent = 'Copied!';
+                            tooltip.style.visibility = 'visible';
+                            tooltip.style.opacity = '1';
+                            setTimeout(() => {
+                                tooltip.textContent = originalText;
+                                tooltip.style.visibility = 'hidden';
+                                tooltip.style.opacity = '0';
+                            }, 1500);
+                        }
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        const tooltip = button.querySelector('.tooltip');
+                         if (tooltip) {
+                            tooltip.textContent = 'Copy failed!';
+                         }
+                    }
+                    document.body.removeChild(textArea);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
