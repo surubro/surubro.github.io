@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<h2>Send Messagezzzz 2</h2>
+<h2>Send Message 2 Telegram</h2>
 
 <form id="myForm">
     <input type="text" id="message" placeholder="Enter your message" style="width: 200px;" required><br><br>
@@ -21,7 +21,7 @@ function sendTelegram() {
     }
 
     var token = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
-    var chat_id = "-1002368470031";
+    var chat_id = "-1002368470030";
     var url = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chat_id + "&text=" + encodeURIComponent(message);
 
     var httpRequest = new XMLHttpRequest();
