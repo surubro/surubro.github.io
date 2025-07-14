@@ -101,7 +101,7 @@
       box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
     }
 
-    .custom-add {
+    .custom-add, .income-input {
       margin-top: 20px;
       display: flex;
       justify-content: center;
@@ -111,7 +111,7 @@
     input[type="number"] {
       font-size: 16px;
       padding: 8px;
-      width: 140px;
+      width: 160px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
@@ -121,6 +121,11 @@
 
   <div class="container">
     <h1>Desktop Bill Tracker</h1>
+
+    <div class="income-input">
+      <input type="number" id="incomeInput" placeholder="Enter income">
+      <button onclick="setIncome()">Set Income</button>
+    </div>
 
     <div class="category">
       <h2>🛒 Necessity</h2>
@@ -150,14 +155,30 @@
     </div>
   </div>
 
-  <div id="total">Total: ₹0</div>
+  <div id="total">Total Expenses: ₹0 | Remaining Income: ₹0</div>
 
   <script>
     let total = 0;
+    let income = 0;
+
+    function updateDisplay() {
+      const remaining = income - total;
+      document.getElementById("total").innerText = `Total Expenses: ₹${total} | Remaining Income: ₹${remaining}`;
+    }
+
+    function setIncome() {
+      const value = parseInt(document.getElementById("incomeInput").value);
+      if (!isNaN(value) && value > 0) {
+        income = value;
+        updateDisplay();
+      } else {
+        alert("Please enter a valid income.");
+      }
+    }
 
     function addToTotal(button, amount) {
       total += amount;
-      document.getElementById("total").innerText = "Total: ₹" + total;
+      updateDisplay();
       button.disabled = true;
       button.innerText = "Added";
     }
@@ -167,7 +188,7 @@
       const value = parseInt(input.value);
       if (!isNaN(value) && value > 0) {
         total += value;
-        document.getElementById("total").innerText = "Total: ₹" + total;
+        updateDisplay();
         input.value = "";
       } else {
         alert("Please enter a valid amount.");
