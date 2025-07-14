@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desktop Bill Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e9ecef;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto 100px auto;
+      padding: 20px 40px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .category {
+      margin-bottom: 40px;
+    }
+
+    .category h2 {
+      font-size: 22px;
+      color: #007BFF;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #007BFF;
+      padding-bottom: 6px;
+    }
+
+    .bills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .bill-item {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .bill-item:hover {
+      background: #eef6ff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .bill-label {
+      font-size: 16px;
+      color: #333;
+    }
+
+    button {
+      font-size: 15px;
+      padding: 8px 14px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    #total {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #343a40;
+      color: white;
+      padding: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .custom-add {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    input[type="number"] {
+      font-size: 16px;
+      padding: 8px;
+      width: 140px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Desktop Bill Tracker</h1>
+
+    <div class="category">
+      <h2>🛒 Necessity</h2>
+      <div class="bills-grid">
+        <div class="bill-item"><div class="bill-label">Electricity bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">GAS bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
+      </div>
+    </div>
+
+    <div class="category">
+      <h2>🎯 Wants</h2>
+      <div class="bills-grid">
+        <div class="bill-item"><div class="bill-label">Sim My+Mom - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">DTH - ₹400</div><button onclick="addToTotal(this, 400)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">SIM Sumit - ₹350</div><button onclick="addToTotal(this, 350)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">Water Bill - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">SIM DAD - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">Property tax - ₹500</div><button onclick="addToTotal(this, 500)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">Wifi - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
+        <div class="bill-item"><div class="bill-label">Subscription - ₹200</div><button onclick="addToTotal(this, 200)">Add</button></div>
+      </div>
+    </div>
+
+    <div class="custom-add">
+      <input type="number" id="customAmount" placeholder="Enter amount">
+      <button onclick="addCustomAmount()">Add Amount</button>
+    </div>
+  </div>
+
+  <div id="total">Total: ₹0</div>
+
+  <script>
+    let total = 0;
+
+    function addToTotal(button, amount) {
+      total += amount;
+      document.getElementById("total").innerText = "Total: ₹" + total;
+      button.disabled = true;
+      button.innerText = "Added";
+    }
+
+    function addCustomAmount() {
+      const input = document.getElementById("customAmount");
+      const value = parseInt(input.value);
+      if (!isNaN(value) && value > 0) {
+        total += value;
+        document.getElementById("total").innerText = "Total: ₹" + total;
+        input.value = "";
+      } else {
+        alert("Please enter a valid amount.");
+      }
+    }
+  </script>
+
+</body>
+</html>
