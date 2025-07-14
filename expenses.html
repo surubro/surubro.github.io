@@ -1,29 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bill Tracker</title>
   <style>
     body {
       margin: 0;
-      padding: 20px;
+      padding: 40px;
       font-family: 'Segoe UI', sans-serif;
       background-color: #f2f2f2;
-      font-size: 20px;
-      padding-bottom: 120px;
+      font-size: 18px;
+      max-width: 800px;
+      margin: auto;
+      padding-bottom: 160px;
     }
 
     h1 {
       text-align: center;
-      font-size: 26px;
-      margin-bottom: 30px;
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      margin-top: 30px;
+      font-size: 24px;
+      color: #333;
+      border-bottom: 2px solid #007BFF;
+      padding-bottom: 5px;
     }
 
     .bill-item {
       background: white;
       border-radius: 12px;
       padding: 15px 20px;
-      margin-bottom: 15px;
+      margin: 12px 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -35,12 +46,12 @@
     }
 
     button {
-      font-size: 18px;
-      padding: 10px 18px;
+      font-size: 16px;
+      padding: 8px 16px;
       background-color: #007BFF;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
@@ -59,25 +70,24 @@
       left: 0;
       width: 100%;
       background-color: white;
-      padding: 15px;
+      padding: 20px;
       font-size: 24px;
       font-weight: bold;
       text-align: center;
-      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
     }
 
     .custom-add {
-      margin-top: 20px;
+      margin-top: 30px;
       display: flex;
       gap: 10px;
       justify-content: center;
-      align-items: center;
     }
 
     input[type="number"] {
       font-size: 18px;
       padding: 10px;
-      width: 120px;
+      width: 150px;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
@@ -87,12 +97,15 @@
 
   <h1>Bill Tracker</h1>
 
+  <h2>🛒 Necessity</h2>
   <div class="bill-item"><div class="bill-label">1. Electricity bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
   <div class="bill-item"><div class="bill-label">2. GAS bill - ₹1000</div><button onclick="addToTotal(this, 1000)">Add</button></div>
+
+  <h2>🎯 Wants</h2>
   <div class="bill-item"><div class="bill-label">3. Sim My+Mom - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
   <div class="bill-item"><div class="bill-label">4. DTH - ₹400</div><button onclick="addToTotal(this, 400)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">5. SIM Sumit- ₹350</div><button onclick="addToTotal(this, 350)">Add</button></div>
-  <div class="bill-item"><div class="bill-label">6. Water Bll- ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">5. SIM Sumit - ₹350</div><button onclick="addToTotal(this, 350)">Add</button></div>
+  <div class="bill-item"><div class="bill-label">6. Water Bill - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
   <div class="bill-item"><div class="bill-label">7. SIM DAD - ₹150</div><button onclick="addToTotal(this, 150)">Add</button></div>
   <div class="bill-item"><div class="bill-label">8. Property tax - ₹500</div><button onclick="addToTotal(this, 500)">Add</button></div>
   <div class="bill-item"><div class="bill-label">9. Wifi - ₹600</div><button onclick="addToTotal(this, 600)">Add</button></div>
