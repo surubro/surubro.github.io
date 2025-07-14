@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desktop Bill Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #e9ecef;
+      font-size: 16px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto 120px auto;
+      padding: 20px 40px;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .income-input, .custom-entry {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"], input[type="text"] {
+      font-size: 16px;
+      padding: 8px;
+      width: 160px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      font-size: 15px;
+      padding: 8px 14px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #total {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #343a40;
+      color: white;
+      padding: 18px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #ddd;
+    }
+
+    h2 {
+      margin-top: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Desktop Bill Tracker</h1>
+
+    <div class="income-input">
+      <input type="number" id="incomeInput" placeholder="Enter income">
+      <button onclick="setIncome()">Set Income</button>
+    </div>
+
+    <div class="custom-entry">
+      <input type="text" id="entryName" placeholder="Expense name">
+      <input type="number" id="entryAmount" placeholder="Amount ₹">
+      <button onclick="addEntry()">Add Entry</button>
+    </div>
+
+    <h2>Expense Summary</h2>
+    <table id="expenseTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Item</th>
+          <th>Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="total">Total Expenses: ₹0 | Remaining Income: ₹0</div>
+
+  <script>
+    let total = 0;
+    let income = 0;
+    let count = 0;
+
+    function updateDisplay() {
+      const remaining = income - total;
+      document.getElementById("total").innerText = `Total Expenses: ₹${total} | Remaining Income: ₹${remaining}`;
+    }
+
+    function setIncome() {
+      const value = parseInt(document.getElementById("incomeInput").value);
+      if (!isNaN(value) && value > 0) {
+        income = value;
+        updateDisplay();
+      } else {
+        alert("Please enter a valid income.");
+      }
+    }
+
+    function addEntry() {
+      const name = document.getElementById("entryName").value.trim();
+      const amount = parseFloat(document.getElementById("entryAmount").value);
+      if (name === "" || isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid name and amount.");
+        return;
+      }
+
+      total += amount;
+      count++;
+      updateDisplay();
+
+      const table = document.getElementById("expenseTable").querySelector("tbody");
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${count}</td>
+        <td>${name}</td>
+        <td>₹${amount.toFixed(2)}</td>
+      `;
+      table.appendChild(row);
+
+      document.getElementById("entryName").value = "";
+      document.getElementById("entryAmount").value = "";
+    }
+  </script>
+
+</body>
+</html>
