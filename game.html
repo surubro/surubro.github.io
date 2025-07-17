@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Bar Graph</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    h2 {
+      margin-bottom: 5px;
+    }
+    .chart-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      height: 60vh;
+      width: 100vw;
+      max-width: 100%;
+      margin: 20px 0;
+    }
+    .bar {
+      flex: 1;
+      margin: 0 5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      transition: height 0.3s ease;
+      position: relative;
+    }
+    .bar-inner {
+      width: 90%;
+      border-radius: 5px;
+      transition: height 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      padding-bottom: 5px;
+    }
+    .controls {
+      display: flex;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .controls button {
+      padding: 4px 8px;
+      font-size: 16px;
+    }
+    .brown   { background: brown; }
+    .red     { background: red; }
+    .green   { background: green; }
+    .blue    { background: blue; }
+    .white   { background: white; color: black; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>Color Bar Chart</h2>
+  <div class="chart-container" id="chart">
+    <!-- Bars will be generated here -->
+  </div>
+
+  <script>
+    const colors = ["brown", "red", "green", "blue", "white"];
+    const values = {
+      brown: 10,
+      red: 15,
+      green: 20,
+      blue: 8,
+      white: 12,
+    };
+
+    function renderChart() {
+      const chart = document.getElementById("chart");
+      chart.innerHTML = "";
+
+      for (let color of colors) {
+        const value = values[color];
+        const barHeight = value * 4; // scaling factor
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+
+        const barInner = document.createElement("div");
+        barInner.className = `bar-inner ${color}`;
+        barInner.style.height = `${barHeight}px`;
+        barInner.textContent = value;
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+
+        const plus = document.createElement("button");
+        plus.textContent = "+";
+        plus.onclick = () => {
+          values[color]++;
+          renderChart();
+        };
+
+        const minus = document.createElement("button");
+        minus.textContent = "-";
+        minus.onclick = () => {
+          if (values[color] > 0) values[color]--;
+          renderChart();
+        };
+
+        controls.appendChild(plus);
+        controls.appendChild(minus);
+
+        bar.appendChild(barInner);
+        bar.appendChild(controls);
+        chart.appendChild(bar);
+      }
+    }
+
+    renderChart();
+  </script>
+</body>
+</html>
