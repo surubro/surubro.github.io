@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ticket to Ride Route Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    .result { margin-top: 15px; font-weight: bold; }
+    input[type="text"] { width: 300px; padding: 5px; }
+    button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h2>Ticket to Ride Route Search</h2>
+  <input type="text" id="routeInput" placeholder="Enter route, e.g. chicago - santa fe" />
+  <button onclick="searchRoute()">Search</button>
+  <div class="result" id="result"></div>
+
+  <script>
+    const routes = [
+      "vancouver - montreal",
+      "portland - phoenix",
+      "chicago - new orleans",
+      "duluth - el paso",
+      "denver - pittsburgh",
+      "boston - miami",
+      "saint sault marie - nashville",
+      "duluth - houston",
+      "chicago - santa fe",
+      "new york - atlanta",
+      "montreal - atlanta",
+      "seattle - los angeles",
+      "calgary - phoenix",
+      "vancouver - santa fe",
+      "los angeles - chicago",
+      "toronto - miami",
+      "los angeles - new york",
+      "winnipeg - little rock",
+      "new york - dallas",
+      "portland - nashville",
+      "portland - pittsburgh",
+      "saint sault marie - oklahoma city",
+      "calgary - salt lake city",
+      "chicago - new orleans",
+      "montreal - new orleans",
+      "los angeles - miami",
+      "dallas - new york",
+      "duluth - el paso",
+      "helena - los angeles",
+      "kansas city - houston",
+      "denver - el paso",
+      "dallas - houston",
+      "pittsburgh - houston",
+      "denver - pittsburgh",
+      "dallas - el paso",
+      "nashville - el paso"
+    ];
+
+    function normalize(str) {
+      // Remove extra spaces, make lowercase, and trim
+      return str.toLowerCase().replace(/\s*-\s*/g, ' - ').trim();
+    }
+
+    function searchRoute() {
+      const input = document.getElementById('routeInput').value;
+      const normalizedInput = normalize(input);
+      const found = routes.includes(normalizedInput);
+      const resultEl = document.getElementById('result');
+      if (found) {
+        resultEl.textContent = 'Route FOUND!';
+        resultEl.style.color = 'green';
+      } else {
+        resultEl.textContent = 'Route NOT found.';
+        resultEl.style.color = 'red';
+      }
+    }
+  </script>
+</body>
+</html>
