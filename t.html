@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ticket to Ride Route Search</title>
+  <title>Ticket to Ride Route Live Search</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 30px; }
     .result { margin-top: 15px; font-weight: bold; }
     input[type="text"] { width: 300px; padding: 5px; }
-    button { padding: 5px 10px; }
+    ul { margin-top: 10px; }
+    li { margin-bottom: 5px; }
   </style>
 </head>
 <body>
-  <h2>Ticket to Ride Route Search</h2>
-  <input type="text" id="routeInput" placeholder="Enter route, e.g. chicago - santa fe" />
-  <button onclick="searchRoute()">Search</button>
-  <div class="result" id="result"></div>
+  <h2>Ticket to Ride Route Live Search</h2>
+  <input type="text" id="routeInput" placeholder="Type route or city..." oninput="liveSearch()" />
+  <ul id="result"></ul>
 
   <script>
     const routes = [
@@ -56,21 +56,29 @@
     ];
 
     function normalize(str) {
-      // Remove extra spaces, make lowercase, and trim
       return str.toLowerCase().replace(/\s*-\s*/g, ' - ').trim();
     }
 
-    function searchRoute() {
+    function liveSearch() {
       const input = document.getElementById('routeInput').value;
       const normalizedInput = normalize(input);
-      const found = routes.includes(normalizedInput);
       const resultEl = document.getElementById('result');
-      if (found) {
-        resultEl.textContent = 'Route FOUND!';
-        resultEl.style.color = 'green';
+      resultEl.innerHTML = '';
+
+      if (normalizedInput.length === 0) return;
+
+      const matches = routes.filter(route => route.includes(normalizedInput));
+      if (matches.length > 0) {
+        matches.forEach(route => {
+          const li = document.createElement('li');
+          li.textContent = route;
+          resultEl.appendChild(li);
+        });
       } else {
-        resultEl.textContent = 'Route NOT found.';
-        resultEl.style.color = 'red';
+        const li = document.createElement('li');
+        li.textContent = 'No matching routes found.';
+        li.style.color = 'red';
+        resultEl.appendChild(li);
       }
     }
   </script>
