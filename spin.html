@@ -14,6 +14,7 @@
       align-items: center;
       min-height: 100vh;
       justify-content: center;
+      box-sizing: border-box;
     }
     .bottle-area {
       position: relative;
@@ -56,10 +57,28 @@
     .spin-btn:active {
       background: #085cc8;
     }
+    footer {
+      width: 100vw;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      padding: 12px 0;
+      font-size: 1.1rem;
+      color: #666;
+      background: #eef3fc;
+      z-index: 100;
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
     @media (max-width: 600px) {
       .spin-btn {
         font-size: 1rem;
         padding: 12px 0;
+      }
+      footer {
+        font-size: 1rem;
+        padding: 10px 0;
       }
     }
   </style>
@@ -76,6 +95,12 @@
     </svg>
   </div>
   <button class="spin-btn" id="spinBtn">Spin the Arrow</button>
+
+  <!-- Footer message -->
+  <footer>
+    Created with ❤️ by Surendra
+  </footer>
+
   <script>
     const arrowSvg = document.getElementById('arrowSvg');
     const spinBtn = document.getElementById('spinBtn');
@@ -89,7 +114,7 @@
 
       // Make at least 9 full spins + random direction (for drama)
       const randomTarget = 360 * (Math.floor(Math.random() * 4) + 9) + Math.floor(Math.random() * 360);
-      const duration = 15000; // Now 15 seconds
+      const duration = 15000; // 15 seconds
       const start = performance.now();
       const initialRotation = currentRotation;
 
