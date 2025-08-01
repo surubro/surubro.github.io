@@ -2,122 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Truth or Dare - Spin the Bottle</title>
+  <title>Spin the Bottle - Mobile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
+      background: #eef3fc;
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 80px;
-      background: #fafaff;
-    }
-
-    .bottle-container {
-      width: 220px;
-      height: 220px;
-      display: flex;
-      align-items: center;
+      min-height: 100vh;
       justify-content: center;
-      margin-bottom: 24px;
     }
-
-    .bottle {
-      width: 160px;
-      height: 40px;
-      background: #8bc34a;
-      border-radius: 20px;
+    .bottle-area {
       position: relative;
-      transition: box-shadow 0.3s;
-      box-shadow: 0 4px 16px #0002;
+      width: 90vw;
+      max-width: 350px;
+      aspect-ratio: 1/1;
+      margin-bottom: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-
-    .bottle:before {
+    .bottle {
+      width: 38vw; max-width: 160px;
+      height: 12vw; max-width-height: 48px;
+      min-width: 90px;
+      min-height: 28px;
+      background: #73af44;
+      border-radius: 20px;
+      box-shadow: 0 4px 18px #0003;
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bottle::before {
       content: "";
       position: absolute;
-      left: -28px;
-      width: 28px;
-      height: 28px;
-      background: #a1887f;
+      left: -26px; top: 50%;
+      width: 24px; height: 24px;
+      background: #ae987b;
       border-radius: 50%;
-      top: 6px;
+      transform: translateY(-50%);
     }
-
-    .bottle:after {
+    .bottle::after {
       content: "";
       position: absolute;
-      right: -16px;
-      width: 16px;
-      height: 16px;
-      background: #689f38;
+      right: -16px; top: 50%;
+      width: 14px; height: 14px;
+      background: #538c2b;
       border-radius: 50%;
-      top: 12px;
+      transform: translateY(-50%);
     }
-
+    .arrow {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 0; height: 0;
+      transform: translate(-50%, -85%);
+      z-index: 2;
+      /* Arrow base styles */
+    }
+    .arrow-shape {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 44px solid #ea2323;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.19));
+    }
     .spin-btn {
-      padding: 12px 36px;
+      width: 92vw; max-width: 340px;
       font-size: 1.2rem;
-      border-radius: 8px;
-      background: #2196f3;
-      color: white;
+      padding: 14px 0;
+      background: linear-gradient(90deg,#156ee9,#37c376);
+      color: #fff;
       border: none;
+      border-radius: 42px;
+      box-shadow: 0 2px 6px #0001;
       cursor: pointer;
-      margin-top: 16px;
-      transition: background 0.2s;
+      margin-top: 3vh;
+      letter-spacing: 1px;
+      font-weight: 500;
+      transition: background 0.2s, box-shadow 0.2s;
     }
-
     .spin-btn:active {
-      background: #1976d2;
+      background: #0359ca;
+    }
+    @media (max-width: 600px) {
+      .spin-btn {
+        font-size: 1rem;
+        padding: 12px 0;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="bottle-container">
+  <div class="bottle-area">
     <div class="bottle" id="bottle"></div>
+    <div class="arrow">
+      <div class="arrow-shape"></div>
+    </div>
   </div>
-  <button class="spin-btn" id="spinBtn">Spin</button>
-
+  <button class="spin-btn" id="spinBtn">Spin the Bottle</button>
   <script>
     const bottle = document.getElementById('bottle');
     const spinBtn = document.getElementById('spinBtn');
+    const arrow = document.querySelector('.arrow');
     let spinning = false;
     let currentRotation = 0;
 
     function spinBottle() {
-      if (spinning) return; // Prevent double spins
-
+      if (spinning) return;
       spinning = true;
       spinBtn.disabled = true;
-      // Random target angle (multiple full turns + random stopping angle)
-      const randomTarget = 360 * (Math.floor(Math.random() * 4) + 5) + Math.floor(Math.random() * 360);
 
+      // At least 7 full spins (for drama), and a random stop angle (0-360)
+      const randomTarget = 360 * (Math.floor(Math.random() * 4) + 7) + Math.floor(Math.random() * 360);
       const duration = 5000; // 5 seconds
       const start = performance.now();
       const initialRotation = currentRotation;
-
       function animate(now) {
         const elapsed = now - start;
-        // Ease-out cubic (slows at the end)
         const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
         const easeOut = 1 - Math.pow(1 - progress, 3);
         const angle = initialRotation + (randomTarget - initialRotation) * easeOut;
-        bottle.style.transform = `rotate(${angle}deg)`;
-
+        bottle.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+        arrow.style.transform = `translate(-50%, -85%) rotate(${angle}deg)`;
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
-          // Fix final rotation value
           currentRotation = randomTarget % 360;
-          bottle.style.transform = `rotate(${currentRotation}deg)`;
+          bottle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
+          arrow.style.transform = `translate(-50%, -85%) rotate(${currentRotation}deg)`;
           spinning = false;
           spinBtn.disabled = false;
         }
       }
       requestAnimationFrame(animate);
     }
-
     spinBtn.addEventListener('click', spinBottle);
   </script>
 </body>
