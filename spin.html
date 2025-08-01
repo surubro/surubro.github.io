@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spin the Bottle - Mobile</title>
+  <title>Spin Game - Arrow</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -25,52 +25,18 @@
       align-items: center;
       justify-content: center;
     }
-    .bottle {
-      width: 38vw; max-width: 160px;
-      height: 12vw; max-width-height: 48px;
-      min-width: 90px;
-      min-height: 28px;
-      background: #73af44;
-      border-radius: 20px;
-      box-shadow: 0 4px 18px #0003;
+    .arrow-svg {
       position: absolute;
-      left: 50%; top: 50%;
+      width: 68vw;
+      max-width: 250px;
+      left: 50%;
+      top: 50%;
       transform: translate(-50%, -50%);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .bottle::before {
-      content: "";
-      position: absolute;
-      left: -26px; top: 50%;
-      width: 24px; height: 24px;
-      background: #ae987b;
-      border-radius: 50%;
-      transform: translateY(-50%);
-    }
-    .bottle::after {
-      content: "";
-      position: absolute;
-      right: -16px; top: 50%;
-      width: 14px; height: 14px;
-      background: #538c2b;
-      border-radius: 50%;
-      transform: translateY(-50%);
-    }
-    .arrow {
-      position: absolute;
-      left: 50%; top: 50%;
-      width: 0; height: 0;
-      transform: translate(-50%, -85%);
-      z-index: 2;
-      /* Arrow base styles */
-    }
-    .arrow-shape {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 44px solid #ea2323;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.19));
+      z-index: 10;
+      transition: filter 0.2s;
+      filter: drop-shadow(0 2px 8px #0003);
+      pointer-events: none;
+      will-change: transform;
     }
     .spin-btn {
       width: 92vw; max-width: 340px;
@@ -88,7 +54,7 @@
       transition: background 0.2s, box-shadow 0.2s;
     }
     .spin-btn:active {
-      background: #0359ca;
+      background: #085cc8;
     }
     @media (max-width: 600px) {
       .spin-btn {
@@ -100,50 +66,53 @@
 </head>
 <body>
   <div class="bottle-area">
-    <div class="bottle" id="bottle"></div>
-    <div class="arrow">
-      <div class="arrow-shape"></div>
-    </div>
+    <!-- Your arrow SVG as per your image -->
+    <svg class="arrow-svg" id="arrowSvg" viewBox="0 0 512 512">
+      <circle cx="256" cy="256" r="248" fill="#36eb8e" stroke="#1e4033" stroke-width="16"/>
+      <ellipse cx="165" cy="85" rx="48" ry="22" fill="#fff" opacity="0.4"/>
+      <!-- Arrow pointer -->
+      <path d="M167 338 l119-119v61c0 12 8 20 20 20s20-8 20-20v-111c0-13-10-24-24-24h-111c-12 0-20 8-20 20s8 20 20 20h61l-119 119c-10 9-10 22 0 32l42 42c9 10 22 10 32 0z"
+        fill="#fff" stroke="#282828" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
   </div>
-  <button class="spin-btn" id="spinBtn">Spin the Bottle</button>
+  <button class="spin-btn" id="spinBtn">Spin the Arrow</button>
   <script>
-    const bottle = document.getElementById('bottle');
+    const arrowSvg = document.getElementById('arrowSvg');
     const spinBtn = document.getElementById('spinBtn');
-    const arrow = document.querySelector('.arrow');
     let spinning = false;
     let currentRotation = 0;
 
-    function spinBottle() {
+    function spinArrow() {
       if (spinning) return;
       spinning = true;
       spinBtn.disabled = true;
 
-      // At least 7 full spins (for drama), and a random stop angle (0-360)
-      const randomTarget = 360 * (Math.floor(Math.random() * 4) + 7) + Math.floor(Math.random() * 360);
-      const duration = 5000; // 5 seconds
+      // Make at least 9 full spins + random direction (for drama)
+      const randomTarget = 360 * (Math.floor(Math.random() * 4) + 9) + Math.floor(Math.random() * 360);
+      const duration = 15000; // Now 15 seconds
       const start = performance.now();
       const initialRotation = currentRotation;
+
       function animate(now) {
         const elapsed = now - start;
         const progress = Math.min(elapsed / duration, 1);
-        // Ease-out cubic
+        // Ease-out cubic for realistic gradual slow down
         const easeOut = 1 - Math.pow(1 - progress, 3);
         const angle = initialRotation + (randomTarget - initialRotation) * easeOut;
-        bottle.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-        arrow.style.transform = `translate(-50%, -85%) rotate(${angle}deg)`;
+        arrowSvg.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
           currentRotation = randomTarget % 360;
-          bottle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
-          arrow.style.transform = `translate(-50%, -85%) rotate(${currentRotation}deg)`;
+          arrowSvg.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
           spinning = false;
           spinBtn.disabled = false;
         }
       }
       requestAnimationFrame(animate);
     }
-    spinBtn.addEventListener('click', spinBottle);
+    spinBtn.addEventListener('click', spinArrow);
   </script>
 </body>
 </html>
