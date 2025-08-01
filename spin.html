@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Random Spin Direction</title>
+  <style>
+    .circle {
+      width: 100px;
+      height: 100px;
+      background: #4a90e2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 1s ease;
+      margin: 50px auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="circle" id="spinCircle"></div>
+
+  <script>
+    const circle = document.getElementById('spinCircle');
+    circle.addEventListener('click', () => {
+      // Generate a random angle between 0 and 360
+      const angle = Math.floor(Math.random() * 360);
+      circle.style.transform = `rotate(${angle}deg)`;
+    });
+  </script>
+</body>
+</html>
