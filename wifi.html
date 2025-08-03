@@ -1,39 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Copy to Clipboard</title>
 </head>
 <body>
 
-    <p id="textToCopy">netsh wlan export profile folder=C:\ key=clear</p>
-    <button onclick="copyToClipboard()">Copy</button>
+    <p id="text1">netsh wlan export profile folder=C:\ key=clear</p>
+    <button onclick="copyToClipboard('text1')">Copy</button>
 
-    <p id="textToCopy">netsh wlan export profile folder=C:\Users\suru\Documents key=clear</p>
-    <button onclick="copyToClipboard()">Copy</button>
-
-    
+    <p id="text2">netsh wlan export profile folder=C:\Users\suru\Documents key=clear</p>
+    <button onclick="copyToClipboard('text2')">Copy</button>
 
     <script>
-        function copyToClipboard() {
-            // Create a temporary text area
-            let textArea = document.createElement("textarea");
-            textArea.value = document.getElementById("textToCopy").innerText;
-            
-            // Append to body
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
             document.body.appendChild(textArea);
-            
-            // Select text
             textArea.select();
             textArea.setSelectionRange(0, 99999); // For mobile devices
-            
-            // Copy text
             document.execCommand("copy");
-            
-            // Remove temporary element
             document.body.removeChild(textArea);
-            
             alert("Copied to clipboard!");
         }
     </script>
