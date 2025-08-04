@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat with Delivered Ticks</title>
+  <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
     body {
@@ -31,15 +31,22 @@
       padding: 12px 16px;
       margin: 10px 0;
       border-radius: 10px;
-      max-width: 60%;
+      max-width: 70%;
       transition: background 0.2s ease;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .message:hover {
       background: #c3dbcf;
+    }
+
+    .tick {
+      margin-left: 10px;
+      font-size: 13px;
+      color: #4caf50;
+      white-space: nowrap;
     }
 
     .delete-btn {
@@ -58,12 +65,6 @@
 
     .message:hover .delete-btn {
       display: inline-block;
-    }
-
-    .tick {
-      margin-left: 10px;
-      font-size: 14px;
-      color: #4caf50; /* WhatsApp green */
     }
 
     .input-container {
@@ -129,7 +130,7 @@
   <div class="chat-box" id="chatBox"></div>
 
   <div class="input-container">
-    <input type="text" id="messageInput" placeholder="Type a message...">
+    <input type="text" id="messageInput" placeholder="Type a message..." />
     <button class="send-btn" onclick="sendMessage()" title="Send">
       <i class="fas fa-paper-plane"></i>
     </button>
@@ -162,26 +163,28 @@
       const div = document.createElement("div");
       div.className = "message";
 
-      const span = document.createElement("span");
-      span.textContent = data.text;
+      const textSpan = document.createElement("span");
+      textSpan.textContent = data.text;
 
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = now.toLocaleString('default', { month: 'short' });
       const tick = document.createElement("span");
       tick.className = "tick";
-      tick.textContent = "✔"; // You can also use image/icon here
+      tick.textContent = `${day}/${month} ✔`;
 
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        const confirmed = confirm("Are you sure you want to delete this message?");
-        if (confirmed) {
+        if (confirm("Are you sure you want to delete this message?")) {
           remove(ref(db, `messages/${key}`));
           div.remove();
         }
       };
 
-      div.appendChild(span);
+      div.appendChild(textSpan);
       div.appendChild(tick);
       div.appendChild(deleteBtn);
       chatBox.appendChild(div);
@@ -193,18 +196,8 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // Initially show without tick (temporary placeholder)
-      const placeholder = document.createElement("div");
-      placeholder.className = "message";
-      placeholder.textContent = text;
-      chatBox.appendChild(placeholder);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // Send to Firebase
-      push(messagesRef, { text }).then(() => {
-        placeholder.remove(); // Remove the placeholder
-      });
-      
+      // Placeholder optional (we can skip it for simplicity)
+      push(messagesRef, { text });
       input.value = "";
     }
 
