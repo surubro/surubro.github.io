@@ -2,62 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Chat</title>
+  <title>Modern Chat UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #eaeff1;
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
+
     .chat-box {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      background: #f4f4f4;
+      padding: 20px;
+      background: #f8f9fa;
     }
+
     .message {
       position: relative;
-      margin: 5px 0;
-      padding: 10px;
       background: #d1e7dd;
-      border-radius: 5px;
-      max-width: 70%;
-      cursor: pointer;
+      padding: 12px 16px;
+      margin: 10px 0;
+      border-radius: 10px;
+      max-width: 60%;
+      transition: background 0.2s ease;
     }
+
+    .message:hover {
+      background: #c3dbcf;
+    }
+
     .delete-btn {
       display: none;
       position: absolute;
-      top: 5px;
+      top: 8px;
       right: 10px;
-      background-color: red;
+      background-color: crimson;
       color: white;
       border: none;
-      padding: 5px 8px;
+      border-radius: 5px;
+      padding: 4px 8px;
       font-size: 12px;
-      border-radius: 3px;
       cursor: pointer;
     }
+
     .message:hover .delete-btn {
       display: inline-block;
     }
+
     .input-container {
       display: flex;
-      padding: 10px;
+      align-items: center;
+      padding: 15px 20px;
       background: #fff;
+      border-top: 1px solid #ccc;
     }
+
     .input-container input {
       flex: 1;
-      padding: 10px;
+      padding: 12px 14px;
       font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      transition: border 0.2s ease;
     }
-    .input-container button {
-      padding: 10px;
-      margin-left: 5px;
-      font-size: 16px;
+
+    .input-container input:focus {
+      border-color: #007bff;
+    }
+
+    .send-btn {
+      background: none;
+      border: none;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    .send-btn img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .clear-all {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      margin-left: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .clear-all:hover {
+      background: #c82333;
     }
   </style>
 </head>
@@ -67,8 +109,10 @@
 
   <div class="input-container">
     <input type="text" id="messageInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="clearMessages()">Clear</button>
+    <button class="send-btn" onclick="sendMessage()" title="Send">
+      <img src="download.png" alt="Send">
+    </button>
+    <button class="clear-all" onclick="clearMessages()">Clear All</button>
   </div>
 
   <script type="module">
