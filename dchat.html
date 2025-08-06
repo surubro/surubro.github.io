@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
@@ -32,7 +32,6 @@
       margin: 10px 0;
       border-radius: 10px;
       max-width: 70%;
-      transition: background 0.2s ease;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -166,12 +165,17 @@
       const textSpan = document.createElement("span");
       textSpan.textContent = data.text;
 
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, '0');
-      const month = now.toLocaleString('default', { month: 'short' });
       const tick = document.createElement("span");
       tick.className = "tick";
-      tick.textContent = `${day}/${month} ✔`;
+
+      if (data.timestamp) {
+        const date = new Date(data.timestamp);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = date.toLocaleString('default', { month: 'short' });
+        tick.textContent = `${day}/${month} ✔`;
+      } else {
+        tick.textContent = `✔`;
+      }
 
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
@@ -196,8 +200,11 @@
       const text = input.value.trim();
       if (!text) return;
 
-      // Placeholder optional (we can skip it for simplicity)
-      push(messagesRef, { text });
+      push(messagesRef, {
+        text,
+        timestamp: Date.now()
+      });
+
       input.value = "";
     }
 
@@ -209,6 +216,5 @@
       }
     }
   </script>
-
 </body>
 </html>
