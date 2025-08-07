@@ -5,7 +5,6 @@
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <style>
     body {
       margin: 0;
@@ -138,6 +137,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // 🔐 Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -153,6 +153,7 @@
     const messagesRef = ref(db, "messages");
     const chatBox = document.getElementById("chatBox");
 
+    // 📩 Display message after received from Firebase
     onChildAdded(messagesRef, (snapshot) => {
       const data = snapshot.val();
       const key = snapshot.key;
@@ -174,8 +175,7 @@
         let hours = date.getHours();
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
+        hours = hours % 12 || 12;
 
         tick.textContent = `${day}/${month} ${hours}:${minutes} ${ampm} ✔`;
       } else {
@@ -200,26 +200,35 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
+    // ✅ Send message only if Firebase confirms
     window.sendMessage = function () {
       const input = document.getElementById("messageInput");
       const text = input.value.trim();
       if (!text) return;
 
+      input.disabled = true;
+
       push(messagesRef, {
         text,
         timestamp: Date.now()
+      }).then(() => {
+        input.value = "";
+      }).catch((error) => {
+        alert("Message not sent. Check your internet connection.");
+        console.error("Firebase push error:", error);
+      }).finally(() => {
+        input.disabled = false;
       });
+    };
 
-      input.value = "";
-    }
-
+    // 🧹 Clear all messages
     window.clearMessages = function () {
       if (confirm("Clear all messages?")) {
         remove(messagesRef).then(() => {
           chatBox.innerHTML = "";
         });
       }
-    }
+    };
   </script>
 </body>
 </html>
