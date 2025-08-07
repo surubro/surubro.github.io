@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -172,7 +170,14 @@
         const date = new Date(data.timestamp);
         const day = String(date.getDate()).padStart(2, '0');
         const month = date.toLocaleString('default', { month: 'short' });
-        tick.textContent = `${day}/${month} ✔`;
+
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        tick.textContent = `${day}/${month} ${hours}:${minutes} ${ampm} ✔`;
       } else {
         tick.textContent = `✔`;
       }
