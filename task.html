@@ -1,218 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Chat → Tasks</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <title>Task Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    :root {
-      --bg: #eaeff1;
-      --chat-bg: #f8f9fa;
-      --msg-bg: #d1e7dd;
-      --msg-hover: #c3dbcf;
-      --accent: #007bff;
-      --danger: #dc3545;
-    }
-
-    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--bg);
-      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      background: #eaeff1;
       display: flex;
       flex-direction: column;
+      height: 100vh;
     }
-
-    .header {
-      padding: 12px 16px;
-      background: white;
-      border-bottom: 1px solid #ddd;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .header h2 { margin:0; font-size:16px; }
-    .header .actions { display:flex; gap:8px; }
 
     .chat-box {
       flex: 1;
-      padding: 16px;
       overflow-y: auto;
-      background: var(--chat-bg);
-      transition: background 0.2s;
+      padding: 20px;
+      background: #f8f9fa;
     }
 
     .message {
       position: relative;
-      background: var(--msg-bg);
-      border-radius: 10px;
+      background: #d1e7dd;
       padding: 12px 16px;
-      margin: 8px 0;
-      max-width: 78%;
+      margin: 10px 0;
+      border-radius: 10px;
+      max-width: 70%;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      transition: all 0.35s ease;
-      overflow: hidden;
+      align-items: center;
     }
 
-    .message .left { display:flex; align-items:center; gap:10px; }
-    .message .text { white-space: pre-wrap; word-break: break-word; }
-    .message .meta { font-size:12px; color:#2f6b45; opacity:0.9; }
+    .message:hover {
+      background: #c3dbcf;
+    }
 
-    .message:hover { background: var(--msg-hover); }
-
-    .complete-btn {
-      background: #28a745;
-      color: #fff;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
+    .tick {
+      margin-left: 10px;
       font-size: 13px;
+      color: #4caf50;
+      white-space: nowrap;
     }
 
-    .complete-btn:hover { filter:brightness(0.95); }
-
-    .clear-all {
-      background: var(--danger);
-      color: #fff;
+    .delete-btn {
+      display: none;
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background-color: crimson;
+      color: white;
       border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 12px;
       cursor: pointer;
-      font-size: 14px;
+    }
+
+    .message:hover .delete-btn {
+      display: inline-block;
     }
 
     .input-container {
-      display:flex;
-      gap:8px;
-      padding:12px;
-      background:white;
-      border-top:1px solid #ddd;
-      align-items:center;
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      background: #fff;
+      border-top: 1px solid #ccc;
     }
-    .input-container input[type="text"] {
-      flex:1;
-      padding:10px 14px;
-      border-radius:22px;
-      border:1px solid #ccc;
-      outline:none;
-      font-size:15px;
+
+    .input-container input {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      transition: border 0.2s ease;
     }
+
+    .input-container input:focus {
+      border-color: #007bff;
+    }
+
     .send-btn {
-      background: var(--accent);
-      color:white;
-      border:none;
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      font-size:16px;
+      background: #007bff;
+      border: none;
+      color: white;
+      margin-left: 10px;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s ease;
     }
 
-    /* Completed (collapsed) style */
-    .message.completed {
-      padding: 6px 12px;
-      border-radius: 8px;
-      opacity: 0.7;
-      background: #eef6ea;
-      max-height: 46px;
-      transform: scale(0.995);
-      font-size: 13px;
-      color:#556b55;
+    .send-btn:hover {
+      background: #0056b3;
     }
-    .message.completed .text {
-      text-decoration: line-through;
-      opacity: 0.9;
-    }
-    .message.completed .complete-btn { display:none; }
 
-    /* Modal */
-    .modal {
-      display:none;
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,0.45);
-      z-index:999;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
+    .clear-all {
+      background: #dc3545;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      margin-left: 10px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .modal.show { display:flex; }
-    .modal-card {
-      background:white;
-      width:320px;
-      max-width:96%;
-      padding:18px;
-      border-radius:10px;
-      text-align:center;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-      animation: pop 0.18s ease;
-    }
-    @keyframes pop { from { transform: scale(.98); opacity:0 } to { transform: scale(1); opacity:1 } }
 
-    .modal-card input[type="password"] {
-      width:100%;
-      padding:10px 12px;
-      margin-top:10px;
-      border-radius:6px;
-      border:1px solid #ccc;
-      font-size:14px;
-    }
-    .modal-actions { margin-top:12px; display:flex; justify-content:center; gap:10px; }
-    .btn { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
-    .btn.confirm { background:var(--accent); color:white; }
-    .btn.cancel { background:#777; color:white; }
-
-    /* small device fixes */
-    @media (max-width:420px) {
-      .message { max-width: 92%; }
-      .header h2 { font-size:14px; }
+    .clear-all:hover {
+      background: #c82333;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h2>Chat / Tasks</h2>
-    <div class="actions">
-      <button class="clear-all" id="clearBtn">Clear All</button>
-    </div>
-  </div>
-
   <div class="chat-box" id="chatBox"></div>
 
   <div class="input-container">
-    <input type="text" id="messageInput" placeholder="Type a message..." />
-    <button class="send-btn" id="sendBtn" title="Send">
+    <input type="text" id="messageInput" placeholder="Type a task..." />
+    <button class="send-btn" onclick="sendMessage()" title="Send">
       <i class="fas fa-paper-plane"></i>
     </button>
-  </div>
-
-  <!-- Password Modal -->
-  <div class="modal" id="passwordModal" aria-hidden="true">
-    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 id="modalTitle">Enter password</h3>
-      <input id="passwordInput" type="password" placeholder="Password" autocomplete="off" />
-      <div class="modal-actions">
-        <button class="btn confirm" id="pwConfirmBtn">Confirm</button>
-        <button class="btn cancel" id="pwCancelBtn">Cancel</button>
-      </div>
-    </div>
+    <button class="clear-all" onclick="clearMessages()">Clear All</button>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // === FIREBASE CONFIG - keep as-is or replace with yours ===
+    // Firebase Config (same project as dchat.html)
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -226,189 +151,84 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    const messagesRef = ref(db, 'messages'); // incoming messages
-    const taskRef = ref(db, 'task');         // completed tasks (new DB space requested)
+    // TASK database reference (different from dchat.html)
+    const taskRef = ref(db, "task");
+    const chatBox = document.getElementById("chatBox");
 
-    const chatBox = document.getElementById('chatBox');
-    const input = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const clearBtn = document.getElementById('clearBtn');
+    // Load tasks
+    onChildAdded(taskRef, (snapshot) => {
+      const data = snapshot.val();
+      const key = snapshot.key;
 
-    // Password modal elements
-    const passwordModal = document.getElementById('passwordModal');
-    const passwordInput = document.getElementById('passwordInput');
-    const pwConfirmBtn = document.getElementById('pwConfirmBtn');
-    const pwCancelBtn = document.getElementById('pwCancelBtn');
+      const div = document.createElement("div");
+      div.className = "message";
 
-    // NOTE: change this password to whatever you want.
-    // If you want stronger storage, move password-check to server or use Firebase Auth+Security Rules.
-    const correctPassword = "1234";
+      const textSpan = document.createElement("span");
+      textSpan.textContent = data.text;
 
-    // targetAction: { type: 'clear' } or { type:'complete', key, element, data }
-    let targetAction = null;
+      const tick = document.createElement("span");
+      tick.className = "tick";
 
-    // --- listen for new messages and render ---
-    onChildAdded(messagesRef, (snap) => {
-      const data = snap.val();
-      const key = snap.key;
-      renderMessage(key, data);
-    });
-
-    function renderMessage(key, data) {
-      const div = document.createElement('div');
-      div.className = 'message';
-      div.dataset.key = key;
-
-      const left = document.createElement('div');
-      left.className = 'left';
-
-      const textSpan = document.createElement('div');
-      textSpan.className = 'text';
-      textSpan.textContent = data.text ?? '';
-
-      const meta = document.createElement('div');
-      meta.className = 'meta';
       if (data.timestamp) {
-        const d = new Date(data.timestamp);
-        const day = String(d.getDate()).padStart(2,'0');
-        const month = d.toLocaleString('default',{month:'short'});
-        let hours = d.getHours();
-        const minutes = String(d.getMinutes()).padStart(2,'0');
+        const date = new Date(data.timestamp);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = date.toLocaleString('default', { month: 'short' });
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12 || 12;
-        meta.textContent = `${day}/${month} ${hours}:${minutes} ${ampm}`;
+        tick.textContent = `${day}/${month} ${hours}:${minutes} ${ampm} ✔✔`;
       } else {
-        meta.textContent = '';
+        tick.textContent = `✔✔`;
       }
 
-      left.appendChild(textSpan);
-      left.appendChild(meta);
-
-      const completeBtn = document.createElement('button');
-      completeBtn.className = 'complete-btn';
-      completeBtn.innerHTML = '<i class="fas fa-check"></i> Complete';
-      completeBtn.onclick = (e) => {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.className = "delete-btn";
+      deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        // set action target and show modal
-        targetAction = { type: 'complete', key, element: div, data };
-        openPasswordModal();
+        if (confirm("Delete this task?")) {
+          remove(ref(db, `task/${key}`));
+          div.remove();
+        }
       };
 
-      div.appendChild(left);
-      div.appendChild(completeBtn);
+      div.appendChild(textSpan);
+      div.appendChild(tick);
+      div.appendChild(deleteBtn);
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
-    }
+    });
 
-    // --- send message ---
-    sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-
-    function sendMessage() {
+    // Send Task
+    window.sendMessage = function () {
+      const input = document.getElementById("messageInput");
       const text = input.value.trim();
       if (!text) return;
+
       input.disabled = true;
-      push(messagesRef, { text, timestamp: Date.now() })
-        .then(() => input.value = '')
-        .catch((err) => { console.error(err); alert('Message failed — check connection.'); })
-        .finally(() => input.disabled = false);
-    }
 
-    // --- Clear All messages (password protected) ---
-    clearBtn.addEventListener('click', () => {
-      targetAction = { type: 'clear' };
-      openPasswordModal();
-    });
+      push(taskRef, {
+        text,
+        timestamp: Date.now()
+      }).then(() => {
+        input.value = "";
+      }).catch((error) => {
+        alert("Task failed to save. Check connection.");
+        console.error("Firebase error:", error);
+      }).finally(() => {
+        input.disabled = false;
+      });
+    };
 
-    // --- Modal helpers ---
-    function openPasswordModal() {
-      passwordInput.value = '';
-      passwordModal.classList.add('show');
-      passwordModal.setAttribute('aria-hidden','false');
-      setTimeout(()=>passwordInput.focus(),80);
-    }
-    function closePasswordModal() {
-      targetAction = null;
-      passwordModal.classList.remove('show');
-      passwordModal.setAttribute('aria-hidden','true');
-      passwordInput.value = '';
-    }
-
-    pwCancelBtn.addEventListener('click', closePasswordModal);
-
-    // Confirm password and perform target action
-    pwConfirmBtn.addEventListener('click', () => {
-      const entered = passwordInput.value ?? '';
-      if (entered === correctPassword) {
-        if (!targetAction) { closePasswordModal(); return; }
-
-        if (targetAction.type === 'clear') {
-          if (confirm('Are you sure you want to clear ALL messages?')) {
-            // remove messages node
-            remove(messagesRef).then(() => {
-              chatBox.innerHTML = '';
-              alert('All messages cleared.');
-            }).catch(err => {
-              console.error(err);
-              alert('Failed to clear messages.');
-            });
-          }
-          closePasswordModal();
-          return;
-        }
-
-        if (targetAction.type === 'complete') {
-          const { key, element, data } = targetAction;
-          // push into /task with completedAt timestamp and original createdAt
-          const taskPayload = {
-            text: data.text ?? '',
-            createdAt: data.timestamp ?? Date.now(),
-            completedAt: Date.now()
-          };
-
-          // push to /task then remove from /messages
-          push(taskRef, taskPayload)
-            .then(() => {
-              return remove(ref(db, `messages/${key}`));
-            })
-            .then(() => {
-              // visually mark collapsed/completed (in case element still in DOM)
-              if (element && element.classList) {
-                element.classList.add('completed');
-                // update meta to show completed time
-                const metaEl = element.querySelector('.meta');
-                if (metaEl) {
-                  const d = new Date(taskPayload.completedAt);
-                  let hours = d.getHours();
-                  const minutes = String(d.getMinutes()).padStart(2,'0');
-                  const ampm = hours >= 12 ? 'PM' : 'AM';
-                  hours = hours % 12 || 12;
-                  metaEl.textContent = `Completed ${hours}:${minutes} ${ampm}`;
-                }
-                // hide the complete button (already hidden by CSS), and leave collapsed item for a short time
-                setTimeout(() => {
-                  // remove element from DOM after a short visible collapse if you prefer it to disappear entirely:
-                  // element.remove();
-                }, 900);
-              }
-            })
-            .catch((err) => {
-              console.error(err);
-              alert('Failed to complete task. Check console.');
-            })
-            .finally(() => {
-              closePasswordModal();
-            });
-
-          return;
-        }
-      } else {
-        alert('Incorrect password. Access denied.');
+    // Clear all tasks
+    window.clearMessages = function () {
+      if (confirm("Clear all tasks?")) {
+        remove(taskRef).then(() => {
+          chatBox.innerHTML = "";
+        });
       }
-    });
-
-    // Utility: copy of firebase remove ref helper for dynamic path
-    // (We used remove(ref(db, `messages/${key}`)) above — keep that as-is.)
+    };
   </script>
 </body>
 </html>
