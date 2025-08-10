@@ -9,19 +9,20 @@
     body {
         margin: 0;
         font-family: Arial, sans-serif;
-        background: #f0f0f0;
+        background: #ece5dd;
         height: 100vh;
         display: flex;
         flex-direction: column;
     }
     .hidden { display: none !important; }
+    /* Access Screen */
     #accessScreen {
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: #fff;
+        background: white;
     }
     #accessScreen input {
         padding: 10px;
@@ -35,26 +36,34 @@
         font-size: 15px;
         background: #007bff;
         border: none;
-        color: #fff;
+        color: white;
         border-radius: 5px;
         cursor: pointer;
+    }
+    /* Chat UI */
+    .chat-header {
+        background: #075e54;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
     }
     .chat-box {
         flex: 1;
         padding: 20px;
         overflow-y: auto;
-        background: #ece5dd;
         display: flex;
         flex-direction: column;
     }
     .message {
-        display: inline-block;
-        max-width: 70%;
         background: #dcf8c6;
         padding: 8px 10px;
         border-radius: 7.5px;
         margin-bottom: 10px;
         position: relative;
+        max-width: 70%;
         align-self: flex-end;
         word-wrap: break-word;
     }
@@ -79,7 +88,7 @@
         display: none;
         position: absolute;
         top: 5px;
-        right: -140px;
+        right: -150px;
         gap: 5px;
     }
     .msg-buttons button {
@@ -92,6 +101,7 @@
     .complete-btn { background: #28a745; color: white; }
     .delete-btn { background: #dc3545; color: white; }
     .message:hover .msg-buttons { display: flex; }
+    /* Input */
     .input-container {
         display: flex;
         align-items: center;
@@ -173,6 +183,10 @@
 
 <!-- Chat UI -->
 <div id="chatUI" class="hidden">
+    <div class="chat-header">
+        <span>Tasks</span>
+        <label><input type="checkbox" id="showCompleted"> Show Completed</label>
+    </div>
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
         <input type="text" id="messageInput" placeholder="Type a task...">
@@ -215,7 +229,6 @@ const accessPassword = "Superman";
 const actionPassword = "Confirm";
 let actionTarget = null;
 
-// Load saved access password
 window.onload = () => {
     const saved = localStorage.getItem("taskAppPassword");
     if (saved === accessPassword) showChat();
@@ -240,13 +253,22 @@ function renderTask(key, data) {
     const div = document.createElement("div");
     div.className = "message";
     if (data.completed) div.classList.add("completed");
-    div.innerHTML = `${data.text}
+    div.dataset.completed = data.completed;
+
+    div.innerHTML = `
+        ${data.text}
         <span class="timestamp">${formatTime(data.timestamp)}<span class="ticks">✓✓</span></span>
         <div class="msg-buttons">
             <button class="complete-btn" onclick="showPasswordModal('complete','${key}',this)">Complete</button>
             <button class="delete-btn" onclick="showPasswordModal('delete','${key}',this)">Delete</button>
-        </div>`;
-    chatBox.appendChild(div);
+        </div>
+    `;
+
+    if (!data.completed) {
+        chatBox.appendChild(div);
+    } else {
+        if (document.getElementById("showCompleted").checked) chatBox.appendChild(div);
+    }
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
@@ -289,10 +311,20 @@ window.verifyPassword = () => {
         actionTarget.element.remove();
     } else if (actionTarget?.type === "complete") {
         update(ref(db, `task/${actionTarget.key}`), { completed: true });
-        actionTarget.element.classList.add("completed");
+        actionTarget.element.remove(); // collapse from active list
     }
     closePasswordModal();
 };
+
+document.getElementById("showCompleted").addEventListener("change", () => {
+    chatBox.innerHTML = "";
+    onChildAdded(taskRef, (snap) => {
+        const data = snap.val();
+        if (!data.completed || document.getElementById("showCompleted").checked) {
+            renderTask(snap.key, data);
+        }
+    });
+});
 </script>
 </body>
 </html>
