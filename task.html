@@ -15,6 +15,7 @@
         flex-direction: column;
     }
     .hidden { display: none !important; }
+
     /* Access Screen */
     #accessScreen {
         flex: 1;
@@ -40,7 +41,8 @@
         border-radius: 5px;
         cursor: pointer;
     }
-    /* Chat Header */
+
+    /* Header */
     .chat-header {
         background: #075e54;
         color: white;
@@ -50,7 +52,8 @@
         align-items: center;
         font-weight: bold;
     }
-    /* Message Area */
+
+    /* Messages area */
     .chat-box {
         flex: 1;
         overflow-y: auto;
@@ -63,10 +66,9 @@
         padding: 8px 10px;
         border-radius: 7.5px;
         margin-bottom: 10px;
-        position: relative;
         max-width: 70%;
         align-self: flex-end;
-        word-wrap: break-word;
+        position: relative;
         transition: all 0.3s ease;
     }
     .message.completed {
@@ -94,6 +96,8 @@
         color: green;
         margin-left: 5px;
     }
+
+    /* Complete button */
     .msg-buttons {
         display: flex;
         gap: 5px;
@@ -105,14 +109,15 @@
         border: none;
         border-radius: 3px;
         cursor: pointer;
+        background: #28a745;
+        color: white;
     }
-    .complete-btn { background: #28a745; color: white; }
-    .delete-btn { background: #dc3545; color: white; }
     @media (min-width: 768px) {
-        .msg-buttons { display: none; position: absolute; top: 5px; right: -150px; }
+        .msg-buttons { display: none; position: absolute; top: 5px; right: -100px; }
         .message:hover .msg-buttons { display: flex; }
     }
-    /* Input at bottom */
+
+    /* Input */
     .input-container {
         display: flex;
         align-items: center;
@@ -151,6 +156,7 @@
         font-size: 13px;
         cursor: pointer;
     }
+
     /* Modal */
     .modal {
         display: none;
@@ -208,7 +214,7 @@
     </div>
 </div>
 
-<!-- Action Password Modal -->
+<!-- Password Modal -->
 <div class="modal" id="passwordModal">
     <div class="modal-content">
         <h3>Enter Action Password</h3>
@@ -238,16 +244,15 @@ const db = getDatabase(app);
 const taskRef = ref(db, "task");
 
 const chatBox = document.getElementById("chatBox");
-const accessPassword = "Chickentikka007";
+const accessPassword = "Superman";
 const actionPassword = "Confirm";
 let actionTarget = null;
 
-// Access password check
+// Access password
 window.onload = () => {
     const saved = localStorage.getItem("taskAppPassword");
     if (saved === accessPassword) showChat();
 };
-
 window.checkAccess = () => {
     const entered = document.getElementById("accessPassword").value;
     const remember = document.getElementById("rememberMe").checked;
@@ -256,50 +261,44 @@ window.checkAccess = () => {
         showChat();
     } else alert("Incorrect access password.");
 };
-
 function showChat() {
     document.getElementById("accessScreen").classList.add("hidden");
     document.getElementById("chatUI").classList.remove("hidden");
     loadTasks();
 }
 
+// Load tasks
 function loadTasks() {
     onValue(taskRef, (snapshot) => {
         chatBox.innerHTML = "";
         const showCompleted = document.getElementById("showCompleted").checked;
         snapshot.forEach((child) => {
             const data = child.val();
-            if (!data.completed || showCompleted) {
-                renderTask(child.key, data);
-            }
+            if (!data.completed || showCompleted) renderTask(child.key, data);
         });
     });
 }
-
 function renderTask(key, data) {
     const div = document.createElement("div");
-    div.className = "message";
-    if (data.completed) div.classList.add("completed");
-
+    div.className = "message" + (data.completed ? " completed" : "");
     div.innerHTML = `
         ${data.text}
         <span class="timestamp">${formatTime(data.timestamp)}<span class="ticks">✓✓</span></span>
         <div class="msg-buttons">
-            <button class="complete-btn" onclick="showPasswordModal('complete','${key}',this)">Complete</button>
-            <button class="delete-btn" onclick="showPasswordModal('delete','${key}',this)">Delete</button>
+            <button onclick="showPasswordModal('complete','${key}',this)">Complete</button>
         </div>
     `;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
+// Send task
 window.sendMessage = () => {
     const input = document.getElementById("messageInput");
     if (!input.value.trim()) return;
     push(taskRef, { text: input.value, timestamp: Date.now(), completed: false });
     input.value = "";
 };
-
 function formatTime(ts) {
     if (!ts) return "";
     const d = new Date(ts);
@@ -312,36 +311,30 @@ function formatTime(ts) {
     return `${day}/${month} ${hours}:${minutes} ${ampm}`;
 }
 
+// Password modal
 window.showPasswordModal = (type, key, el) => {
-    actionTarget = { type, key, element: el?.closest(".message") };
+    actionTarget = { type, key, element: el.closest(".message") };
     document.getElementById("passwordModal").style.display = "flex";
 };
-
 window.closePasswordModal = () => {
     document.getElementById("passwordModal").style.display = "none";
     actionTarget = null;
 };
-
 window.verifyPassword = () => {
     const entered = document.getElementById("clearPassword").value;
     if (entered !== actionPassword) return alert("Incorrect action password.");
-
     if (actionTarget?.type === "clear") {
         remove(taskRef);
-    } else if (actionTarget?.type === "delete") {
-        remove(ref(db, `task/${actionTarget.key}`));
     } else if (actionTarget?.type === "complete") {
         update(ref(db, `task/${actionTarget.key}`), { completed: true });
         collapseTask(actionTarget.element);
     }
     closePasswordModal();
 };
-
 function collapseTask(el) {
     el.classList.add("collapse");
     setTimeout(() => el.remove(), 300);
 }
-
 document.getElementById("showCompleted").addEventListener("change", loadTasks);
 </script>
 </body>
