@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chat → Tasks</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --bg: #eaeff1;
+      --chat-bg: #f8f9fa;
+      --msg-bg: #d1e7dd;
+      --msg-hover: #c3dbcf;
+      --accent: #007bff;
+      --danger: #dc3545;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 12px 16px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .header h2 { margin:0; font-size:16px; }
+    .header .actions { display:flex; gap:8px; }
+
+    .chat-box {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      background: var(--chat-bg);
+      transition: background 0.2s;
+    }
+
+    .message {
+      position: relative;
+      background: var(--msg-bg);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin: 8px 0;
+      max-width: 78%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.35s ease;
+      overflow: hidden;
+    }
+
+    .message .left { display:flex; align-items:center; gap:10px; }
+    .message .text { white-space: pre-wrap; word-break: break-word; }
+    .message .meta { font-size:12px; color:#2f6b45; opacity:0.9; }
+
+    .message:hover { background: var(--msg-hover); }
+
+    .complete-btn {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .complete-btn:hover { filter:brightness(0.95); }
+
+    .clear-all {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .input-container {
+      display:flex;
+      gap:8px;
+      padding:12px;
+      background:white;
+      border-top:1px solid #ddd;
+      align-items:center;
+    }
+    .input-container input[type="text"] {
+      flex:1;
+      padding:10px 14px;
+      border-radius:22px;
+      border:1px solid #ccc;
+      outline:none;
+      font-size:15px;
+    }
+    .send-btn {
+      background: var(--accent);
+      color:white;
+      border:none;
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    /* Completed (collapsed) style */
+    .message.completed {
+      padding: 6px 12px;
+      border-radius: 8px;
+      opacity: 0.7;
+      background: #eef6ea;
+      max-height: 46px;
+      transform: scale(0.995);
+      font-size: 13px;
+      color:#556b55;
+    }
+    .message.completed .text {
+      text-decoration: line-through;
+      opacity: 0.9;
+    }
+    .message.completed .complete-btn { display:none; }
+
+    /* Modal */
+    .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,0.45);
+      z-index:999;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+    }
+    .modal.show { display:flex; }
+    .modal-card {
+      background:white;
+      width:320px;
+      max-width:96%;
+      padding:18px;
+      border-radius:10px;
+      text-align:center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      animation: pop 0.18s ease;
+    }
+    @keyframes pop { from { transform: scale(.98); opacity:0 } to { transform: scale(1); opacity:1 } }
+
+    .modal-card input[type="password"] {
+      width:100%;
+      padding:10px 12px;
+      margin-top:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      font-size:14px;
+    }
+    .modal-actions { margin-top:12px; display:flex; justify-content:center; gap:10px; }
+    .btn { padding:8px 12px; border-radius:6px; border:none; cursor:pointer; }
+    .btn.confirm { background:var(--accent); color:white; }
+    .btn.cancel { background:#777; color:white; }
+
+    /* small device fixes */
+    @media (max-width:420px) {
+      .message { max-width: 92%; }
+      .header h2 { font-size:14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>Chat / Tasks</h2>
+    <div class="actions">
+      <button class="clear-all" id="clearBtn">Clear All</button>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="input-container">
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button class="send-btn" id="sendBtn" title="Send">
+      <i class="fas fa-paper-plane"></i>
+    </button>
+  </div>
+
+  <!-- Password Modal -->
+  <div class="modal" id="passwordModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle">Enter password</h3>
+      <input id="passwordInput" type="password" placeholder="Password" autocomplete="off" />
+      <div class="modal-actions">
+        <button class="btn confirm" id="pwConfirmBtn">Confirm</button>
+        <button class="btn cancel" id="pwCancelBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // === FIREBASE CONFIG - keep as-is or replace with yours ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const messagesRef = ref(db, 'messages'); // incoming messages
+    const taskRef = ref(db, 'task');         // completed tasks (new DB space requested)
+
+    const chatBox = document.getElementById('chatBox');
+    const input = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Password modal elements
+    const passwordModal = document.getElementById('passwordModal');
+    const passwordInput = document.getElementById('passwordInput');
+    const pwConfirmBtn = document.getElementById('pwConfirmBtn');
+    const pwCancelBtn = document.getElementById('pwCancelBtn');
+
+    // NOTE: change this password to whatever you want.
+    // If you want stronger storage, move password-check to server or use Firebase Auth+Security Rules.
+    const correctPassword = "1234";
+
+    // targetAction: { type: 'clear' } or { type:'complete', key, element, data }
+    let targetAction = null;
+
+    // --- listen for new messages and render ---
+    onChildAdded(messagesRef, (snap) => {
+      const data = snap.val();
+      const key = snap.key;
+      renderMessage(key, data);
+    });
+
+    function renderMessage(key, data) {
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.dataset.key = key;
+
+      const left = document.createElement('div');
+      left.className = 'left';
+
+      const textSpan = document.createElement('div');
+      textSpan.className = 'text';
+      textSpan.textContent = data.text ?? '';
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      if (data.timestamp) {
+        const d = new Date(data.timestamp);
+        const day = String(d.getDate()).padStart(2,'0');
+        const month = d.toLocaleString('default',{month:'short'});
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2,'0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        meta.textContent = `${day}/${month} ${hours}:${minutes} ${ampm}`;
+      } else {
+        meta.textContent = '';
+      }
+
+      left.appendChild(textSpan);
+      left.appendChild(meta);
+
+      const completeBtn = document.createElement('button');
+      completeBtn.className = 'complete-btn';
+      completeBtn.innerHTML = '<i class="fas fa-check"></i> Complete';
+      completeBtn.onclick = (e) => {
+        e.stopPropagation();
+        // set action target and show modal
+        targetAction = { type: 'complete', key, element: div, data };
+        openPasswordModal();
+      };
+
+      div.appendChild(left);
+      div.appendChild(completeBtn);
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // --- send message ---
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      input.disabled = true;
+      push(messagesRef, { text, timestamp: Date.now() })
+        .then(() => input.value = '')
+        .catch((err) => { console.error(err); alert('Message failed — check connection.'); })
+        .finally(() => input.disabled = false);
+    }
+
+    // --- Clear All messages (password protected) ---
+    clearBtn.addEventListener('click', () => {
+      targetAction = { type: 'clear' };
+      openPasswordModal();
+    });
+
+    // --- Modal helpers ---
+    function openPasswordModal() {
+      passwordInput.value = '';
+      passwordModal.classList.add('show');
+      passwordModal.setAttribute('aria-hidden','false');
+      setTimeout(()=>passwordInput.focus(),80);
+    }
+    function closePasswordModal() {
+      targetAction = null;
+      passwordModal.classList.remove('show');
+      passwordModal.setAttribute('aria-hidden','true');
+      passwordInput.value = '';
+    }
+
+    pwCancelBtn.addEventListener('click', closePasswordModal);
+
+    // Confirm password and perform target action
+    pwConfirmBtn.addEventListener('click', () => {
+      const entered = passwordInput.value ?? '';
+      if (entered === correctPassword) {
+        if (!targetAction) { closePasswordModal(); return; }
+
+        if (targetAction.type === 'clear') {
+          if (confirm('Are you sure you want to clear ALL messages?')) {
+            // remove messages node
+            remove(messagesRef).then(() => {
+              chatBox.innerHTML = '';
+              alert('All messages cleared.');
+            }).catch(err => {
+              console.error(err);
+              alert('Failed to clear messages.');
+            });
+          }
+          closePasswordModal();
+          return;
+        }
+
+        if (targetAction.type === 'complete') {
+          const { key, element, data } = targetAction;
+          // push into /task with completedAt timestamp and original createdAt
+          const taskPayload = {
+            text: data.text ?? '',
+            createdAt: data.timestamp ?? Date.now(),
+            completedAt: Date.now()
+          };
+
+          // push to /task then remove from /messages
+          push(taskRef, taskPayload)
+            .then(() => {
+              return remove(ref(db, `messages/${key}`));
+            })
+            .then(() => {
+              // visually mark collapsed/completed (in case element still in DOM)
+              if (element && element.classList) {
+                element.classList.add('completed');
+                // update meta to show completed time
+                const metaEl = element.querySelector('.meta');
+                if (metaEl) {
+                  const d = new Date(taskPayload.completedAt);
+                  let hours = d.getHours();
+                  const minutes = String(d.getMinutes()).padStart(2,'0');
+                  const ampm = hours >= 12 ? 'PM' : 'AM';
+                  hours = hours % 12 || 12;
+                  metaEl.textContent = `Completed ${hours}:${minutes} ${ampm}`;
+                }
+                // hide the complete button (already hidden by CSS), and leave collapsed item for a short time
+                setTimeout(() => {
+                  // remove element from DOM after a short visible collapse if you prefer it to disappear entirely:
+                  // element.remove();
+                }, 900);
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              alert('Failed to complete task. Check console.');
+            })
+            .finally(() => {
+              closePasswordModal();
+            });
+
+          return;
+        }
+      } else {
+        alert('Incorrect password. Access denied.');
+      }
+    });
+
+    // Utility: copy of firebase remove ref helper for dynamic path
+    // (We used remove(ref(db, `messages/${key}`)) above — keep that as-is.)
+  </script>
+</body>
+</html>
