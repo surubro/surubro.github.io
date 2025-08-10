@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Task Manager2</title>
+<title>Task Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
@@ -17,18 +17,37 @@
     /* Header */
     .chat-header { background: #075e54; color: white; padding: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
 
-    /* Messages area */
+    /* Messages */
     .chat-box { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }
-    .message { background: #dcf8c6; padding: 8px 10px; border-radius: 7.5px; margin-bottom: 10px; max-width: 70%; align-self: flex-end; position: relative; transition: all 0.3s ease; }
+    .message { background: #dcf8c6; padding: 8px 10px; border-radius: 7.5px; margin-bottom: 10px; max-width: 70%; align-self: flex-end; position: relative; transition: all 0.3s ease; display: flex; align-items: flex-start; }
     .message.completed { background: #d3d3d3; text-decoration: line-through; color: #555; }
     .collapse { opacity: 0; transform: translateX(100%); max-height: 0; margin: 0; padding: 0; overflow: hidden; }
-    .timestamp { font-size: 11px; color: #666; display: block; text-align: right; margin-top: 4px; }
+    .timestamp { font-size: 11px; color: #666; display: block; text-align: right; margin-top: 4px; width: 100%; }
     .ticks { font-size: 12px; color: green; margin-left: 5px; }
 
     /* Buttons */
-    .msg-buttons { margin-top: 5px; display: flex; gap: 5px; }
-    .btn-complete { font-size: 11px; padding: 3px 6px; border: none; border-radius: 3px; cursor: pointer; background: #28a745; color: white; }
-    .btn-delete { font-size: 11px; padding: 3px 6px; border: none; border-radius: 3px; cursor: pointer; background: #dc3545; color: white; }
+    .msg-buttons { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .btn-complete, .btn-delete {
+        font-size: 14px;
+        padding: 6px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        min-width: 40px;
+        min-height: 32px;
+    }
+    .btn-complete { background: #28a745; color: white; }
+    .btn-delete { background: #dc3545; color: white; }
+
+    /* Desktop hover effect */
+    @media (min-width: 769px) {
+        .btn-complete, .btn-delete { opacity: 0; transition: opacity 0.2s ease; }
+        .message:hover .btn-complete, .message:hover .btn-delete { opacity: 1; }
+    }
+    /* Always visible on mobile */
+    @media (max-width: 768px) {
+        .btn-complete, .btn-delete { opacity: 1; }
+    }
 
     /* Input */
     .input-container { display: flex; align-items: center; padding: 8px; background: #f1f1f1; border-top: 1px solid #ccc; position: sticky; bottom: 0; }
@@ -99,7 +118,7 @@ const db = getDatabase(app);
 const taskRef = ref(db, "task");
 
 const chatBox = document.getElementById("chatBox");
-const accessPassword = "Superman";
+const accessPassword = "Chickentikka007";
 const completePassword = "complete";
 const deletePassword = "confirm";
 let actionTarget = null;
@@ -138,12 +157,12 @@ function renderTask(key, data) {
     const div = document.createElement("div");
     div.className = "message" + (data.completed ? " completed" : "");
     div.innerHTML = `
-        ${data.text}
-        <span class="timestamp">${formatTime(data.timestamp)}<span class="ticks">✓✓</span></span>
-        <div class="msg-buttons">
-            <button class="btn-complete" onclick="showPasswordModal('complete','${key}',this)"><i class="fas fa-check"></i></button>
-            <button class="btn-delete" onclick="showPasswordModal('delete','${key}',this)"><i class="fas fa-trash"></i></button>
+        <button class="btn-complete" onclick="showPasswordModal('complete','${key}',this)"><i class="fas fa-check"></i></button>
+        <div style="flex:1; padding:0 10px;">
+            ${data.text}
+            <span class="timestamp">${formatTime(data.timestamp)}<span class="ticks">✓✓</span></span>
         </div>
+        <button class="btn-delete" onclick="showPasswordModal('delete','${key}',this)"><i class="fas fa-trash"></i></button>
     `;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
