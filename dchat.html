@@ -140,6 +140,7 @@
       border-radius: 10px;
       width: 300px;
       text-align: center;
+      animation: fadeIn 0.3s ease;
     }
 
     .modal-content input {
@@ -168,6 +169,11 @@
       color: white;
       margin-left: 10px;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -179,7 +185,7 @@
     <button class="send-btn" onclick="sendMessage()" title="Send">
       <i class="fas fa-paper-plane"></i>
     </button>
-    <button class="clear-all" onclick="showPasswordModal()">Clear All</button>
+    <button class="clear-all" onclick="showPasswordModal('clear')">Clear All</button>
   </div>
 
   <!-- Password Modal -->
@@ -213,6 +219,9 @@
     const messagesRef = ref(db, "messages");
     const chatBox = document.getElementById("chatBox");
 
+    const correctPassword = "1234"; // change to your password
+    let deleteTarget = null; // store delete target action
+
     // Display messages from Firebase
     onChildAdded(messagesRef, (snapshot) => {
       const data = snapshot.val();
@@ -245,10 +254,8 @@
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        if (confirm("Delete this message?")) {
-          remove(ref(db, `messages/${key}`));
-          div.remove();
-        }
+        deleteTarget = { type: 'single', key: key, element: div };
+        showPasswordModal();
       };
 
       div.appendChild(textSpan);
@@ -271,26 +278,34 @@
         .finally(() => input.disabled = false);
     };
 
-    // Modal functions
-    window.showPasswordModal = function () {
+    // Show modal
+    window.showPasswordModal = function (action = 'single') {
+      deleteTarget = (action === 'clear') ? { type: 'clear' } : deleteTarget;
       document.getElementById("passwordModal").style.display = "flex";
       document.getElementById("clearPassword").value = "";
     };
 
+    // Close modal
     window.closePasswordModal = function () {
       document.getElementById("passwordModal").style.display = "none";
     };
 
+    // Verify password
     window.verifyPassword = function () {
       const enteredPassword = document.getElementById("clearPassword").value;
-      const correctPassword = "Confirm"; // <-- change to your password
-
       if (enteredPassword === correctPassword) {
-        if (confirm("Are you sure you want to clear all messages?")) {
-          remove(messagesRef).then(() => {
-            chatBox.innerHTML = "";
-            alert("All messages cleared.");
-          });
+        if (deleteTarget?.type === 'clear') {
+          if (confirm("Are you sure you want to clear all messages?")) {
+            remove(messagesRef).then(() => {
+              chatBox.innerHTML = "";
+              alert("All messages cleared.");
+            });
+          }
+        } else if (deleteTarget?.type === 'single') {
+          if (confirm("Delete this message?")) {
+            remove(ref(db, `messages/${deleteTarget.key}`));
+            deleteTarget.element.remove();
+          }
         }
         closePasswordModal();
       } else {
