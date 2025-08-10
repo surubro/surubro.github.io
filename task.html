@@ -97,17 +97,28 @@
         margin-left: 5px;
     }
 
-    /* Complete button - always visible */
+    /* Buttons */
     .msg-buttons {
         margin-top: 5px;
+        display: flex;
+        gap: 5px;
     }
-    .msg-buttons button {
+    .btn-complete {
         font-size: 11px;
         padding: 3px 6px;
         border: none;
         border-radius: 3px;
         cursor: pointer;
         background: #28a745;
+        color: white;
+    }
+    .btn-delete {
+        font-size: 11px;
+        padding: 3px 6px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        background: #dc3545;
         color: white;
     }
 
@@ -238,7 +249,7 @@ const db = getDatabase(app);
 const taskRef = ref(db, "task");
 
 const chatBox = document.getElementById("chatBox");
-const accessPassword = "Superman";
+const accessPassword = "Chickentikka007";
 const actionPassword = "Confirm";
 let actionTarget = null;
 
@@ -279,7 +290,8 @@ function renderTask(key, data) {
         ${data.text}
         <span class="timestamp">${formatTime(data.timestamp)}<span class="ticks">✓✓</span></span>
         <div class="msg-buttons">
-            <button onclick="showPasswordModal('complete','${key}',this)">Complete</button>
+            <button class="btn-complete" onclick="showPasswordModal('complete','${key}',this)"><i class="fas fa-check"></i></button>
+            <button class="btn-delete" onclick="showPasswordModal('delete','${key}',this)"><i class="fas fa-trash"></i></button>
         </div>
     `;
     chatBox.appendChild(div);
@@ -321,6 +333,9 @@ window.verifyPassword = () => {
         remove(taskRef);
     } else if (actionTarget?.type === "complete") {
         update(ref(db, `task/${actionTarget.key}`), { completed: true });
+        collapseTask(actionTarget.element);
+    } else if (actionTarget?.type === "delete") {
+        remove(ref(db, `task/${actionTarget.key}`));
         collapseTask(actionTarget.element);
     }
     closePasswordModal();
