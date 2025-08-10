@@ -1,313 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Task Manager with pass</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
+<meta charset="UTF-8" />
+<title>Task Manager Chat Style</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #eaeff1;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: #e5ddd5;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
     }
-
     .hidden { display: none !important; }
-
     .chat-box {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      background: #f8f9fa;
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #ece5dd;
     }
-
     .message {
-      position: relative;
-      background: #d1e7dd;
-      padding: 12px 16px;
-      margin: 10px 0;
-      border-radius: 10px;
-      max-width: 70%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.3s ease;
+        position: relative;
+        padding: 10px 14px;
+        margin: 8px;
+        border-radius: 7.5px;
+        max-width: 75%;
+        word-wrap: break-word;
+        font-size: 15px;
     }
-
     .message.completed {
-      opacity: 0.6;
-      background: #cde0cd;
-      text-decoration: line-through;
+        background: #bdbdbd !important;
+        text-decoration: line-through;
+        color: #444;
     }
-
-    .tick {
-      margin-left: 10px;
-      font-size: 13px;
-      color: #4caf50;
-      white-space: nowrap;
+    .sent {
+        background: #dcf8c6;
+        align-self: flex-end;
+        border-bottom-right-radius: 0;
     }
-
+    .timestamp {
+        display: block;
+        font-size: 11px;
+        color: gray;
+        margin-top: 4px;
+        text-align: right;
+    }
     .delete-btn, .complete-btn {
-      display: none;
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      background-color: crimson;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 4px 8px;
-      font-size: 12px;
-      cursor: pointer;
+        display: none;
+        position: absolute;
+        top: 5px;
+        font-size: 11px;
+        padding: 2px 5px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        color: white;
     }
-
-    .complete-btn {
-      right: 80px;
-      background: #28a745;
+    .delete-btn { right: -60px; background: crimson; }
+    .complete-btn { right: -130px; background: #28a745; }
+    .message:hover .delete-btn, .message:hover .complete-btn {
+        display: inline-block;
     }
-
-    .message:hover .delete-btn,
-    .message:hover .complete-btn {
-      display: inline-block;
-    }
-
     .input-container {
-      display: flex;
-      align-items: center;
-      padding: 15px 20px;
-      background: #fff;
-      border-top: 1px solid #ccc;
+        display: flex;
+        padding: 10px;
+        background: #f0f0f0;
+        align-items: center;
     }
-
     .input-container input {
-      flex: 1;
-      padding: 12px 16px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 25px;
-      outline: none;
-      transition: border 0.2s ease;
+        flex: 1;
+        padding: 10px;
+        font-size: 15px;
+        border-radius: 20px;
+        border: none;
+        outline: none;
     }
-
     .send-btn {
-      background: #007bff;
-      border: none;
-      color: white;
-      margin-left: 10px;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background 0.2s ease;
+        background: #0084ff;
+        border: none;
+        color: white;
+        margin-left: 8px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        cursor: pointer;
     }
-
-    .send-btn:hover { background: #0056b3; }
-
     .clear-all {
-      background: #dc3545;
-      color: #fff;
-      border: none;
-      padding: 10px 16px;
-      margin-left: 10px;
-      font-size: 14px;
-      border-radius: 5px;
-      cursor: pointer;
+        background: #dc3545;
+        border: none;
+        color: white;
+        margin-left: 8px;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        cursor: pointer;
     }
-
-    .clear-all:hover { background: #c82333; }
-
-    /* Fullscreen Password Overlay */
+    /* Access Screen */
     #accessScreen {
-      position: fixed;
-      inset: 0;
-      background: #f8f9fa;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      z-index: 1000;
+        position: fixed;
+        inset: 0;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        z-index: 1000;
     }
-
     #accessScreen input {
-      padding: 10px;
-      width: 200px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+        padding: 10px;
+        width: 200px;
+        font-size: 16px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
     }
-
     #accessScreen button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: none;
-      border-radius: 5px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 5px;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
     }
-
-    /* Password Modal */
+    /* Modal */
     .modal {
-      display: none;
-      position: fixed;
-      z-index: 999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
     }
-
     .modal-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: center;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        width: 280px;
     }
-
     .modal-content input {
-      padding: 8px;
-      width: 80%;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+        padding: 8px;
+        width: 90%;
+        margin-top: 10px;
     }
-
     .modal-content button {
-      margin-top: 15px;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+        margin-top: 10px;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
     }
-
-    .btn-confirm {
-      background: #007bff;
-      color: white;
-    }
-
-    .btn-cancel {
-      background: gray;
-      color: white;
-      margin-left: 10px;
-    }
-  </style>
+    .btn-confirm { background: #007bff; color: white; }
+    .btn-cancel { background: gray; color: white; margin-left: 8px; }
+</style>
 </head>
 <body>
 
-  <!-- Access Password Screen -->
-  <div id="accessScreen">
+<!-- Access Screen -->
+<div id="accessScreen">
     <h2>Enter Access Password</h2>
     <input type="password" id="accessPassword" placeholder="Password" />
     <label><input type="checkbox" id="rememberMe" /> Remember Me</label>
     <button onclick="checkAccess()">Enter</button>
-  </div>
+</div>
 
-  <!-- Chat UI -->
-  <div id="chatUI" class="hidden">
+<!-- Chat UI -->
+<div id="chatUI" class="hidden">
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
-      <input type="text" id="messageInput" placeholder="Type a task..." />
-      <button class="send-btn" onclick="sendMessage()" title="Send">
-        <i class="fas fa-paper-plane"></i>
-      </button>
-      <button class="clear-all" onclick="showPasswordModal('clear')">Clear All</button>
+        <input type="text" id="messageInput" placeholder="Type a task..." />
+        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <button class="clear-all" onclick="showPasswordModal('clear')">Clear All</button>
     </div>
-  </div>
+</div>
 
-  <!-- Action Password Modal -->
-  <div class="modal" id="passwordModal">
+<!-- Action Password Modal -->
+<div class="modal" id="passwordModal">
     <div class="modal-content">
-      <h3>Enter Action Password</h3>
-      <input type="password" id="clearPassword" placeholder="Password" />
-      <br />
-      <button class="btn-confirm" onclick="verifyPassword()">Confirm</button>
-      <button class="btn-cancel" onclick="closePasswordModal()">Cancel</button>
+        <h3>Enter Action Password</h3>
+        <input type="password" id="clearPassword" placeholder="Password" />
+        <br />
+        <button class="btn-confirm" onclick="verifyPassword()">Confirm</button>
+        <button class="btn-cancel" onclick="closePasswordModal()">Cancel</button>
     </div>
-  </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onChildAdded, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-      authDomain: "striped-acrobat-342207.firebaseapp.com",
-      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-      projectId: "striped-acrobat-342207",
-      storageBucket: "striped-acrobat-342207.appspot.com",
-      messagingSenderId: "367114842706",
-      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const taskRef = ref(db, "task");
-    const chatBox = document.getElementById("chatBox");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const taskRef = ref(db, "task");
+const chatBox = document.getElementById("chatBox");
 
-    // Passwords
-    const accessPassword = "Chickentikka007";
-    const actionPassword = "Confirm";
+// Passwords
+const accessPassword = "Chickentikka007";
+const actionPassword = "Confirm";
+let actionTarget = null;
 
-    let actionTarget = null;
-
-    // Check saved access password
-    window.onload = function() {
-      const saved = localStorage.getItem("taskAppPassword");
-      if (saved === accessPassword) {
+// On load, check saved password
+window.onload = function() {
+    const saved = localStorage.getItem("taskAppPassword");
+    if (saved === accessPassword) {
         showChat();
-      }
-    };
+    }
+};
 
-    // Access password check
-    window.checkAccess = function() {
-      const entered = document.getElementById("accessPassword").value;
-      const remember = document.getElementById("rememberMe").checked;
-      if (entered === accessPassword) {
+// Check Access Password
+window.checkAccess = function() {
+    const entered = document.getElementById("accessPassword").value;
+    const remember = document.getElementById("rememberMe").checked;
+    if (entered === accessPassword) {
         if (remember) localStorage.setItem("taskAppPassword", entered);
         showChat();
-      } else {
+    } else {
         alert("Incorrect access password.");
-      }
-    };
-
-    function showChat() {
-      document.getElementById("accessScreen").style.display = "none";
-      document.getElementById("chatUI").classList.remove("hidden");
-      loadTasks();
     }
+};
 
-    function loadTasks() {
-      onChildAdded(taskRef, (snapshot) => {
-        const data = snapshot.val();
-        const key = snapshot.key;
-        renderTask(key, data);
-      });
-    }
+function showChat() {
+    document.getElementById("accessScreen").style.display = "none";
+    document.getElementById("chatUI").classList.remove("hidden");
+    loadTasks();
+}
 
-    function renderTask(key, data) {
-      const div = document.createElement("div");
-      div.className = "message";
-      if (data.completed) div.classList.add("completed");
+function loadTasks() {
+    onChildAdded(taskRef, (snapshot) => {
+        renderTask(snapshot.key, snapshot.val());
+    });
+}
 
-      const textSpan = document.createElement("span");
-      textSpan.textContent = data.text;
+function renderTask(key, data) {
+    const div = document.createElement("div");
+    div.className = "message sent";
+    if (data.completed) div.classList.add("completed");
 
-      const tick = document.createElement("span");
-      tick.className = "tick";
-      if (data.timestamp) {
+    const textSpan = document.createElement("span");
+    textSpan.textContent = data.text;
+
+    const time = document.createElement("span");
+    time.className = "timestamp";
+    if (data.timestamp) {
         const date = new Date(data.timestamp);
         const day = String(date.getDate()).padStart(2, '0');
         const month = date.toLocaleString('default', { month: 'short' });
@@ -315,79 +268,68 @@
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12 || 12;
-        tick.textContent = `${day}/${month} ${hours}:${minutes} ${ampm}`;
-      }
-
-      const completeBtn = document.createElement("button");
-      completeBtn.textContent = "Complete";
-      completeBtn.className = "complete-btn";
-      completeBtn.onclick = () => {
-        actionTarget = { type: "complete", key, element: div };
-        showPasswordModal();
-      };
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.onclick = () => {
-        actionTarget = { type: "delete", key, element: div };
-        showPasswordModal();
-      };
-
-      div.appendChild(textSpan);
-      div.appendChild(tick);
-      div.appendChild(completeBtn);
-      div.appendChild(deleteBtn);
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
+        time.textContent = `${day}/${month} ${hours}:${minutes} ${ampm}`;
     }
 
-    // Send Task
-    window.sendMessage = function () {
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
-      if (!text) return;
-      push(taskRef, {
-        text,
-        timestamp: Date.now(),
-        completed: false
-      });
-      input.value = "";
-    };
+    const completeBtn = document.createElement("button");
+    completeBtn.textContent = "Complete";
+    completeBtn.className = "complete-btn";
+    completeBtn.onclick = () => { actionTarget = { type: "complete", key, element: div }; showPasswordModal(); };
 
-    // Show action password modal
-    window.showPasswordModal = function (action) {
-      if (action === "clear") actionTarget = { type: "clear" };
-      document.getElementById("passwordModal").style.display = "flex";
-      document.getElementById("clearPassword").value = "";
-    };
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+    deleteBtn.className = "delete-btn";
+    deleteBtn.onclick = () => { actionTarget = { type: "delete", key, element: div }; showPasswordModal(); };
 
-    // Close modal
-    window.closePasswordModal = function () {
-      document.getElementById("passwordModal").style.display = "none";
-      actionTarget = null;
-    };
+    div.appendChild(textSpan);
+    div.appendChild(time);
+    div.appendChild(completeBtn);
+    div.appendChild(deleteBtn);
 
-    // Verify action password
-    window.verifyPassword = function () {
-      const enteredPassword = document.getElementById("clearPassword").value;
-      if (enteredPassword !== actionPassword) {
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+// Send Task
+window.sendMessage = function() {
+    const input = document.getElementById("messageInput");
+    const text = input.value.trim();
+    if (!text) return;
+    push(taskRef, { text, timestamp: Date.now(), completed: false });
+    input.value = "";
+};
+
+// Show modal
+window.showPasswordModal = function(action) {
+    if (action === "clear") actionTarget = { type: "clear" };
+    document.getElementById("passwordModal").style.display = "flex";
+    document.getElementById("clearPassword").value = "";
+};
+
+// Close modal
+window.closePasswordModal = function() {
+    document.getElementById("passwordModal").style.display = "none";
+    actionTarget = null;
+};
+
+// Verify action password
+window.verifyPassword = function() {
+    const enteredPassword = document.getElementById("clearPassword").value;
+    if (enteredPassword !== actionPassword) {
         alert("Incorrect action password.");
         return;
-      }
-
-      if (actionTarget?.type === "clear") {
+    }
+    if (actionTarget?.type === "clear") {
         remove(taskRef).then(() => chatBox.innerHTML = "");
-      } else if (actionTarget?.type === "delete") {
+    } else if (actionTarget?.type === "delete") {
         remove(ref(db, `task/${actionTarget.key}`));
         actionTarget.element.remove();
-      } else if (actionTarget?.type === "complete") {
+    } else if (actionTarget?.type === "complete") {
         update(ref(db, `task/${actionTarget.key}`), { completed: true });
         actionTarget.element.classList.add("completed");
-      }
-
-      closePasswordModal();
-    };
-  </script>
+    }
+    closePasswordModal();
+};
+</script>
 </body>
 </html>
