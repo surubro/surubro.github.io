@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Task Manager</title>
+  <title>Task Manager with pass</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -153,19 +153,68 @@
       color: white;
       cursor: pointer;
     }
+
+    /* Password Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+
+    .modal-content input {
+      padding: 8px;
+      width: 80%;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-confirm {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-cancel {
+      background: gray;
+      color: white;
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Password Gate -->
+  <!-- Access Password Screen -->
   <div id="accessScreen">
-    <h2>Enter Password</h2>
+    <h2>Enter Access Password</h2>
     <input type="password" id="accessPassword" placeholder="Password" />
     <label><input type="checkbox" id="rememberMe" /> Remember Me</label>
     <button onclick="checkAccess()">Enter</button>
   </div>
 
-  <!-- Chat Interface -->
+  <!-- Chat UI -->
   <div id="chatUI" class="hidden">
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
@@ -177,10 +226,10 @@
     </div>
   </div>
 
-  <!-- Password Modal -->
-  <div class="modal" id="passwordModal" style="display:none;">
+  <!-- Action Password Modal -->
+  <div class="modal" id="passwordModal">
     <div class="modal-content">
-      <h3>Enter Password</h3>
+      <h3>Enter Action Password</h3>
       <input type="password" id="clearPassword" placeholder="Password" />
       <br />
       <button class="btn-confirm" onclick="verifyPassword()">Confirm</button>
@@ -208,26 +257,29 @@
     const taskRef = ref(db, "task");
     const chatBox = document.getElementById("chatBox");
 
-    const correctPassword = "1234"; // Change this
+    // Passwords
+    const accessPassword = "Chickentikka007";
+    const actionPassword = "Confirm";
+
     let actionTarget = null;
 
-    // Check saved password
+    // Check saved access password
     window.onload = function() {
       const saved = localStorage.getItem("taskAppPassword");
-      if (saved === correctPassword) {
+      if (saved === accessPassword) {
         showChat();
       }
     };
 
-    // Access control
+    // Access password check
     window.checkAccess = function() {
       const entered = document.getElementById("accessPassword").value;
       const remember = document.getElementById("rememberMe").checked;
-      if (entered === correctPassword) {
+      if (entered === accessPassword) {
         if (remember) localStorage.setItem("taskAppPassword", entered);
         showChat();
       } else {
-        alert("Incorrect password.");
+        alert("Incorrect access password.");
       }
     };
 
@@ -303,22 +355,24 @@
       input.value = "";
     };
 
-    // Password Modal for delete/clear/complete
+    // Show action password modal
     window.showPasswordModal = function (action) {
       if (action === "clear") actionTarget = { type: "clear" };
       document.getElementById("passwordModal").style.display = "flex";
       document.getElementById("clearPassword").value = "";
     };
 
+    // Close modal
     window.closePasswordModal = function () {
       document.getElementById("passwordModal").style.display = "none";
       actionTarget = null;
     };
 
+    // Verify action password
     window.verifyPassword = function () {
       const enteredPassword = document.getElementById("clearPassword").value;
-      if (enteredPassword !== correctPassword) {
-        alert("Incorrect password.");
+      if (enteredPassword !== actionPassword) {
+        alert("Incorrect action password.");
         return;
       }
 
