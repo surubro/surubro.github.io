@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Task Manager2</title>
+<title>Task Manager</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
@@ -97,10 +97,8 @@
         margin-left: 5px;
     }
 
-    /* Complete button */
+    /* Complete button - always visible */
     .msg-buttons {
-        display: flex;
-        gap: 5px;
         margin-top: 5px;
     }
     .msg-buttons button {
@@ -111,10 +109,6 @@
         cursor: pointer;
         background: #28a745;
         color: white;
-    }
-    @media (min-width: 768px) {
-        .msg-buttons { display: none; position: absolute; top: 5px; right: -100px; }
-        .message:hover .msg-buttons { display: flex; }
     }
 
     /* Input */
