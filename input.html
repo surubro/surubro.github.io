@@ -2,51 +2,167 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Chat</title>
+  <title>Verified Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      width: 100%;
       font-family: Arial, sans-serif;
-      margin: 20px;
+      background: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
-    #chatBox {
-      border: 1px solid #ccc;
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 12px;
+      text-align: center;
+      background: #4CAF50;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    #authSection {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+    #authSection input {
+      width: 80%;
+      max-width: 300px;
       padding: 10px;
-      height: 300px;
-      overflow-y: scroll;
-      margin-bottom: 10px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
     }
+    #authSection button {
+      padding: 10px 16px;
+      margin: 6px;
+      border: none;
+      border-radius: 6px;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #authSection button:hover { background: #45a049; }
+    #statusMsg { margin-top: 12px; color: #333; font-size: 14px; }
 
+    #chatSection {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    #chatBox {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      background: #fff;
+    }
     .message {
-      padding: 8px;
-      background-color: #f0f0f0;
-      margin-bottom: 5px;
-      border-radius: 5px;
+      max-width: 80%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 12px;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .me {
+      background: #dcf8c6;
+      align-self: flex-end;
+    }
+    .other {
+      background: #eee;
+      align-self: flex-start;
     }
 
+    #inputBar {
+      display: flex;
+      padding: 8px;
+      border-top: 1px solid #ccc;
+      background: #fafafa;
+    }
     #messageInput {
-      width: 70%;
-      padding: 8px;
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 16px;
+      outline: none;
     }
-
     #sendBtn {
-      padding: 8px 16px;
+      margin-left: 8px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
     }
+    #sendBtn:hover { background: #45a049; }
+
+    #logoutBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: #f44336;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+    }
+    #logoutBtn:hover { background: #d32f2f; }
   </style>
 </head>
 <body>
+  <div id="app">
+    <header>Verified Chat</header>
 
-  <h2>Simple Chat</h2>
-  <div id="chatBox"></div>
+    <!-- Auth Section -->
+    <div id="authSection">
+      <input type="email" id="emailInput" placeholder="Email" />
+      <input type="password" id="passwordInput" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <button id="signupBtn">Sign Up</button>
+      <p id="statusMsg"></p>
+    </div>
 
-  <input type="text" id="messageInput" placeholder="Type your message..." />
-  <button id="sendBtn" onclick="sendMessage()">Send</button>
+    <!-- Chat Section -->
+    <div id="chatSection" style="display:none;">
+      <div id="chatBox"></div>
+      <div id="inputBar">
+        <input type="text" id="messageInput" placeholder="Type your message..." />
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+    <button id="logoutBtn">Logout</button>
+  </div>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
@@ -60,32 +176,77 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const chatRef = ref(db, "simpleMessages");
+    const auth = getAuth();
 
+    const chatRef = ref(db, "simpleMessages");
     const chatBox = document.getElementById("chatBox");
 
-    window.sendMessage = function () {
-      const msg = document.getElementById("messageInput").value.trim();
-      if (!msg) return;
-
-      push(chatRef, {
-        message: msg,
-        timestamp: Date.now()
-      });
-
-      document.getElementById("messageInput").value = "";
+    // Auth
+    document.getElementById("signupBtn").onclick = async () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(userCredential.user);
+        statusMsg.textContent = "Verification email sent. Please check your inbox.";
+      } catch (err) {
+        statusMsg.textContent = err.message;
+      }
     };
 
-    // Load messages as they come in
-    onChildAdded(chatRef, (snapshot) => {
-      const data = snapshot.val();
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "message";
-      msgDiv.textContent = data.message;
-      chatBox.appendChild(msgDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  </script>
+    document.getElementById("loginBtn").onclick = async () => {
+      try {
+        await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      } catch (err) {
+        statusMsg.textContent = err.message;
+      }
+    };
 
+    document.getElementById("logoutBtn").onclick = async () => {
+      await signOut(auth);
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        authSection.style.display = "none";
+        chatSection.style.display = "flex";
+        logoutBtn.style.display = "block";
+        loadMessages(user);
+      } else if (user && !user.emailVerified) {
+        statusMsg.textContent = "Please verify your email before using chat.";
+      } else {
+        authSection.style.display = "flex";
+        chatSection.style.display = "none";
+        logoutBtn.style.display = "none";
+        statusMsg.textContent = "Please login to access chat.";
+      }
+    });
+
+    function loadMessages(user) {
+      chatBox.innerHTML = "";
+      onChildAdded(chatRef, (snapshot) => {
+        const data = snapshot.val();
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "message " + (data.sender === user.email ? "me" : "other");
+        msgDiv.textContent = data.message;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+
+    sendBtn.onclick = () => {
+      const msg = messageInput.value.trim();
+      if (!msg) return;
+      const user = auth.currentUser;
+      if (user && user.emailVerified) {
+        push(chatRef, {
+          message: msg,
+          sender: user.email,
+          timestamp: Date.now()
+        });
+        messageInput.value = "";
+      }
+    };
+  </script>
 </body>
 </html>
