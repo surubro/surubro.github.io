@@ -143,7 +143,6 @@
       <input type="email" id="emailInput" placeholder="Email" />
       <input type="password" id="passwordInput" placeholder="Password" />
       <button id="loginBtn">Login</button>
-      <button id="signupBtn">Sign Up</button>
       <p id="statusMsg"></p>
     </div>
 
@@ -162,7 +161,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
@@ -181,19 +180,7 @@
     const chatRef = ref(db, "simpleMessages");
     const chatBox = document.getElementById("chatBox");
 
-    // Auth
-    document.getElementById("signupBtn").onclick = async () => {
-      const email = emailInput.value;
-      const password = passwordInput.value;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await sendEmailVerification(userCredential.user);
-        statusMsg.textContent = "Verification email sent. Please check your inbox.";
-      } catch (err) {
-        statusMsg.textContent = err.message;
-      }
-    };
-
+    // Login only
     document.getElementById("loginBtn").onclick = async () => {
       try {
         await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
