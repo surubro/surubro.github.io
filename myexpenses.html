@@ -17,6 +17,8 @@
     .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
     .delete { background: #dc2626; }
     .delete:hover { background: #b91c1c; }
+    .edit { background: #2563eb; }
+    .edit:hover { background: #1d4ed8; }
     .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
     .summary h3 { margin-bottom: 10px; }
     .inline-btn { background:#dc2626;color:white;border:none;padding:4px 8px;margin-left:10px;border-radius:6px;cursor:pointer; }
@@ -42,10 +44,10 @@
         <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
       </div>
 
-      <!-- Add Income -->
+      <!-- Add/Edit Income -->
       <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
       <input type="number" id="incomeAmount" placeholder="Income Amount">
-      <button onclick="addIncome()">Save Income</button>
+      <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
 
       <!-- Add Expense -->
       <input type="text" id="descInput" placeholder="Expense Description">
@@ -81,6 +83,8 @@
     const incomesRef = ref(db, "expenses/incomes");
     const expensesRef = ref(db, "expenses/items");
 
+    let editingIncomeId = null;
+
     function formatDate(timestamp) {
       const d = new Date(timestamp);
       const date = d.toLocaleDateString("en-GB");
@@ -108,15 +112,26 @@
       }
     });
 
-    // Add Income
-    window.addIncome = function() {
+    // Save/Add or Update Income
+    window.saveIncome = function() {
       const desc = document.getElementById("incomeDesc").value.trim();
       const amount = parseFloat(document.getElementById("incomeAmount").value);
-      if (desc && !isNaN(amount)) {
+
+      if (!desc || isNaN(amount)) return;
+
+      if (editingIncomeId) {
+        // Update income
+        const incomeRef = ref(db, "expenses/incomes/" + editingIncomeId);
+        update(incomeRef, { desc, amount, remaining: amount });
+        editingIncomeId = null;
+        document.getElementById("incomeBtn").innerText = "Save Income";
+      } else {
+        // Add new
         push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
-        document.getElementById("incomeDesc").value = "";
-        document.getElementById("incomeAmount").value = "";
       }
+
+      document.getElementById("incomeDesc").value = "";
+      document.getElementById("incomeAmount").value = "";
     };
 
     function loadIncomes() {
@@ -134,6 +149,7 @@
           const row = document.createElement("div");
           row.innerHTML = `
             <strong>${income.desc}</strong>: ₹${income.remaining} (Total ₹${income.amount})
+            <button class="inline-btn editIncome" data-id="${child.key}" data-amount="${income.amount}" data-desc="${income.desc}">Edit</button>
             <button class="inline-btn deleteIncome" data-id="${child.key}" data-name="${income.desc}">Delete</button>
           `;
           incomeSummary.appendChild(row);
@@ -150,10 +166,17 @@
           btn.addEventListener("click", async () => {
             const id = btn.dataset.id;
             const name = btn.dataset.name;
-
             if (!confirm(`Delete income source "${name}"?`)) return;
-
             await remove(ref(db, "expenses/incomes/" + id));
+          });
+        });
+
+        document.querySelectorAll(".editIncome").forEach(btn => {
+          btn.addEventListener("click", () => {
+            editingIncomeId = btn.dataset.id;
+            document.getElementById("incomeDesc").value = btn.dataset.desc;
+            document.getElementById("incomeAmount").value = btn.dataset.amount;
+            document.getElementById("incomeBtn").innerText = "Update Income";
           });
         });
       });
