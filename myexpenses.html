@@ -11,7 +11,7 @@
     .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
     .card strong { font-size: 1rem; }
     .card small { display: block; color: #777; margin-top: 4px; }
-    input, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+    input, button, select { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
     button { background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
     button:hover { background: #4338ca; }
     .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
@@ -36,16 +36,18 @@
     <div id="appSection" style="display:none;">
       <div class="summary">
         <h3>Summary</h3>
-        <p><strong>Salary:</strong> ₹<span id="salary">0</span></p>
+        <div id="incomeSummary"></div>
         <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
-        <p><strong>Remaining:</strong> ₹<span id="remaining">0</span></p>
+        <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
       </div>
 
-      <input type="number" id="salaryInput" placeholder="Enter / Update Salary">
-      <button onclick="updateSalary()">Save Salary</button>
+      <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
+      <input type="number" id="incomeAmount" placeholder="Income Amount">
+      <button onclick="addIncome()">Save Income</button>
 
       <input type="text" id="descInput" placeholder="Expense Description">
       <input type="number" id="amountInput" placeholder="Expense Amount">
+      <select id="incomeSelect"></select>
       <button onclick="addExpense()">Add Expense</button>
 
       <h3>Expenses</h3>
@@ -73,7 +75,7 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let salaryRef = ref(db, "expenses/salary");
+    let incomesRef = ref(db, "expenses/incomes");
     let expensesRef = ref(db, "expenses/items");
 
     function formatDate(timestamp) {
@@ -95,7 +97,7 @@
       if (user && user.emailVerified) {
         document.getElementById("authSection").style.display = "none";
         document.getElementById("appSection").style.display = "block";
-        loadSalary();
+        loadIncomes();
         loadExpenses();
       } else {
         document.getElementById("authSection").style.display = "block";
@@ -103,27 +105,62 @@
       }
     });
 
-    // Salary
-    window.updateSalary = function() {
-      let salary = parseFloat(document.getElementById("salaryInput").value);
-      if (!isNaN(salary)) {
-        set(salaryRef, { amount: salary, date: Date.now() });
+    // Add Income
+    window.addIncome = function() {
+      let desc = document.getElementById("incomeDesc").value.trim();
+      let amount = parseFloat(document.getElementById("incomeAmount").value);
+      if (desc && !isNaN(amount)) {
+        push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
+        document.getElementById("incomeDesc").value = "";
+        document.getElementById("incomeAmount").value = "";
       }
     };
-    function loadSalary() {
-      onValue(salaryRef, snap => {
-        if (snap.exists()) {
-          document.getElementById("salary").innerText = snap.val().amount;
-        }
+
+    function loadIncomes() {
+      onValue(incomesRef, (snapshot) => {
+        let incomeSummary = document.getElementById("incomeSummary");
+        let incomeSelect = document.getElementById("incomeSelect");
+        incomeSummary.innerHTML = "";
+        incomeSelect.innerHTML = "";
+        let totalRemaining = 0;
+
+        snapshot.forEach((child) => {
+          let income = child.val();
+          totalRemaining += income.remaining;
+          let div = document.createElement("div");
+          div.innerHTML = `<strong>${income.desc}</strong>: ₹${income.remaining} (Total ₹${income.amount})`;
+          incomeSummary.appendChild(div);
+
+          let opt = document.createElement("option");
+          opt.value = child.key;
+          opt.textContent = income.desc;
+          incomeSelect.appendChild(opt);
+        });
+
+        document.getElementById("totalRemaining").innerText = totalRemaining;
       });
     }
 
-    // Expenses
+    // Add Expense
     window.addExpense = function() {
       let desc = document.getElementById("descInput").value.trim();
       let amount = parseFloat(document.getElementById("amountInput").value);
-      if (desc && !isNaN(amount)) {
-        push(expensesRef, { desc, amount, date: Date.now() });
+      let incomeId = document.getElementById("incomeSelect").value;
+
+      if (desc && !isNaN(amount) && incomeId) {
+        let incomeRef = ref(db, "expenses/incomes/" + incomeId);
+        onValue(incomeRef, (snap) => {
+          if (snap.exists()) {
+            let income = snap.val();
+            if (income.remaining >= amount) {
+              push(expensesRef, { desc, amount, income: income.desc, date: Date.now() });
+              update(incomeRef, { remaining: income.remaining - amount });
+            } else {
+              alert("Not enough balance in " + income.desc);
+            }
+          }
+        }, { onlyOnce: true });
+
         document.getElementById("descInput").value = "";
         document.getElementById("amountInput").value = "";
       }
@@ -141,33 +178,15 @@
           let div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
-            <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
+            <div><strong>${item.desc}</strong> - ₹${item.amount}<br><small>From: ${item.income}</small></div>
             <small>Added: ${formatDate(item.date)}</small>
             <div class="actions">
-              <button class="edit" data-id="${child.key}" data-desc="${item.desc}" data-amount="${item.amount}">Edit</button>
               <button class="delete" data-id="${child.key}">Delete</button>
             </div>`;
           listDiv.prepend(div);
         });
 
         document.getElementById("totalExpenses").innerText = total;
-
-        // Load salary to calc remaining
-        onValue(salaryRef, snap => {
-          let salary = snap.exists() ? snap.val().amount : 0;
-          document.getElementById("remaining").innerText = salary - total;
-        });
-
-        document.querySelectorAll(".edit").forEach(btn => {
-          btn.addEventListener("click", () => {
-            let id = btn.dataset.id;
-            let newDesc = prompt("Edit description:", btn.dataset.desc);
-            let newAmount = parseFloat(prompt("Edit amount:", btn.dataset.amount));
-            if (newDesc && !isNaN(newAmount)) {
-              update(ref(db, "expenses/items/" + id), { desc: newDesc, amount: newAmount, date: Date.now() });
-            }
-          });
-        });
 
         document.querySelectorAll(".delete").forEach(btn => {
           btn.addEventListener("click", () => {
