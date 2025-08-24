@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>💰 Money Tracker</title>
+  <title>💰 Money Tracker (Secure)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -11,10 +11,10 @@
       padding: 15px;
       background: #f4f4f9;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
-      margin-bottom: 20px;
     }
+    .hidden { display: none; }
     .input-box {
       display: flex;
       flex-wrap: wrap;
@@ -40,6 +40,8 @@
     button.add { background: #4CAF50; }
     button.edit { background: #2196F3; }
     button.delete { background: #f44336; }
+    button.login { background: #4CAF50; }
+    button.logout { background: #f44336; }
     .card {
       background: white;
       padding: 12px;
@@ -51,28 +53,11 @@
       align-items: center;
       flex-wrap: wrap;
     }
-    .card strong {
-      font-size: 16px;
-    }
-    .actions {
-      display: flex;
-      gap: 5px;
-    }
-    h2 {
-      text-align: center;
-      margin-top: 20px;
-    }
+    .actions { display: flex; gap: 5px; }
     @media (max-width: 600px) {
-      input, button {
-        flex: 1 1 100%;
-      }
-      .card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .actions {
-        margin-top: 8px;
-      }
+      input, button { flex: 1 1 100%; }
+      .card { flex-direction: column; align-items: flex-start; }
+      .actions { margin-top: 8px; }
     }
   </style>
 </head>
@@ -80,21 +65,35 @@
 
   <h1>💰 Money Tracker</h1>
 
-  <div class="input-box">
+  <!-- Login Box -->
+  <div id="loginBox">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button class="login" id="loginBtn">Login</button>
+  </div>
+
+  <!-- Logout Button -->
+  <div id="logoutBox" class="hidden" style="text-align:center; margin:10px;">
+    <button class="logout" id="logoutBtn">Logout</button>
+  </div>
+
+  <!-- Input form (only visible if logged in) -->
+  <div id="inputForm" class="input-box hidden">
     <input type="text" id="desc" placeholder="Enter description">
     <input type="number" id="amount" placeholder="Enter amount">
-    <button class="add" onclick="addMoney()">Add</button>
+    <button class="add" id="addBtn">Add</button>
   </div>
 
   <h2>Total: ₹<span id="total">0</span></h2>
-
   <div id="list"></div>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    // ✅ Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -107,25 +106,58 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const auth = getAuth(app);
     const moneyRef = ref(db, "money");
 
-    // Add entry
-    window.addMoney = function () {
+    const loginBox = document.getElementById("loginBox");
+    const logoutBox = document.getElementById("logoutBox");
+    const inputForm = document.getElementById("inputForm");
+
+    // ✅ Login
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .catch(err => alert("Login failed: " + err.message));
+    });
+
+    // ✅ Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth);
+    });
+
+    // ✅ Auth state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        loginBox.classList.add("hidden");
+        logoutBox.classList.remove("hidden");
+        inputForm.classList.remove("hidden");
+      } else {
+        loginBox.classList.remove("hidden");
+        logoutBox.classList.add("hidden");
+        inputForm.classList.add("hidden");
+      }
+    });
+
+    // ✅ Add entry (only if logged in & verified)
+    document.getElementById("addBtn").addEventListener("click", () => {
       let desc = document.getElementById("desc").value.trim();
       let amount = parseFloat(document.getElementById("amount").value);
 
       if (!desc || isNaN(amount)) {
-        alert("Please enter description and amount!");
+        alert("Enter description & amount!");
         return;
       }
 
-      push(moneyRef, { desc: desc, amount: amount }).then(() => {
-        document.getElementById("desc").value = "";
-        document.getElementById("amount").value = "";
-      });
-    };
+      push(moneyRef, { desc, amount })
+        .then(() => {
+          document.getElementById("desc").value = "";
+          document.getElementById("amount").value = "";
+        })
+        .catch(err => alert("Error: " + err.message));
+    });
 
-    // Show all entries and total
+    // ✅ Show all entries + total
     onValue(moneyRef, (snapshot) => {
       let listDiv = document.getElementById("list");
       listDiv.innerHTML = "";
@@ -141,29 +173,29 @@
           div.className = "card";
           div.innerHTML = `
             <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
-            <div class="actions">
-              <button class="edit" onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
-              <button class="delete" onclick="deleteMoney('${id}')">Delete</button>
-            </div>
+            ${
+              auth.currentUser && auth.currentUser.emailVerified
+              ? `<div class="actions">
+                   <button class="edit" onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
+                   <button class="delete" onclick="deleteMoney('${id}')">Delete</button>
+                 </div>`
+              : ""
+            }
           `;
-          listDiv.prepend(div); // newest on top
+          listDiv.prepend(div);
         });
       }
-
       document.getElementById("total").innerText = total;
     });
 
-    // Edit entry
+    // ✅ Edit & Delete (only for verified users)
     window.editMoney = function (id, oldDesc, oldAmount) {
       let newDesc = prompt("Edit description:", oldDesc);
       let newAmount = parseFloat(prompt("Edit amount:", oldAmount));
-
       if (newDesc && !isNaN(newAmount)) {
         update(ref(db, "money/" + id), { desc: newDesc, amount: newAmount });
       }
     };
-
-    // Delete entry
     window.deleteMoney = function (id) {
       if (confirm("Delete this record?")) {
         remove(ref(db, "money/" + id));
