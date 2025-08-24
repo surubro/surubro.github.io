@@ -1,177 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Expenses Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      background: #f4f6f9;
-      color: #333;
-    }
-    header {
-      background: #4a90e2;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.4rem;
-    }
-    #authSection {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    #authSection input {
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    #authSection button {
-      background: white;
-      border: none;
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #authSection button:hover {
-      background: #eee;
-    }
-
-    main {
-      padding: 1rem;
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .card {
-      background: white;
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 1rem;
-    }
-
-    h2 {
-      margin-top: 0;
-      font-size: 1.2rem;
-      color: #444;
-    }
-
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .input-row input {
-      flex: 1;
-      padding: 0.7rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-    .input-row button {
-      background: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.7rem 1rem;
-      cursor: pointer;
-    }
-    .input-row button:hover {
-      background: #3b78c2;
-    }
-
-    #expensesList .expense {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.6rem 0.4rem;
-      border-bottom: 1px solid #eee;
-    }
-    #expensesList .expense:last-child {
-      border-bottom: none;
-    }
-    .expense strong {
-      color: #333;
-    }
-    .actions button {
-      margin-left: 0.3rem;
-      padding: 0.4rem 0.6rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .edit { background: #ffd54f; }
-    .delete { background: #e57373; color: white; }
-    .edit:hover { background: #ffca28; }
-    .delete:hover { background: #ef5350; }
-
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 1.1rem;
-      }
-      .input-row {
-        flex-direction: column;
-      }
-      .actions button {
-        padding: 0.5rem;
-      }
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
+    .container { max-width: 500px; margin: auto; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .card strong { font-size: 1rem; }
+    .card small { display: block; color: #777; margin-top: 4px; }
+    input, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+    button { background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #4338ca; }
+    .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    .edit { background: #16a34a; }
+    .edit:hover { background: #15803d; }
+    .delete { background: #dc2626; }
+    .delete:hover { background: #b91c1c; }
+    .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>💰 Expenses Manager</h2>
 
-  <header>
-    <h1>💰 Expenses Manager</h1>
     <div id="authSection">
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
       <button onclick="login()">Login</button>
       <button onclick="logout()">Logout</button>
     </div>
-  </header>
 
-  <main id="app" style="display:none;">
-    <div class="card">
-      <h2>Salary</h2>
-      <div class="input-row">
-        <input type="number" id="salaryInput" placeholder="Enter salary">
-        <button onclick="saveSalary()">Save</button>
+    <div id="appSection" style="display:none;">
+      <div class="summary">
+        <h3>Summary</h3>
+        <p><strong>Salary:</strong> ₹<span id="salary">0</span></p>
+        <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
+        <p><strong>Remaining:</strong> ₹<span id="remaining">0</span></p>
       </div>
-      <p>💵 Current Salary: <strong id="salary">0</strong></p>
-    </div>
 
-    <div class="card">
-      <h2>Add Expense</h2>
-      <div class="input-row">
-        <input type="text" id="expDesc" placeholder="Description">
-        <input type="number" id="expAmount" placeholder="Amount">
-        <button onclick="addExpense()">Add</button>
-      </div>
-    </div>
+      <input type="number" id="salaryInput" placeholder="Enter / Update Salary">
+      <button onclick="updateSalary()">Save Salary</button>
 
-    <div class="card">
-      <h2>Summary</h2>
-      <p>Total Expenses: <strong id="totalExp">0</strong></p>
-      <p>Remaining: <strong id="remaining">0</strong></p>
-    </div>
+      <input type="text" id="descInput" placeholder="Expense Description">
+      <input type="number" id="amountInput" placeholder="Expense Amount">
+      <button onclick="addExpense()">Add Expense</button>
 
-    <div class="card">
-      <h2>Expenses List</h2>
-      <div id="expensesList"></div>
+      <h3>Expenses</h3>
+      <div id="list"></div>
     </div>
-  </main>
+  </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -189,105 +71,112 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth();
+    const auth = getAuth(app);
 
-    let salaryRef, expensesRef;
+    let salaryRef = ref(db, "expenses/salary");
+    let expensesRef = ref(db, "expenses/items");
 
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        document.getElementById("app").style.display = "block";
-        document.getElementById("authSection").style.display = "none";
-        salaryRef = ref(db, "expenses/" + user.uid + "/salary");
-        expensesRef = ref(db, "expenses/" + user.uid + "/items");
-        loadSalary();
-        loadExpenses();
-      } else {
-        document.getElementById("app").style.display = "none";
-        document.getElementById("authSection").style.display = "flex";
-      }
-    });
+    function formatDate(timestamp) {
+      let d = new Date(timestamp);
+      let date = d.toLocaleDateString("en-GB");
+      let time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+      return `${date}, ${time}`;
+    }
 
     // Auth
     window.login = function() {
-      const email = document.getElementById("email").value;
-      const pass = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, pass).catch(e => alert(e.message));
-    }
-    window.logout = function() {
-      signOut(auth);
-    }
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
+    };
+    window.logout = function() { signOut(auth); };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        document.getElementById("authSection").style.display = "none";
+        document.getElementById("appSection").style.display = "block";
+        loadSalary();
+        loadExpenses();
+      } else {
+        document.getElementById("authSection").style.display = "block";
+        document.getElementById("appSection").style.display = "none";
+      }
+    });
 
     // Salary
+    window.updateSalary = function() {
+      let salary = parseFloat(document.getElementById("salaryInput").value);
+      if (!isNaN(salary)) {
+        set(salaryRef, { amount: salary, date: Date.now() });
+      }
+    };
     function loadSalary() {
-      onValue(salaryRef, (snap) => {
+      onValue(salaryRef, snap => {
         if (snap.exists()) {
-          document.getElementById("salary").innerText = snap.val();
-          calcRemaining();
+          document.getElementById("salary").innerText = snap.val().amount;
         }
       });
-    }
-    window.saveSalary = function() {
-      const val = parseFloat(document.getElementById("salaryInput").value);
-      if (!isNaN(val)) {
-        set(salaryRef, val);
-      }
     }
 
     // Expenses
-    function loadExpenses() {
-      onValue(expensesRef, (snap) => {
-        const list = document.getElementById("expensesList");
-        list.innerHTML = "";
-        let total = 0;
-        if (snap.exists()) {
-          snap.forEach(child => {
-            const id = child.key;
-            const exp = child.val();
-            total += Number(exp.amount);
-            const div = document.createElement("div");
-            div.className = "expense";
-            div.innerHTML = `
-              <span><strong>${exp.desc}</strong> - ₹${exp.amount}</span>
-              <span class="actions">
-                <button class="edit" onclick="editExp('${id}','${exp.desc}',${exp.amount})">✏</button>
-                <button class="delete" onclick="deleteExp('${id}')">🗑</button>
-              </span>
-            `;
-            list.appendChild(div);
-          });
-        }
-        document.getElementById("totalExp").innerText = total;
-        calcRemaining(total);
-      });
-    }
-
     window.addExpense = function() {
-      const desc = document.getElementById("expDesc").value;
-      const amt = parseFloat(document.getElementById("expAmount").value);
-      if (desc && !isNaN(amt)) {
-        push(expensesRef, { desc: desc, amount: amt });
-        document.getElementById("expDesc").value = "";
-        document.getElementById("expAmount").value = "";
+      let desc = document.getElementById("descInput").value.trim();
+      let amount = parseFloat(document.getElementById("amountInput").value);
+      if (desc && !isNaN(amount)) {
+        push(expensesRef, { desc, amount, date: Date.now() });
+        document.getElementById("descInput").value = "";
+        document.getElementById("amountInput").value = "";
       }
-    }
+    };
 
-    window.editExp = function(id, oldDesc, oldAmt) {
-      const newDesc = prompt("Edit description:", oldDesc);
-      const newAmt = parseFloat(prompt("Edit amount:", oldAmt));
-      if (newDesc && !isNaN(newAmt)) {
-        update(ref(db, "expenses/" + auth.currentUser.uid + "/items/" + id), { desc: newDesc, amount: newAmt });
-      }
-    }
+    function loadExpenses() {
+      onValue(expensesRef, (snapshot) => {
+        let listDiv = document.getElementById("list");
+        listDiv.innerHTML = "";
+        let total = 0;
 
-    window.deleteExp = function(id) {
-      if (confirm("Delete this expense?")) {
-        remove(ref(db, "expenses/" + auth.currentUser.uid + "/items/" + id));
-      }
-    }
+        snapshot.forEach((child) => {
+          let item = child.val();
+          total += Number(item.amount);
+          let div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
+            <small>Added: ${formatDate(item.date)}</small>
+            <div class="actions">
+              <button class="edit" data-id="${child.key}" data-desc="${item.desc}" data-amount="${item.amount}">Edit</button>
+              <button class="delete" data-id="${child.key}">Delete</button>
+            </div>`;
+          listDiv.prepend(div);
+        });
 
-    function calcRemaining(totalExp=0) {
-      const salary = parseFloat(document.getElementById("salary").innerText) || 0;
-      document.getElementById("remaining").innerText = salary - totalExp;
+        document.getElementById("totalExpenses").innerText = total;
+
+        // Load salary to calc remaining
+        onValue(salaryRef, snap => {
+          let salary = snap.exists() ? snap.val().amount : 0;
+          document.getElementById("remaining").innerText = salary - total;
+        });
+
+        document.querySelectorAll(".edit").forEach(btn => {
+          btn.addEventListener("click", () => {
+            let id = btn.dataset.id;
+            let newDesc = prompt("Edit description:", btn.dataset.desc);
+            let newAmount = parseFloat(prompt("Edit amount:", btn.dataset.amount));
+            if (newDesc && !isNaN(newAmount)) {
+              update(ref(db, "expenses/items/" + id), { desc: newDesc, amount: newAmount, date: Date.now() });
+            }
+          });
+        });
+
+        document.querySelectorAll(".delete").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (confirm("Delete this expense?")) {
+              remove(ref(db, "expenses/items/" + btn.dataset.id));
+            }
+          });
+        });
+      });
     }
   </script>
 </body>
