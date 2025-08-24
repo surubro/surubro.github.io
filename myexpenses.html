@@ -231,7 +231,7 @@
             <small>From: ${item.incomeName || "—"}</small></div>
             <small>Added: ${formatDate(item.date)}</small>
             <div class="actions">
-              <button class="delete" data-id="${child.key}">Delete</button>
+              <button class="delete" data-id="${child.key}" data-incomeid="${item.incomeId}" data-amount="${item.amount}">Delete</button>
             </div>`;
           listDiv.prepend(div);
         });
@@ -239,9 +239,22 @@
         document.getElementById("totalExpenses").innerText = total;
 
         document.querySelectorAll(".delete").forEach(btn => {
-          btn.addEventListener("click", () => {
+          btn.addEventListener("click", async () => {
             if (confirm("Delete this expense?")) {
-              remove(ref(db, "expenses/items/" + btn.dataset.id));
+              const expenseId = btn.dataset.id;
+              const incomeId = btn.dataset.incomeid;
+              const amount = Number(btn.dataset.amount);
+
+              // Restore balance back to income source
+              const incomeRef = ref(db, "expenses/incomes/" + incomeId);
+              onValue(incomeRef, (snap) => {
+                if (snap.exists()) {
+                  const income = snap.val();
+                  update(incomeRef, { remaining: Number(income.remaining) + amount });
+                }
+              }, { onlyOnce: true });
+
+              await remove(ref(db, "expenses/items/" + expenseId));
             }
           });
         });
