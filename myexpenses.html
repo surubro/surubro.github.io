@@ -1,264 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expenses Manager</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Income & Expenses Manager</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
-    .container { max-width: 500px; margin: auto; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .card strong { font-size: 1rem; }
-    .card small { display: block; color: #777; margin-top: 4px; }
-    input, button, select { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
-    button { background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
-    button:hover { background: #4338ca; }
-    .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
-    .delete { background: #dc2626; }
-    .delete:hover { background: #b91c1c; }
-    .edit { background: #2563eb; }
-    .edit:hover { background: #1d4ed8; }
-    .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
-    .summary h3 { margin-bottom: 10px; }
-    .income-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
-    .income-info { flex: 1; }
-    .income-actions { display: flex; gap: 6px; }
-    .inline-btn { background:#2563eb;color:white;border:none;padding:4px 8px;border-radius:6px;cursor:pointer; font-size:0.9rem; }
-    .inline-btn.deleteIncome { background:#dc2626; }
-    .inline-btn.deleteIncome:hover { background:#b91c1c; }
-    .inline-btn.editIncome:hover { background:#1d4ed8; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f8f9fa;
+    }
+    h2 {
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      margin: 5px 0;
+      padding: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      background: #f1f1f1;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .actions button {
+      margin-left: 5px;
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .summary {
+      margin-top: 15px;
+      padding: 10px;
+      background: #e9ecef;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>💰 Expenses Manager</h2>
+    <h2>Income & Expenses Manager</h2>
 
-    <div id="authSection">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-      <button onclick="logout()">Logout</button>
-    </div>
+    <h3>Add Income Source</h3>
+    <input type="text" id="incomeName" placeholder="Income Name (e.g. Salary)">
+    <input type="number" id="incomeAmount" placeholder="Amount">
+    <button onclick="addIncome()">Add Income</button>
 
-    <div id="appSection" style="display:none;">
-      <div class="summary">
-        <h3>Summary</h3>
-        <div id="incomeSummary"></div>
-        <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
-        <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
-      </div>
+    <h3>Add Expense</h3>
+    <input type="text" id="expenseName" placeholder="Expense Name">
+    <input type="number" id="expenseAmount" placeholder="Amount">
+    <select id="incomeSelect"></select>
+    <button onclick="addExpense()">Add Expense</button>
 
-      <!-- Add/Edit Income -->
-      <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
-      <input type="number" id="incomeAmount" placeholder="Income Amount">
-      <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
+    <h3>Income Sources</h3>
+    <ul id="incomeList"></ul>
 
-      <!-- Add Expense -->
-      <input type="text" id="descInput" placeholder="Expense Description">
-      <input type="number" id="amountInput" placeholder="Expense Amount">
-      <select id="incomeSelect"></select>
-      <button onclick="addExpense()">Add Expense</button>
+    <h3>Expenses</h3>
+    <ul id="expenseList"></ul>
 
-      <h3>Expenses</h3>
-      <div id="list"></div>
+    <div class="summary">
+      <p><b>Total Income:</b> <span id="totalIncome">0</span></p>
+      <p><b>Total Expenses:</b> <span id="totalExpenses">0</span></p>
+      <p><b>Remaining Balance:</b> <span id="remainingBalance">0</span></p>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <script>
+    const PASSWORD = "1234"; // change your password here
+    let incomes = [];
+    let expenses = [];
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-      authDomain: "striped-acrobat-342207.firebaseapp.com",
-      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-      projectId: "striped-acrobat-342207",
-      storageBucket: "striped-acrobat-342207.appspot.com",
-      messagingSenderId: "367114842706",
-      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
-
-    const incomesRef = ref(db, "expenses/incomes");
-    const expensesRef = ref(db, "expenses/items");
-
-    let editingIncomeId = null;
-
-    function formatDate(timestamp) {
-      const d = new Date(timestamp);
-      const date = d.toLocaleDateString("en-GB");
-      const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-      return `${date}, ${time}`;
+    function checkPassword() {
+      let pwd = prompt("Enter password:");
+      return pwd === PASSWORD;
     }
 
-    // Auth
-    window.login = function() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
-    };
-    window.logout = function() { signOut(auth); };
-
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        document.getElementById("authSection").style.display = "none";
-        document.getElementById("appSection").style.display = "block";
-        loadIncomes();
-        loadExpenses();
-      } else {
-        document.getElementById("authSection").style.display = "block";
-        document.getElementById("appSection").style.display = "none";
+    function addIncome() {
+      if (!checkPassword()) {
+        alert("Incorrect password!");
+        return;
       }
-    });
-
-    // Save/Add or Update Income
-    window.saveIncome = function() {
-      const desc = document.getElementById("incomeDesc").value.trim();
-      const amount = parseFloat(document.getElementById("incomeAmount").value);
-
-      if (!desc || isNaN(amount)) return;
-
-      if (editingIncomeId) {
-        const incomeRef = ref(db, "expenses/incomes/" + editingIncomeId);
-        update(incomeRef, { desc, amount, remaining: amount });
-        editingIncomeId = null;
-        document.getElementById("incomeBtn").innerText = "Save Income";
-      } else {
-        push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
+      let name = document.getElementById("incomeName").value;
+      let amount = parseFloat(document.getElementById("incomeAmount").value);
+      if (name && amount) {
+        incomes.push({ name, amount });
+        document.getElementById("incomeName").value = "";
+        document.getElementById("incomeAmount").value = "";
+        render();
       }
-
-      document.getElementById("incomeDesc").value = "";
-      document.getElementById("incomeAmount").value = "";
-    };
-
-    function loadIncomes() {
-      onValue(incomesRef, (snapshot) => {
-        const incomeSummary = document.getElementById("incomeSummary");
-        const incomeSelect = document.getElementById("incomeSelect");
-        incomeSummary.innerHTML = "";
-        incomeSelect.innerHTML = "";
-        let totalRemaining = 0;
-
-        snapshot.forEach((child) => {
-          const income = child.val();
-          totalRemaining += Number(income.remaining || 0);
-
-          const row = document.createElement("div");
-          row.className = "income-row";
-          row.innerHTML = `
-            <div class="income-info">
-              <strong>${income.desc}</strong>: ₹${income.remaining} (Total ₹${income.amount})
-            </div>
-            <div class="income-actions">
-              <button class="inline-btn deleteIncome" data-id="${child.key}" data-name="${income.desc}">Delete</button>
-              <button class="inline-btn editIncome" data-id="${child.key}" data-amount="${income.amount}" data-desc="${income.desc}">Edit</button>
-            </div>
-          `;
-          incomeSummary.appendChild(row);
-
-          const opt = document.createElement("option");
-          opt.value = child.key;
-          opt.textContent = income.desc;
-          incomeSelect.appendChild(opt);
-        });
-
-        document.getElementById("totalRemaining").innerText = totalRemaining;
-
-        document.querySelectorAll(".deleteIncome").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
-            if (!confirm(`Delete income source "${name}"?`)) return;
-            await remove(ref(db, "expenses/incomes/" + id));
-          });
-        });
-
-        document.querySelectorAll(".editIncome").forEach(btn => {
-          btn.addEventListener("click", () => {
-            editingIncomeId = btn.dataset.id;
-            document.getElementById("incomeDesc").value = btn.dataset.desc;
-            document.getElementById("incomeAmount").value = btn.dataset.amount;
-            document.getElementById("incomeBtn").innerText = "Update Income";
-          });
-        });
-      });
     }
 
-    // Add Expense
-    window.addExpense = function() {
-      const desc = document.getElementById("descInput").value.trim();
-      const amount = parseFloat(document.getElementById("amountInput").value);
-      const incomeId = document.getElementById("incomeSelect").value;
-
-      if (desc && !isNaN(amount) && incomeId) {
-        const incomeRef = ref(db, "expenses/incomes/" + incomeId);
-        onValue(incomeRef, (snap) => {
-          if (snap.exists()) {
-            const income = snap.val();
-            if (Number(income.remaining) >= amount) {
-              push(expensesRef, { desc, amount, incomeName: income.desc, incomeId, date: Date.now() });
-              update(incomeRef, { remaining: Number(income.remaining) - amount });
-            } else {
-              alert("Not enough balance in " + income.desc);
-            }
-          }
-        }, { onlyOnce: true });
-
-        document.getElementById("descInput").value = "";
-        document.getElementById("amountInput").value = "";
+    function editIncome(index) {
+      if (!checkPassword()) {
+        alert("Incorrect password!");
+        return;
       }
-    };
+      let newName = prompt("Edit Income Name:", incomes[index].name);
+      let newAmount = parseFloat(prompt("Edit Income Amount:", incomes[index].amount));
+      if (newName && newAmount) {
+        incomes[index].name = newName;
+        incomes[index].amount = newAmount;
+        render();
+      }
+    }
 
-    function loadExpenses() {
-      onValue(expensesRef, (snapshot) => {
-        const listDiv = document.getElementById("list");
-        listDiv.innerHTML = "";
-        let total = 0;
+    function deleteIncome(index) {
+      if (!checkPassword()) {
+        alert("Incorrect password!");
+        return;
+      }
+      if (confirm("Delete this income source?")) {
+        incomes.splice(index, 1);
+        render();
+      }
+    }
 
-        snapshot.forEach((child) => {
-          const item = child.val();
-          total += Number(item.amount);
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <div><strong>${item.desc}</strong> - ₹${item.amount}<br>
-            <small>From: ${item.incomeName || "—"}</small></div>
-            <small>Added: ${formatDate(item.date)}</small>
-            <div class="actions">
-              <button class="delete" data-id="${child.key}" data-incomeid="${item.incomeId}" data-amount="${item.amount}">Delete</button>
-            </div>`;
-          listDiv.prepend(div);
-        });
+    function addExpense() {
+      let name = document.getElementById("expenseName").value;
+      let amount = parseFloat(document.getElementById("expenseAmount").value);
+      let incomeIndex = document.getElementById("incomeSelect").value;
+      if (name && amount && incomeIndex !== "") {
+        expenses.push({ name, amount, incomeIndex: parseInt(incomeIndex) });
+        document.getElementById("expenseName").value = "";
+        document.getElementById("expenseAmount").value = "";
+        render();
+      }
+    }
 
-        document.getElementById("totalExpenses").innerText = total;
+    function deleteExpense(index) {
+      if (confirm("Delete this expense?")) {
+        expenses.splice(index, 1);
+        render();
+      }
+    }
 
-        document.querySelectorAll(".delete").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            if (confirm("Delete this expense?")) {
-              const expenseId = btn.dataset.id;
-              const incomeId = btn.dataset.incomeid;
-              const amount = Number(btn.dataset.amount);
+    function render() {
+      let incomeList = document.getElementById("incomeList");
+      let expenseList = document.getElementById("expenseList");
+      let incomeSelect = document.getElementById("incomeSelect");
+      incomeList.innerHTML = "";
+      expenseList.innerHTML = "";
+      incomeSelect.innerHTML = "<option value=''>Select Income</option>";
 
-              // Restore balance back to income source
-              const incomeRef = ref(db, "expenses/incomes/" + incomeId);
-              onValue(incomeRef, (snap) => {
-                if (snap.exists()) {
-                  const income = snap.val();
-                  update(incomeRef, { remaining: Number(income.remaining) + amount });
-                }
-              }, { onlyOnce: true });
+      incomes.forEach((income, i) => {
+        let li = document.createElement("li");
+        let totalExpensesForThisIncome = expenses
+          .filter(e => e.incomeIndex === i)
+          .reduce((sum, e) => sum + e.amount, 0);
+        let remaining = income.amount - totalExpensesForThisIncome;
+        li.innerHTML = `${income.name}: ${income.amount} (Remaining: ${remaining})
+          <span class="actions">
+            <button onclick="editIncome(${i})">Edit</button>
+            <button onclick="deleteIncome(${i})">Delete</button>
+          </span>`;
+        incomeList.appendChild(li);
 
-              await remove(ref(db, "expenses/items/" + expenseId));
-            }
-          });
-        });
+        let opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = income.name;
+        incomeSelect.appendChild(opt);
       });
+
+      expenses.forEach((expense, i) => {
+        let li = document.createElement("li");
+        li.innerHTML = `${expense.name}: -${expense.amount} (from ${incomes[expense.incomeIndex]?.name || "Unknown"})
+          <span class="actions">
+            <button onclick="deleteExpense(${i})">Delete</button>
+          </span>`;
+        expenseList.appendChild(li);
+      });
+
+      let totalIncome = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+      let totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      let remainingBalance = totalIncome - totalExpenses;
+
+      document.getElementById("totalIncome").textContent = totalIncome;
+      document.getElementById("totalExpenses").textContent = totalExpenses;
+      document.getElementById("remainingBalance").textContent = remainingBalance;
     }
   </script>
 </body>
