@@ -2,90 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>💰 Money Tracker (Secure)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Money Tracker</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 15px;
-      background: #f4f4f9;
-    }
-    h1, h2 {
-      text-align: center;
-    }
-    .hidden { display: none; }
-    .input-box {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
-      justify-content: center;
-    }
-    input {
-      flex: 1 1 150px;
-      padding: 10px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    button {
-      padding: 10px 15px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-    }
-    button.add { background: #4CAF50; }
-    button.edit { background: #2196F3; }
-    button.delete { background: #f44336; }
-    button.login { background: #4CAF50; }
-    button.logout { background: #f44336; }
-    .card {
-      background: white;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .actions { display: flex; gap: 5px; }
-    @media (max-width: 600px) {
-      input, button { flex: 1 1 100%; }
-      .card { flex-direction: column; align-items: flex-start; }
-      .actions { margin-top: 8px; }
+    body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f5f5f5; }
+    .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+    h2 { text-align:center; }
+    .input-box { margin:10px 0; }
+    input { width:100%; padding:10px; font-size:16px; margin-top:5px; box-sizing:border-box; }
+    button { padding:10px 15px; margin:5px 0; border:none; border-radius:6px; cursor:pointer; font-size:16px; }
+    .btn-primary { background:#4CAF50; color:white; }
+    .btn-secondary { background:#2196F3; color:white; }
+    .btn-danger { background:#f44336; color:white; }
+    .card { background:#fafafa; padding:10px; margin:8px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
+    .actions button { margin-left:5px; font-size:14px; padding:5px 8px; }
+    #totalBox { font-size:18px; font-weight:bold; margin-top:15px; text-align:right; }
+    @media (max-width:600px) {
+      .card { flex-direction:column; align-items:flex-start; }
+      .actions { margin-top:5px; }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>💰 Money Tracker</h2>
 
-  <h1>💰 Money Tracker</h1>
+    <!-- Login Form -->
+    <div id="loginBox">
+      <div class="input-box">
+        <label>Email</label>
+        <input type="email" id="email">
+      </div>
+      <div class="input-box">
+        <label>Password</label>
+        <input type="password" id="password">
+      </div>
+      <button class="btn-primary" id="loginBtn">Login</button>
+    </div>
 
-  <!-- Login Box -->
-  <div id="loginBox">
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button class="login" id="loginBtn">Login</button>
+    <!-- Tracker UI -->
+    <div id="trackerBox" style="display:none;">
+      <button class="btn-secondary" id="logoutBtn">Logout</button>
+
+      <div class="input-box">
+        <label>Description</label>
+        <input type="text" id="descInput" placeholder="Enter description">
+      </div>
+      <div class="input-box">
+        <label>Amount</label>
+        <input type="number" id="amountInput" placeholder="Enter amount">
+      </div>
+      <button class="btn-primary" id="addBtn">Add</button>
+
+      <h3>Records</h3>
+      <div id="list"></div>
+
+      <div id="totalBox">Total: ₹0</div>
+    </div>
   </div>
-
-  <!-- Logout Button -->
-  <div id="logoutBox" class="hidden" style="text-align:center; margin:10px;">
-    <button class="logout" id="logoutBtn">Logout</button>
-  </div>
-
-  <!-- Input form (only visible if logged in) -->
-  <div id="inputForm" class="input-box hidden">
-    <input type="text" id="desc" placeholder="Enter description">
-    <input type="number" id="amount" placeholder="Enter amount">
-    <button class="add" id="addBtn">Add</button>
-  </div>
-
-  <h2>Total: ₹<span id="total">0</span></h2>
-  <div id="list"></div>
 
   <!-- Firebase SDK -->
   <script type="module">
@@ -93,7 +66,7 @@
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ✅ Your Firebase config
+    // 🔥 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -109,98 +82,97 @@
     const auth = getAuth(app);
     const moneyRef = ref(db, "money");
 
-    const loginBox = document.getElementById("loginBox");
-    const logoutBox = document.getElementById("logoutBox");
-    const inputForm = document.getElementById("inputForm");
-
-    // ✅ Login
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password)
-        .catch(err => alert("Login failed: " + err.message));
-    });
-
-    // ✅ Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      signOut(auth);
-    });
-
-    // ✅ Auth state listener
+    // 🔑 Auth State
     onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
-        loginBox.classList.add("hidden");
-        logoutBox.classList.remove("hidden");
-        inputForm.classList.remove("hidden");
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("trackerBox").style.display = "block";
+        loadData();
       } else {
-        loginBox.classList.remove("hidden");
-        logoutBox.classList.add("hidden");
-        inputForm.classList.add("hidden");
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("trackerBox").style.display = "none";
       }
     });
 
-    // ✅ Add entry (only if logged in & verified)
-    document.getElementById("addBtn").addEventListener("click", () => {
-      let desc = document.getElementById("desc").value.trim();
-      let amount = parseFloat(document.getElementById("amount").value);
+    // Login
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCred) => {
+          if (!userCred.user.emailVerified) {
+            alert("Please verify your email before login.");
+            signOut(auth);
+          }
+        })
+        .catch((err) => alert(err.message));
+    });
 
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+    // Add Record
+    document.getElementById("addBtn").addEventListener("click", () => {
+      let desc = document.getElementById("descInput").value.trim();
+      let amount = parseFloat(document.getElementById("amountInput").value);
       if (!desc || isNaN(amount)) {
-        alert("Enter description & amount!");
+        alert("Enter valid description and amount");
         return;
       }
-
-      push(moneyRef, { desc, amount })
-        .then(() => {
-          document.getElementById("desc").value = "";
-          document.getElementById("amount").value = "";
-        })
-        .catch(err => alert("Error: " + err.message));
+      push(moneyRef, { desc, amount });
+      document.getElementById("descInput").value = "";
+      document.getElementById("amountInput").value = "";
     });
 
-    // ✅ Show all entries + total
-    onValue(moneyRef, (snapshot) => {
-      let listDiv = document.getElementById("list");
-      listDiv.innerHTML = "";
-      let total = 0;
+    // Load + Listen Records
+    function loadData() {
+      onValue(moneyRef, (snapshot) => {
+        let listDiv = document.getElementById("list");
+        listDiv.innerHTML = "";
+        let total = 0;
 
-      if (snapshot.exists()) {
-        snapshot.forEach((childSnap) => {
-          let id = childSnap.key;
-          let item = childSnap.val();
-          total += Number(item.amount);
+        if (snapshot.exists()) {
+          snapshot.forEach((childSnap) => {
+            let id = childSnap.key;
+            let item = childSnap.val();
+            total += Number(item.amount);
 
-          let div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
-            ${
-              auth.currentUser && auth.currentUser.emailVerified
-              ? `<div class="actions">
-                   <button class="edit" onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
-                   <button class="delete" onclick="deleteMoney('${id}')">Delete</button>
-                 </div>`
-              : ""
+            let div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `
+              <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
+              <div class="actions">
+                <button class="btn-secondary editBtn" data-id="${id}" data-desc="${item.desc}" data-amount="${item.amount}">Edit</button>
+                <button class="btn-danger deleteBtn" data-id="${id}">Delete</button>
+              </div>
+            `;
+            listDiv.prepend(div);
+          });
+        }
+        document.getElementById("totalBox").innerText = "Total: ₹" + total;
+
+        // Attach listeners
+        document.querySelectorAll(".editBtn").forEach(btn => {
+          btn.onclick = () => {
+            let id = btn.dataset.id;
+            let oldDesc = btn.dataset.desc;
+            let oldAmount = btn.dataset.amount;
+            let newDesc = prompt("Edit description:", oldDesc);
+            let newAmount = parseFloat(prompt("Edit amount:", oldAmount));
+            if (newDesc && !isNaN(newAmount)) {
+              update(ref(db, "money/" + id), { desc: newDesc, amount: newAmount });
             }
-          `;
-          listDiv.prepend(div);
+          };
         });
-      }
-      document.getElementById("total").innerText = total;
-    });
 
-    // ✅ Edit & Delete (only for verified users)
-    window.editMoney = function (id, oldDesc, oldAmount) {
-      let newDesc = prompt("Edit description:", oldDesc);
-      let newAmount = parseFloat(prompt("Edit amount:", oldAmount));
-      if (newDesc && !isNaN(newAmount)) {
-        update(ref(db, "money/" + id), { desc: newDesc, amount: newAmount });
-      }
-    };
-    window.deleteMoney = function (id) {
-      if (confirm("Delete this record?")) {
-        remove(ref(db, "money/" + id));
-      }
-    };
+        document.querySelectorAll(".deleteBtn").forEach(btn => {
+          btn.onclick = () => {
+            let id = btn.dataset.id;
+            if (confirm("Delete this record?")) remove(ref(db, "money/" + id));
+          };
+        });
+      });
+    }
   </script>
 </body>
 </html>
