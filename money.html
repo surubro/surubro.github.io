@@ -77,30 +77,33 @@
         return;
       }
 
-      push(moneyRef, { desc, amount });
-      document.getElementById("desc").value = "";
-      document.getElementById("amount").value = "";
+      push(moneyRef, { desc: desc, amount: amount }).then(() => {
+        document.getElementById("desc").value = "";
+        document.getElementById("amount").value = "";
+      });
     };
 
     // Display list + total
     onValue(moneyRef, (snapshot) => {
-      let data = snapshot.val();
       let listDiv = document.getElementById("list");
-      let total = 0;
       listDiv.innerHTML = "";
+      let total = 0;
 
-      for (let id in data) {
-        let item = data[id];
-        total += item.amount;
+      if (snapshot.exists()) {
+        snapshot.forEach((childSnap) => {
+          let id = childSnap.key;
+          let item = childSnap.val();
+          total += Number(item.amount);
 
-        let div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <strong>${item.desc}</strong> - ₹${item.amount} 
-          <button class="edit" onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
-          <button class="delete" onclick="deleteMoney('${id}')">Delete</button>
-        `;
-        listDiv.appendChild(div);
+          let div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <strong>${item.desc}</strong> - ₹${item.amount}
+            <button class="edit" onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
+            <button class="delete" onclick="deleteMoney('${id}')">Delete</button>
+          `;
+          listDiv.appendChild(div);
+        });
       }
 
       document.getElementById("total").innerText = total;
@@ -122,7 +125,6 @@
         remove(ref(db, "money/" + id));
       }
     };
-
   </script>
 </body>
 </html>
