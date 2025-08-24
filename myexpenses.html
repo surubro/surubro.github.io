@@ -209,7 +209,7 @@
       });
     }
 
-    // Add Expense (no password)
+    // Add Expense
     window.addExpense = function() {
       const desc = document.getElementById("descInput").value.trim();
       const amount = parseFloat(document.getElementById("amountInput").value);
@@ -259,6 +259,10 @@
 
         document.querySelectorAll(".delete").forEach(btn => {
           btn.addEventListener("click", async () => {
+            if (!askPassword()) {
+              alert("❌ Incorrect password!");
+              return;
+            }
             if (confirm("Delete this expense?")) {
               const expenseId = btn.dataset.id;
               const incomeId = btn.dataset.incomeid;
