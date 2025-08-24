@@ -2,61 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Money Tracker</title>
+  <title>Money Trackerzz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f5f5f5; }
-    .container { max-width:600px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
-    h2 { text-align:center; }
-    .input-box { margin:10px 0; }
-    input { width:100%; padding:10px; font-size:16px; margin-top:5px; box-sizing:border-box; }
-    button { padding:10px 15px; margin:5px 0; border:none; border-radius:6px; cursor:pointer; font-size:16px; }
-    .btn-primary { background:#4CAF50; color:white; }
-    .btn-secondary { background:#2196F3; color:white; }
-    .btn-danger { background:#f44336; color:white; }
-    .card { background:#fafafa; padding:10px; margin:8px 0; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
-    .actions button { margin-left:5px; font-size:14px; padding:5px 8px; }
-    #totalBox { font-size:18px; font-weight:bold; margin-top:15px; text-align:right; }
-    @media (max-width:600px) {
-      .card { flex-direction:column; align-items:flex-start; }
-      .actions { margin-top:5px; }
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    .container { max-width: 500px; margin: auto; }
+    input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin: 10px 0; }
+    .actions { margin-top: 5px; display: flex; gap: 10px; }
+    .actions button { flex: 1; padding: 6px; }
+    .total { font-size: 18px; font-weight: bold; margin-top: 15px; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>💰 Money Tracker</h2>
 
-    <!-- Login Form -->
-    <div id="loginBox">
-      <div class="input-box">
-        <label>Email</label>
-        <input type="email" id="email">
-      </div>
-      <div class="input-box">
-        <label>Password</label>
-        <input type="password" id="password">
-      </div>
-      <button class="btn-primary" id="loginBtn">Login</button>
+    <!-- Login -->
+    <div id="loginDiv">
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
     </div>
 
-    <!-- Tracker UI -->
-    <div id="trackerBox" style="display:none;">
-      <button class="btn-secondary" id="logoutBtn">Logout</button>
-
-      <div class="input-box">
-        <label>Description</label>
-        <input type="text" id="descInput" placeholder="Enter description">
-      </div>
-      <div class="input-box">
-        <label>Amount</label>
-        <input type="number" id="amountInput" placeholder="Enter amount">
-      </div>
-      <button class="btn-primary" id="addBtn">Add</button>
-
-      <h3>Records</h3>
+    <!-- App (hidden until login) -->
+    <div id="appDiv" style="display:none;">
+      <button onclick="logout()">Logout</button>
+      <input type="text" id="desc" placeholder="Description">
+      <input type="number" id="amount" placeholder="Amount">
+      <button onclick="addMoney()">Add</button>
       <div id="list"></div>
-
-      <div id="totalBox">Total: ₹0</div>
+      <div class="total">Total: ₹<span id="total">0</span></div>
     </div>
   </div>
 
@@ -66,7 +42,6 @@
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 🔥 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -79,100 +54,85 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
+    const auth = getAuth();
     const moneyRef = ref(db, "money");
 
-    // 🔑 Auth State
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("trackerBox").style.display = "block";
-        loadData();
-      } else {
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("trackerBox").style.display = "none";
-      }
-    });
-
     // Login
-    document.getElementById("loginBtn").addEventListener("click", () => {
-      let email = document.getElementById("email").value;
-      let password = document.getElementById("password").value;
+    window.login = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
       signInWithEmailAndPassword(auth, email, password)
-        .then((userCred) => {
-          if (!userCred.user.emailVerified) {
-            alert("Please verify your email before login.");
-            signOut(auth);
-          }
-        })
-        .catch((err) => alert(err.message));
-    });
+        .catch(err => alert(err.message));
+    };
 
     // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+    window.logout = function () {
+      signOut(auth);
+    };
 
-    // Add Record
-    document.getElementById("addBtn").addEventListener("click", () => {
-      let desc = document.getElementById("descInput").value.trim();
-      let amount = parseFloat(document.getElementById("amountInput").value);
-      if (!desc || isNaN(amount)) {
-        alert("Enter valid description and amount");
-        return;
+    // Auth State
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        document.getElementById("loginDiv").style.display = "none";
+        document.getElementById("appDiv").style.display = "block";
+      } else {
+        document.getElementById("loginDiv").style.display = "block";
+        document.getElementById("appDiv").style.display = "none";
       }
-      push(moneyRef, { desc, amount });
-      document.getElementById("descInput").value = "";
-      document.getElementById("amountInput").value = "";
     });
 
-    // Load + Listen Records
-    function loadData() {
-      onValue(moneyRef, (snapshot) => {
-        let listDiv = document.getElementById("list");
-        listDiv.innerHTML = "";
-        let total = 0;
+    // Add Money
+    window.addMoney = function () {
+      let desc = document.getElementById("desc").value.trim();
+      let amount = parseFloat(document.getElementById("amount").value);
+      if (desc && !isNaN(amount)) {
+        push(moneyRef, { desc, amount });
+        document.getElementById("desc").value = "";
+        document.getElementById("amount").value = "";
+      }
+    };
 
-        if (snapshot.exists()) {
-          snapshot.forEach((childSnap) => {
-            let id = childSnap.key;
-            let item = childSnap.val();
-            total += Number(item.amount);
+    // Edit Money
+    window.editMoney = function (id, oldDesc, oldAmount) {
+      let newDesc = prompt("Edit description:", oldDesc);
+      let newAmount = parseFloat(prompt("Edit amount:", oldAmount));
+      if (newDesc && !isNaN(newAmount)) {
+        update(ref(db, "money/" + id), { desc: newDesc, amount: newAmount });
+      }
+    };
 
-            let div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `
-              <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
-              <div class="actions">
-                <button class="btn-secondary editBtn" data-id="${id}" data-desc="${item.desc}" data-amount="${item.amount}">Edit</button>
-                <button class="btn-danger deleteBtn" data-id="${id}">Delete</button>
-              </div>
-            `;
-            listDiv.prepend(div);
-          });
-        }
-        document.getElementById("totalBox").innerText = "Total: ₹" + total;
+    // Delete Money
+    window.deleteMoney = function (id) {
+      if (confirm("Delete this record?")) {
+        remove(ref(db, "money/" + id));
+      }
+    };
 
-        // Attach listeners
-        document.querySelectorAll(".editBtn").forEach(btn => {
-          btn.onclick = () => {
-            let id = btn.dataset.id;
-            let oldDesc = btn.dataset.desc;
-            let oldAmount = btn.dataset.amount;
-            let newDesc = prompt("Edit description:", oldDesc);
-            let newAmount = parseFloat(prompt("Edit amount:", oldAmount));
-            if (newDesc && !isNaN(newAmount)) {
-              update(ref(db, "money/" + id), { desc: newDesc, amount: newAmount });
-            }
-          };
-        });
+    // Show List + Total
+    onValue(moneyRef, (snapshot) => {
+      let listDiv = document.getElementById("list");
+      listDiv.innerHTML = "";
+      let total = 0;
 
-        document.querySelectorAll(".deleteBtn").forEach(btn => {
-          btn.onclick = () => {
-            let id = btn.dataset.id;
-            if (confirm("Delete this record?")) remove(ref(db, "money/" + id));
-          };
-        });
+      snapshot.forEach((childSnap) => {
+        let id = childSnap.key;
+        let item = childSnap.val();
+        total += Number(item.amount);
+
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div><strong>${item.desc}</strong> - ₹${item.amount}</div>
+          <div class="actions">
+            <button onclick="editMoney('${id}', '${item.desc.replace(/'/g, "\\'")}', ${item.amount})">Edit</button>
+            <button onclick="deleteMoney('${id}')">Delete</button>
+          </div>
+        `;
+        listDiv.prepend(div);
       });
-    }
+
+      document.getElementById("total").innerText = total;
+    });
   </script>
 </body>
 </html>
