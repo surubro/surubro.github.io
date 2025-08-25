@@ -19,8 +19,9 @@
     .delete:hover { background: #b91c1c; }
     .edit { background: #2563eb; }
     .edit:hover { background: #1d4ed8; }
-    .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; }
+    .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; cursor:pointer; }
     .summary h3 { margin-bottom: 10px; }
+    .summary-content { display: none; margin-top: 10px; }
     .income-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
     .income-info { flex: 1; }
     .income-actions { display: flex; gap: 6px; }
@@ -42,11 +43,13 @@
     </div>
 
     <div id="appSection" style="display:none;">
-      <div class="summary">
+      <div class="summary" id="summaryBox">
         <h3>Summary</h3>
-        <div id="incomeSummary"></div>
-        <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
-        <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
+        <div class="summary-content" id="summaryContent">
+          <div id="incomeSummary"></div>
+          <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
+          <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
+        </div>
       </div>
 
       <!-- Add/Edit Income -->
@@ -102,6 +105,12 @@
       const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
       return `${date}, ${time}`;
     }
+
+    // Toggle summary
+    document.getElementById("summaryBox").addEventListener("click", () => {
+      const content = document.getElementById("summaryContent");
+      content.style.display = content.style.display === "none" ? "block" : "none";
+    });
 
     // Auth
     window.login = function() {
