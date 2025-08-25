@@ -19,9 +19,9 @@
     .delete:hover { background: #b91c1c; }
     .edit { background: #2563eb; }
     .edit:hover { background: #1d4ed8; }
-    .summary { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; text-align: center; cursor:pointer; }
-    .summary h3 { margin-bottom: 10px; }
-    .summary-content { display: none; margin-top: 10px; }
+    .collapsible { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; cursor:pointer; }
+    .collapsible h3 { margin-bottom: 10px; }
+    .collapsible-content { display: none; margin-top: 10px; }
     .income-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
     .income-info { flex: 1; }
     .income-actions { display: flex; gap: 6px; }
@@ -43,19 +43,26 @@
     </div>
 
     <div id="appSection" style="display:none;">
-      <div class="summary" id="summaryBox">
+
+      <!-- Summary collapsible -->
+      <div class="collapsible" id="summaryBox">
         <h3>Summary</h3>
-        <div class="summary-content" id="summaryContent">
+        <div class="collapsible-content" id="summaryContent">
           <div id="incomeSummary"></div>
           <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
           <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
         </div>
       </div>
 
-      <!-- Add/Edit Income -->
-      <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
-      <input type="number" id="incomeAmount" placeholder="Income Amount">
-      <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
+      <!-- Add/Edit Income collapsible -->
+      <div class="collapsible" id="incomeBox">
+        <h3>Add Income</h3>
+        <div class="collapsible-content" id="incomeContent">
+          <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
+          <input type="number" id="incomeAmount" placeholder="Income Amount">
+          <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
+        </div>
+      </div>
 
       <!-- Add Expense -->
       <input type="text" id="descInput" placeholder="Expense Description">
@@ -106,11 +113,15 @@
       return `${date}, ${time}`;
     }
 
-    // Toggle summary
-    document.getElementById("summaryBox").addEventListener("click", () => {
-      const content = document.getElementById("summaryContent");
-      content.style.display = content.style.display === "none" ? "block" : "none";
-    });
+    // Toggle collapsibles
+    function setupToggle(boxId, contentId) {
+      document.getElementById(boxId).addEventListener("click", () => {
+        const content = document.getElementById(contentId);
+        content.style.display = content.style.display === "none" ? "block" : "none";
+      });
+    }
+    setupToggle("summaryBox", "summaryContent");
+    setupToggle("incomeBox", "incomeContent");
 
     // Auth
     window.login = function() {
