@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>+Expenses Manager</title>
+  <title>Expenses Manager</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
@@ -179,7 +179,9 @@
         let totalIncome = 0, totalRemaining = 0;
         snap.forEach((c) => {
           const i = c.val();
-          totalIncome += +i.amount; totalRemaining += +i.remaining;
+          totalIncome += +i.amount; 
+          totalRemaining += +i.remaining;
+
           const row = document.createElement("div");
           row.className = "income-row";
           row.innerHTML = `
@@ -189,11 +191,16 @@
               <button class="inline-btn editIncome" data-id="${c.key}" data-desc="${i.desc}" data-amount="${i.amount}">Edit</button>
             </div>`;
           incomeSummary.appendChild(row);
+
           const opt = document.createElement("option");
           opt.value = c.key; opt.textContent = i.desc; incomeSelect.appendChild(opt);
         });
-        totalIncomeEl.innerText = totalIncome; totalRemainingEl.innerText = totalRemaining;
 
+        // ✅ Fixed: Update summary correctly
+        document.getElementById("totalIncome").innerText = totalIncome;
+        document.getElementById("totalRemaining").innerText = totalRemaining;
+
+        // delete & edit actions
         document.querySelectorAll(".deleteIncome").forEach(btn=>{
           btn.onclick=async()=>{
             if(!askPassword()) return;
@@ -283,7 +290,7 @@
             <div class="actions"><button class="delete" data-id="${c.key}" data-incomeid="${e.incomeId}" data-amount="${e.amount}">Delete</button></div>`;
           list.prepend(div);
         });
-        totalExpenses.innerText=total;
+        document.getElementById("totalExpenses").innerText=total;
         categorySummary.innerHTML="<h4>By Category:</h4>";
         Object.keys(catTotals).forEach(cat=>{
           categorySummary.innerHTML+=`<p>${cat}: ₹${catTotals[cat]}</p>`;
