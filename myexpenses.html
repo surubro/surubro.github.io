@@ -46,10 +46,11 @@
 
       <!-- Summary collapsible -->
       <div class="collapsible" id="summaryBox">
-        <h3>Summary</h3>
+        <h3>
+          Summary — Income: ₹<span id="totalIncome">0</span> | Expenses: ₹<span id="totalExpenses">0</span>
+        </h3>
         <div class="collapsible-content" id="summaryContent">
           <div id="incomeSummary"></div>
-          <p><strong>Total Expenses:</strong> ₹<span id="totalExpenses">0</span></p>
           <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
         </div>
       </div>
@@ -99,7 +100,7 @@
     const expensesRef = ref(db, "expenses/items");
 
     let editingIncomeId = null;
-    const PASSWORD = "Confirm"; // 🔑 set your password here
+    const PASSWORD = "Confirm";
 
     function askPassword() {
       const input = prompt("Enter password:");
@@ -143,16 +144,11 @@
       }
     });
 
-    // Save/Add or Update Income (password protected)
+    // Save/Add or Update Income
     window.saveIncome = function() {
-      if (!askPassword()) {
-        alert("❌ Incorrect password!");
-        return;
-      }
-
+      if (!askPassword()) return alert("❌ Incorrect password!");
       const desc = document.getElementById("incomeDesc").value.trim();
       const amount = parseFloat(document.getElementById("incomeAmount").value);
-
       if (!desc || isNaN(amount)) return;
 
       if (editingIncomeId) {
@@ -163,7 +159,6 @@
       } else {
         push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
       }
-
       document.getElementById("incomeDesc").value = "";
       document.getElementById("incomeAmount").value = "";
     };
@@ -174,10 +169,11 @@
         const incomeSelect = document.getElementById("incomeSelect");
         incomeSummary.innerHTML = "";
         incomeSelect.innerHTML = "";
-        let totalRemaining = 0;
+        let totalRemaining = 0, totalIncome = 0;
 
         snapshot.forEach((child) => {
           const income = child.val();
+          totalIncome += Number(income.amount || 0);
           totalRemaining += Number(income.remaining || 0);
 
           const row = document.createElement("div");
@@ -199,60 +195,10 @@
           incomeSelect.appendChild(opt);
         });
 
+        document.getElementById("totalIncome").innerText = totalIncome;
         document.getElementById("totalRemaining").innerText = totalRemaining;
-
-        document.querySelectorAll(".deleteIncome").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            if (!askPassword()) {
-              alert("❌ Incorrect password!");
-              return;
-            }
-            const id = btn.dataset.id;
-            const name = btn.dataset.name;
-            if (!confirm(`Delete income source "${name}"?`)) return;
-            await remove(ref(db, "expenses/incomes/" + id));
-          });
-        });
-
-        document.querySelectorAll(".editIncome").forEach(btn => {
-          btn.addEventListener("click", () => {
-            if (!askPassword()) {
-              alert("❌ Incorrect password!");
-              return;
-            }
-            editingIncomeId = btn.dataset.id;
-            document.getElementById("incomeDesc").value = btn.dataset.desc;
-            document.getElementById("incomeAmount").value = btn.dataset.amount;
-            document.getElementById("incomeBtn").innerText = "Update Income";
-          });
-        });
       });
     }
-
-    // Add Expense
-    window.addExpense = function() {
-      const desc = document.getElementById("descInput").value.trim();
-      const amount = parseFloat(document.getElementById("amountInput").value);
-      const incomeId = document.getElementById("incomeSelect").value;
-
-      if (desc && !isNaN(amount) && incomeId) {
-        const incomeRef = ref(db, "expenses/incomes/" + incomeId);
-        onValue(incomeRef, (snap) => {
-          if (snap.exists()) {
-            const income = snap.val();
-            if (Number(income.remaining) >= amount) {
-              push(expensesRef, { desc, amount, incomeName: income.desc, incomeId, date: Date.now() });
-              update(incomeRef, { remaining: Number(income.remaining) - amount });
-            } else {
-              alert("Not enough balance in " + income.desc);
-            }
-          }
-        }, { onlyOnce: true });
-
-        document.getElementById("descInput").value = "";
-        document.getElementById("amountInput").value = "";
-      }
-    };
 
     function loadExpenses() {
       onValue(expensesRef, (snapshot) => {
@@ -279,15 +225,11 @@
 
         document.querySelectorAll(".delete").forEach(btn => {
           btn.addEventListener("click", async () => {
-            if (!askPassword()) {
-              alert("❌ Incorrect password!");
-              return;
-            }
+            if (!askPassword()) return alert("❌ Incorrect password!");
             if (confirm("Delete this expense?")) {
               const expenseId = btn.dataset.id;
               const incomeId = btn.dataset.incomeid;
               const amount = Number(btn.dataset.amount);
-
               const incomeRef = ref(db, "expenses/incomes/" + incomeId);
               onValue(incomeRef, (snap) => {
                 if (snap.exists()) {
@@ -295,7 +237,6 @@
                   update(incomeRef, { remaining: Number(income.remaining) + amount });
                 }
               }, { onlyOnce: true });
-
               await remove(ref(db, "expenses/items/" + expenseId));
             }
           });
