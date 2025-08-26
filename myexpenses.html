@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expenses Manager</title>
+  <title>+Expenses Manager</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
@@ -47,7 +47,7 @@
 
     <div id="appSection" style="display:none;">
 
-      <!-- Summary collapsible -->
+      <!-- Summary -->
       <div class="collapsible" id="summaryBox">
         <h3>
           Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
@@ -60,7 +60,7 @@
         </div>
       </div>
 
-      <!-- Add/Edit Income collapsible -->
+      <!-- Incomes -->
       <div class="collapsible" id="incomeBox">
         <h3>Add Income</h3>
         <div class="collapsible-content" id="incomeContent">
@@ -70,7 +70,7 @@
         </div>
       </div>
 
-      <!-- Add/Delete Categories collapsible -->
+      <!-- Categories -->
       <div class="collapsible" id="categoryBox">
         <h3>Categories</h3>
         <div class="collapsible-content" id="categoryContent">
@@ -80,7 +80,7 @@
         </div>
       </div>
 
-      <!-- Add Expense -->
+      <!-- Expenses -->
       <input type="text" id="descInput" placeholder="Expense Description">
       <input type="number" id="amountInput" placeholder="Expense Amount">
       <select id="categorySelect"></select>
@@ -157,7 +157,7 @@
       }
     });
 
-    // Income functions
+    // Income
     let editingIncomeId = null;
     window.saveIncome = async function() {
       if (!askPassword()) return alert("❌ Incorrect password!");
@@ -214,10 +214,11 @@
       });
     }
 
-    // Category functions
+    // Categories
     window.addCategory = async function() {
+      if (!askPassword()) return alert("❌ Incorrect password!");
       const name = catInput.value.trim();
-      if(!name) return;
+      if(!name) return alert("Enter category name!");
       await push(categoriesRef,{name});
       catInput.value="";
     };
@@ -248,9 +249,9 @@
       });
     }
 
-    // Expense functions
+    // Expenses
     window.addExpense=async function(){
-      if(!askPassword()) return;
+      if(!askPassword()) return alert("❌ Incorrect password!");
       const desc=descInput.value.trim();
       const amount=parseFloat(amountInput.value);
       const cat=categorySelect.value;
