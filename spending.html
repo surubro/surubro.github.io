@@ -12,7 +12,6 @@
     input, select, button { width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ccc; box-sizing:border-box; }
     button { background:#4f46e5; color:#fff; border:none; cursor:pointer; }
     button:hover { opacity:0.9; }
-    .actions { display:flex; gap:8px; justify-content:flex-end; margin-top:8px; }
     .delete { background:#dc2626; color:#fff; }
     .edit { background:#2563eb; color:#fff; }
     .collapsible { background:#eef2ff; padding:12px; border-radius:12px; margin:10px 0; }
@@ -54,6 +53,7 @@
         <div class="collapsible-content" id="categoryContent">
           <input type="text" id="categoryName" placeholder="Category name">
           <button id="categorySaveBtn" onclick="saveCategory()">Save Category</button>
+          <div id="categoryList"></div>
         </div>
       </div>
 
@@ -93,13 +93,11 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // 🔹 Database refs (changed to spending)
     const categoriesRef = ref(db, "spending/categories");
     const itemsRef = ref(db, "spending/items");
 
     let editingCategoryId = null;
     const PASSWORD = "Confirm";
-
     function askPassword(){ return prompt("Enter password:")===PASSWORD; }
 
     function setupToggle(boxId,contentId){
@@ -143,13 +141,15 @@
 
     function loadCategories(){
       onValue(categoriesRef,snap=>{
-        categorySelect.innerHTML=""; categorySummary.innerHTML="";
+        categorySelect.innerHTML=""; categoryList.innerHTML="";
         snap.forEach(ch=>{
           const d=ch.val();
           const opt=document.createElement("option"); opt.value=ch.key; opt.textContent=d.name; categorySelect.appendChild(opt);
           const row=document.createElement("div");
-          row.innerHTML=`${d.name} <button onclick="editCategory('${ch.key}','${d.name}')">Edit</button> <button onclick="deleteCategory('${ch.key}')">Delete</button>`;
-          categorySummary.appendChild(row);
+          row.innerHTML=`${d.name} 
+            <button class="edit" onclick="editCategory('${ch.key}','${d.name}')">Edit</button> 
+            <button class="delete" onclick="deleteCategory('${ch.key}')">Delete</button>`;
+          categoryList.appendChild(row);
         });
       });
     }
