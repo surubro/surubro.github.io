@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expenses Manager m</title>
+  <title>Expenses Manager</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
@@ -29,6 +29,11 @@
     .inline-btn.deleteIncome { background:#dc2626; }
     .inline-btn.deleteIncome:hover { background:#b91c1c; }
     .inline-btn.editIncome:hover { background:#1d4ed8; }
+
+    /* NEW COLORS */
+    .income-text { color: #16a34a; font-weight: bold; }   /* green */
+    .expense-text { color: #dc2626; font-weight: bold; }  /* red */
+    .remaining-text { color: #2563eb; font-weight: bold; }/* blue */
   </style>
 </head>
 <body>
@@ -47,11 +52,12 @@
       <!-- Summary collapsible -->
       <div class="collapsible" id="summaryBox">
         <h3>
-          Summary — Income: ₹<span id="totalIncome">0</span> | Expenses: ₹<span id="totalExpenses">0</span>
+          Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
+          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
         </h3>
         <div class="collapsible-content" id="summaryContent">
           <div id="incomeSummary"></div>
-          <p><strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span></p>
+          <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
         </div>
       </div>
 
