@@ -30,7 +30,7 @@
     .inline-btn.deleteIncome:hover { background:#b91c1c; }
     .inline-btn.editIncome:hover { background:#1d4ed8; }
 
-    /* NEW COLORS */
+    /* colors for summary */
     .income-text { color: #16a34a; font-weight: bold; }   /* green */
     .expense-text { color: #dc2626; font-weight: bold; }  /* red */
     .remaining-text { color: #2563eb; font-weight: bold; }/* blue */
@@ -75,7 +75,7 @@
       <input type="text" id="descInput" placeholder="Expense Description">
       <input type="number" id="amountInput" placeholder="Expense Amount">
       <select id="incomeSelect"></select>
-      <button onclick="addExpense()">Add Expense</button>
+      <button id="addExpenseBtn" onclick="addExpense()">Add Expense</button>
 
       <h3>Expenses</h3>
       <div id="list"></div>
@@ -85,7 +85,7 @@
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -106,7 +106,7 @@
     const expensesRef = ref(db, "expenses/items");
 
     let editingIncomeId = null;
-    const PASSWORD = "Confirm";
+    const PASSWORD = "Confirm"; // 🔑 your password
 
     function askPassword() {
       const input = prompt("Enter password:");
@@ -150,25 +150,29 @@
       }
     });
 
-    // Save/Add or Update Income
-    window.saveIncome = function() {
+    // Save/Add or Update Income (password protected)
+    window.saveIncome = async function() {
       if (!askPassword()) return alert("❌ Incorrect password!");
       const desc = document.getElementById("incomeDesc").value.trim();
       const amount = parseFloat(document.getElementById("incomeAmount").value);
       if (!desc || isNaN(amount)) return;
 
-      if (editingIncomeId) {
-        const incomeRef = ref(db, "expenses/incomes/" + editingIncomeId);
-        update(incomeRef, { desc, amount, remaining: amount });
-        editingIncomeId = null;
-        document.getElementById("incomeBtn").innerText = "Save Income";
-      } else {
-        push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
+      try {
+        if (editingIncomeId) {
+          await update(ref(db, `expenses/incomes/${editingIncomeId}`), { desc, amount, remaining: amount });
+          editingIncomeId = null;
+          document.getElementById("incomeBtn").innerText = "Save Income";
+        } else {
+          await push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
+        }
+        document.getElementById("incomeDesc").value = "";
+        document.getElementById("incomeAmount").value = "";
+      } catch (e) {
+        alert("Failed to save income: " + e.message);
       }
-      document.getElementById("incomeDesc").value = "";
-      document.getElementById("incomeAmount").value = "";
     };
 
+    // Load Incomes (summary + select)
     function loadIncomes() {
       onValue(incomesRef, (snapshot) => {
         const incomeSummary = document.getElementById("incomeSummary");
@@ -203,18 +207,92 @@
 
         document.getElementById("totalIncome").innerText = totalIncome;
         document.getElementById("totalRemaining").innerText = totalRemaining;
+
+        // bind income action buttons
+        document.querySelectorAll(".deleteIncome").forEach(btn => {
+          btn.onclick = async () => {
+            if (!askPassword()) return alert("❌ Incorrect password!");
+            const id = btn.dataset.id;
+            const name = btn.dataset.name;
+            if (!confirm(`Delete income source "${name}"?`)) return;
+            try {
+              await remove(ref(db, "expenses/incomes/" + id));
+            } catch (e) {
+              alert("Failed to delete income: " + e.message);
+            }
+          };
+        });
+
+        document.querySelectorAll(".editIncome").forEach(btn => {
+          btn.onclick = () => {
+            if (!askPassword()) return alert("❌ Incorrect password!");
+            editingIncomeId = btn.dataset.id;
+            document.getElementById("incomeDesc").value = btn.dataset.desc;
+            document.getElementById("incomeAmount").value = btn.dataset.amount;
+            document.getElementById("incomeBtn").innerText = "Update Income";
+            document.getElementById("incomeContent").style.display = "block"; // auto-open
+          };
+        });
       });
     }
 
+    // Add Expense (password protected + atomic update)
+    window.addExpense = async function() {
+      if (!askPassword()) return alert("❌ Incorrect password!");
+
+      const desc = document.getElementById("descInput").value.trim();
+      const amount = parseFloat(document.getElementById("amountInput").value);
+      const incomeId = document.getElementById("incomeSelect").value;
+
+      if (!desc) return alert("Please enter expense description.");
+      if (isNaN(amount) || amount <= 0) return alert("Please enter a valid amount.");
+      if (!incomeId) return alert("Please select an income source.");
+
+      try {
+        // fetch selected income once
+        const incSnap = await get(ref(db, `expenses/incomes/${incomeId}`));
+        if (!incSnap.exists()) return alert("Selected income not found.");
+        const income = incSnap.val();
+
+        const remaining = Number(income.remaining || 0);
+        if (remaining < amount) return alert(`Not enough balance in "${income.desc}".`);
+
+        // generate new expense key without writing yet
+        const newExpenseRef = push(expensesRef);
+        const expenseKey = newExpenseRef.key;
+
+        // atomic multi-location update
+        const updates = {};
+        updates[`expenses/incomes/${incomeId}/remaining`] = remaining - amount;
+        updates[`expenses/items/${expenseKey}`] = {
+          desc,
+          amount,
+          incomeName: income.desc,
+          incomeId,
+          date: Date.now()
+        };
+
+        await update(ref(db), updates);
+
+        // clear inputs
+        document.getElementById("descInput").value = "";
+        document.getElementById("amountInput").value = "";
+      } catch (e) {
+        alert("Failed to add expense: " + e.message);
+      }
+    };
+
+    // Load Expenses (list + total + delete atomic)
     function loadExpenses() {
       onValue(expensesRef, (snapshot) => {
         const listDiv = document.getElementById("list");
         listDiv.innerHTML = "";
         let total = 0;
 
+        const rows = [];
         snapshot.forEach((child) => {
           const item = child.val();
-          total += Number(item.amount);
+          total += Number(item.amount || 0);
           const div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
@@ -224,28 +302,39 @@
             <div class="actions">
               <button class="delete" data-id="${child.key}" data-incomeid="${item.incomeId}" data-amount="${item.amount}">Delete</button>
             </div>`;
-          listDiv.prepend(div);
+          rows.push(div);
         });
+
+        // newest first
+        rows.reverse().forEach(el => listDiv.prepend(el));
 
         document.getElementById("totalExpenses").innerText = total;
 
         document.querySelectorAll(".delete").forEach(btn => {
-          btn.addEventListener("click", async () => {
+          btn.onclick = async () => {
             if (!askPassword()) return alert("❌ Incorrect password!");
-            if (confirm("Delete this expense?")) {
-              const expenseId = btn.dataset.id;
-              const incomeId = btn.dataset.incomeid;
-              const amount = Number(btn.dataset.amount);
-              const incomeRef = ref(db, "expenses/incomes/" + incomeId);
-              onValue(incomeRef, (snap) => {
-                if (snap.exists()) {
-                  const income = snap.val();
-                  update(incomeRef, { remaining: Number(income.remaining) + amount });
-                }
-              }, { onlyOnce: true });
-              await remove(ref(db, "expenses/items/" + expenseId));
+            if (!confirm("Delete this expense?")) return;
+
+            const expenseId = btn.dataset.id;
+            const incomeId = btn.dataset.incomeid;
+            const amount = Number(btn.dataset.amount);
+
+            try {
+              // read current remaining for that income
+              const incSnap = await get(ref(db, `expenses/incomes/${incomeId}`));
+              if (!incSnap.exists()) return alert("Income not found to refund.");
+              const currentRemaining = Number(incSnap.val().remaining || 0);
+
+              // atomic: refund remaining and remove expense
+              const updates = {};
+              updates[`expenses/incomes/${incomeId}/remaining`] = currentRemaining + amount;
+              updates[`expenses/items/${expenseId}`] = null; // delete
+
+              await update(ref(db), updates);
+            } catch (e) {
+              alert("Failed to delete expense: " + e.message);
             }
-          });
+          };
         });
       });
     }
