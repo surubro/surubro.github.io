@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My m Spending</title>
+  <title>My Spending</title>
   <style>
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafb; }
     .container { max-width:600px; margin:0 auto; padding:15px; }
@@ -222,6 +222,17 @@
       await remove(ref(db,`spending/categories/${id}`));
     };
 
+    // Format date
+    function formatDate(ts){
+      const d=new Date(ts);
+      const hours=d.getHours();
+      const minutes=d.getMinutes().toString().padStart(2,'0');
+      const ampm=hours>=12?"pm":"am";
+      const hr=((hours+11)%12+1);
+      const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return `${hr}:${minutes} ${ampm} ${d.getDate()}/${months[d.getMonth()]}/${d.getFullYear()}`;
+    }
+
     // Spending
     window.addExpense=async()=>{
       if(!askPassword()) return;
@@ -239,7 +250,10 @@
           const v=ch.val(); total+=v.amount;
           catTotals[v.categoryId]=(catTotals[v.categoryId]||0)+v.amount;
           const div=document.createElement("div");
-          div.className="card"; div.innerHTML=`<b>${v.desc}</b> - ₹${v.amount} <br><small class="muted">${v.categoryName}</small> <button onclick="deleteItem('${ch.key}')">Delete</button>`;
+          div.className="card"; 
+          div.innerHTML=`<b>${v.desc}</b> - ₹${v.amount} 
+            <br><small class="muted">${v.categoryName} • ${formatDate(v.date)}</small> 
+            <button onclick="deleteItem('${ch.key}')">Delete</button>`;
           list.prepend(div);
         });
         totalExpenses.innerText=total;
