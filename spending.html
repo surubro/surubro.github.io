@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Spending</title>
+  <title>My Spendings</title>
   <style>
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafb; }
     .container { max-width:600px; margin:0 auto; padding:15px; }
@@ -89,9 +89,196 @@
     </div>
   </div>
 
-  <!-- Firebase (JS stays the same except summary header removed salary display) -->
+  <!-- Firebase -->
   <script type="module">
-    /* --- keep all your existing Firebase + logic code unchanged --- */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Database refs
+    const salariesRef = ref(db, "spending/salaries");
+    const categoriesRef = ref(db, "spending/categories");
+    const itemsRef = ref(db, "spending/items");
+
+    let editingSalaryId = null;
+    let editingCategoryId = null;
+    const PASSWORD = "Confirm";
+    function askPassword(){ return prompt("Enter password:")===PASSWORD; }
+
+    function setupToggle(boxId,contentId){
+      document.querySelector(`#${boxId} h3`).addEventListener("click",()=>{
+        const c=document.getElementById(contentId);
+        c.style.display=c.style.display==="block"?"none":"block";
+      });
+    }
+    setupToggle("summaryBox","summaryContent");
+    setupToggle("salaryBox","salaryContent");
+    setupToggle("categoryBox","categoryContent");
+
+    // Auth
+    window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
+    window.logout=()=>signOut(auth);
+
+    onAuthStateChanged(auth,(u)=>{
+      if(u&&u.emailVerified){
+        authSection.style.display="none"; appSection.style.display="block";
+        loadSalaries(); loadCategories(); loadItems();
+      } else {
+        authSection.style.display="block"; appSection.style.display="none";
+      }
+    });
+
+    // Salary
+    window.saveSalary=async()=>{
+      if(!askPassword()) return alert("Wrong password!");
+      const name=salaryName.value.trim(); const amt=parseFloat(salaryAmount.value);
+      if(!name||isNaN(amt)||amt<=0) return;
+      if(editingSalaryId){
+        await update(ref(db,`spending/salaries/${editingSalaryId}`),{name,amount:amt});
+        editingSalaryId=null; salarySaveBtn.innerText="Save Salary"; salaryBoxTitle.innerText="Add Salary";
+      } else {
+        await push(salariesRef,{name,amount:amt,date:Date.now()});
+      }
+      salaryName.value=""; salaryAmount.value="";
+    };
+    function loadSalaries(){
+      onValue(salariesRef,snap=>{
+        salaryList.innerHTML=""; let total=0;
+        snap.forEach(ch=>{
+          const d=ch.val(); total+=d.amount;
+          const row=document.createElement("div");
+          row.innerHTML=`${d.name}: ₹${d.amount} 
+            <button class="edit" onclick="editSalary('${ch.key}','${d.name}',${d.amount})">Edit</button> 
+            <button class="delete" onclick="deleteSalary('${ch.key}')">Delete</button>`;
+          salaryList.appendChild(row);
+        });
+        totalIncome.innerText=total;
+        updateRemaining();
+      });
+    }
+    window.editSalary=(id,name,amt)=>{
+      if(!askPassword()) return;
+      editingSalaryId=id; salaryName.value=name; salaryAmount.value=amt;
+      salarySaveBtn.innerText="Update Salary"; salaryBoxTitle.innerText="Edit Salary"; salaryContent.style.display="block";
+    };
+    window.deleteSalary=async(id)=>{
+      if(!askPassword()) return;
+      if(confirm("Delete this salary?")) await remove(ref(db,`spending/salaries/${id}`));
+    };
+
+    // Categories
+    window.saveCategory=async()=>{
+      if(!askPassword()) return alert("Wrong password!");
+      const name=categoryName.value.trim(); if(!name) return;
+      if(editingCategoryId){
+        await update(ref(db,`spending/categories/${editingCategoryId}`),{name});
+        const snap=await get(itemsRef); const updates={};
+        snap.forEach(ch=>{ if(ch.val().categoryId===editingCategoryId) updates[`spending/items/${ch.key}/categoryName`]=name; });
+        if(Object.keys(updates).length) await update(ref(db),updates);
+        editingCategoryId=null; categorySaveBtn.innerText="Save Category"; categoryBoxTitle.innerText="Add Category";
+      } else {
+        await push(categoriesRef,{name,date:Date.now()});
+      }
+      categoryName.value="";
+    };
+    function loadCategories(){
+      onValue(categoriesRef,snap=>{
+        categorySelect.innerHTML=""; categoryList.innerHTML="";
+        snap.forEach(ch=>{
+          const d=ch.val();
+          const opt=document.createElement("option"); opt.value=ch.key; opt.textContent=d.name; categorySelect.appendChild(opt);
+          const row=document.createElement("div");
+          row.innerHTML=`${d.name} 
+            <button class="edit" onclick="editCategory('${ch.key}','${d.name}')">Edit</button> 
+            <button class="delete" onclick="deleteCategory('${ch.key}')">Delete</button>`;
+          categoryList.appendChild(row);
+        });
+      });
+    }
+    window.editCategory=(id,name)=>{
+      if(!askPassword()) return;
+      editingCategoryId=id; categoryName.value=name; categorySaveBtn.innerText="Update Category"; categoryBoxTitle.innerText="Edit Category"; categoryContent.style.display="block";
+    };
+    window.deleteCategory=async(id)=>{
+      if(!askPassword()) return;
+      if(!confirm("Delete category?")) return;
+      const snap=await get(itemsRef); let used=false;
+      snap.forEach(ch=>{if(ch.val().categoryId===id) used=true;});
+      if(used) return alert("Category has spending entries.");
+      await remove(ref(db,`spending/categories/${id}`));
+    };
+
+    // Format date
+    function formatDate(ts){
+      const d=new Date(ts);
+      const hours=d.getHours();
+      const minutes=d.getMinutes().toString().padStart(2,'0');
+      const ampm=hours>=12?"pm":"am";
+      const hr=((hours+11)%12+1);
+      const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return `${hr}:${minutes} ${ampm} ${d.getDate()}/${months[d.getMonth()]}/${d.getFullYear()}`;
+    }
+
+    // Spending
+    window.addExpense=async()=>{
+      if(!askPassword()) return;
+      const desc=descInput.value.trim(); const amt=parseFloat(amountInput.value); const catId=categorySelect.value;
+      if(!desc||isNaN(amt)||amt<=0) return;
+      const snap=await get(ref(db,`spending/categories/${catId}`)); if(!snap.exists()) return;
+      const catName=snap.val().name;
+      await push(itemsRef,{desc,amount:amt,categoryId:catId,categoryName:catName,date:Date.now()});
+      descInput.value=""; amountInput.value="";
+    };
+    function loadItems(){
+      onValue(itemsRef,snap=>{
+        list.innerHTML=""; let total=0; const catTotals={};
+        snap.forEach(ch=>{
+          const v=ch.val(); total+=v.amount;
+          catTotals[v.categoryId]=(catTotals[v.categoryId]||0)+v.amount;
+          const div=document.createElement("div");
+          div.className="card"; 
+          div.innerHTML=`<b>${v.desc}</b> - ₹${v.amount} 
+            <br><small class="muted">${v.categoryName} • ${formatDate(v.date)}</small> 
+            <button onclick="deleteItem('${ch.key}')">Delete</button>`;
+          list.prepend(div);
+        });
+        totalExpenses.innerText=total;
+        updateRemaining();
+        categorySummary.innerHTML="";
+        get(categoriesRef).then(cs=>{
+          cs.forEach(c=>{
+            const amt=catTotals[c.key]||0;
+            const row=document.createElement("div"); row.textContent=`${c.val().name}: ₹${amt}`;
+            categorySummary.appendChild(row);
+          });
+        });
+      });
+    }
+    window.deleteItem=async(id)=>{
+      if(!askPassword()) return;
+      if(confirm("Delete this entry?")) await remove(ref(db,`spending/items/${id}`));
+    };
+
+    // Update remaining
+    function updateRemaining(){
+      const income=parseFloat(totalIncome.innerText)||0;
+      const expenses=parseFloat(totalExpenses.innerText)||0;
+      remainingBalance.innerText=income-expenses;
+    }
   </script>
 </body>
 </html>
