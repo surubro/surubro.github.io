@@ -1,13 +1,76 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ticket to Ride Route Live Search</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    .result { margin-top: 15px; font-weight: bold; }
-    input[type="text"] { width: 300px; padding: 5px; }
-    ul { margin-top: 10px; }
-    li { margin-bottom: 5px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 15px;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #routeInput {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px 15px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    #routeInput:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 15px;
+    }
+
+    li {
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      font-size: 1rem;
+      word-break: break-word;
+    }
+
+    li.no-match {
+      color: red;
+      background-color: #ffe5e5;
+      text-align: center;
+    }
+
+    @media (max-width: 400px) {
+      body {
+        margin: 10px;
+      }
+
+      h2 {
+        font-size: 1.2rem;
+      }
+
+      li {
+        padding: 10px 12px;
+        font-size: 0.95rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -17,41 +80,18 @@
 
   <script>
     const routes = [
-      "vancouver - montreal",
-      "portland - phoenix",
-      "chicago - new orleans",
-      "duluth - el paso",
-      "denver - pittsburgh",
-      "boston - miami",
-      "saint sault marie - nashville",
-      "duluth - houston",
-      "chicago - santa fe",
-      "new york - atlanta",
-      "montreal - atlanta",
-      "seattle - los angeles",
-      "calgary - phoenix",
-      "vancouver - santa fe",
-      "los angeles - chicago",
-      "toronto - miami",
-      "los angeles - new york",
-      "winnipeg - little rock",
-      "new york - dallas",
-      "portland - nashville",
-      "portland - pittsburgh",
-      "saint sault marie - oklahoma city",
-      "calgary - salt lake city",
-      "chicago - new orleans",
-      "montreal - new orleans",
-      "los angeles - miami",
-      "dallas - new york",
-      "duluth - el paso",
-      "helena - los angeles",
-      "kansas city - houston",
-      "denver - el paso",
-      "dallas - houston",
-      "pittsburgh - houston",
-      "denver - pittsburgh",
-      "dallas - el paso",
+      "vancouver - montreal", "portland - phoenix", "chicago - new orleans",
+      "duluth - el paso", "denver - pittsburgh", "boston - miami",
+      "saint sault marie - nashville", "duluth - houston", "chicago - santa fe",
+      "new york - atlanta", "montreal - atlanta", "seattle - los angeles",
+      "calgary - phoenix", "vancouver - santa fe", "los angeles - chicago",
+      "toronto - miami", "los angeles - new york", "winnipeg - little rock",
+      "new york - dallas", "portland - nashville", "portland - pittsburgh",
+      "saint sault marie - oklahoma city", "calgary - salt lake city",
+      "chicago - new orleans", "montreal - new orleans", "los angeles - miami",
+      "dallas - new york", "duluth - el paso", "helena - los angeles",
+      "kansas city - houston", "denver - el paso", "dallas - houston",
+      "pittsburgh - houston", "denver - pittsburgh", "dallas - el paso",
       "nashville - el paso"
     ];
 
@@ -65,9 +105,10 @@
       const resultEl = document.getElementById('result');
       resultEl.innerHTML = '';
 
-      if (normalizedInput.length === 0) return;
+      if (!normalizedInput) return;
 
       const matches = routes.filter(route => route.includes(normalizedInput));
+
       if (matches.length > 0) {
         matches.forEach(route => {
           const li = document.createElement('li');
@@ -77,7 +118,7 @@
       } else {
         const li = document.createElement('li');
         li.textContent = 'No matching routes found.';
-        li.style.color = 'red';
+        li.className = 'no-match';
         resultEl.appendChild(li);
       }
     }
