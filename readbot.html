@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Telegram Bot — Send & Read</title>
+  <meta name="viewport" content="width=240, initial-scale=1">
+  <style>
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      padding:10px;
+      max-width:240px;
+      box-sizing:border-box;
+    }
+    h3{margin:6px 0 8px 0; font-size:16px;}
+    #messages{
+      border:1px solid #ddd;
+      padding:8px;
+      height:260px;
+      overflow:auto;
+      font-size:13px;
+      background:#fafafa;
+    }
+    .msg {
+      margin:6px 0;
+      padding:6px;
+      border-radius:6px;
+    }
+    .me{ background:#e6ffe6; text-align:right; }
+    .other{ background:#f0f0f0; text-align:left; }
+    form{margin-top:8px;}
+    input[type="text"]{
+      width:100%;
+      box-sizing:border-box;
+      padding:6px;
+      font-size:14px;
+    }
+    button{
+      width:100%;
+      padding:8px;
+      margin-top:6px;
+      font-size:14px;
+      cursor:pointer;
+    }
+    small{color:#666}
+  </style>
+</head>
+<body>
+  <h3>Telegram — Send & Read</h3>
+
+  <div id="messages">Loading messages…</div>
+
+  <form id="sendForm" onsubmit="event.preventDefault(); sendMessage();">
+    <input id="text" type="text" placeholder="Type message..." required />
+    <button type="submit">Send</button>
+  </form>
+
+  <p><small id="status"></small></p>
+
+<script>
+/* ====== CONFIG — inserted token & chat id ====== */
+const BOT_TOKEN = "7625260219:AAHaPBpQVQ2CXL-e_RiHh8FUbXxmec5YCKc";
+const CHAT_ID = "-1002368470030";
+/* ================================================= */
+
+const API_BASE = "https://api.telegram.org/bot" + BOT_TOKEN;
+const msgsEl = document.getElementById('messages');
+const statusEl = document.getElementById('status');
+
+let lastUpdateId = 0;      // used to request only new updates
+let pollInterval = 3000;   // ms - poll every 3s
+
+function appendMessage(text, who='other') {
+  const d = document.createElement('div');
+  d.className = 'msg ' + (who === 'me' ? 'me' : 'other');
+  d.textContent = text;
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+/* Send message to target chat */
+async function sendMessage() {
+  const input = document.getElementById('text');
+  const text = input.value.trim();
+  if (!text) return;
+  statusEl.textContent = "Sending...";
+  try {
+    // Use POST to avoid URL length issues
+    const res = await fetch(API_BASE + '/sendMessage', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      appendMessage(text, 'me');
+      input.value = '';
+      statusEl.textContent = "Sent";
+    } else {
+      statusEl.textContent = "Error: " + (data.description || JSON.stringify(data));
+      console.error('send error', data);
+    }
+  } catch (err) {
+    statusEl.textContent = "Network/CORS error: " + err.message;
+    console.error(err);
+  }
+}
+
+/* Poll getUpdates and display new messages.
+   We keep track of lastUpdateId and set offset=lastUpdateId+1 to prevent duplicates.
+*/
+async function pollUpdates() {
+  try {
+    const url = API_BASE + '/getUpdates?timeout=0' + (lastUpdateId ? '&offset=' + (lastUpdateId + 1) : '');
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) {
+      console.error('getUpdates failed', data);
+      statusEl.textContent = 'getUpdates error: ' + (data.description || JSON.stringify(data));
+      return;
+    }
+    if (Array.isArray(data.result) && data.result.length) {
+      data.result.forEach(update => {
+        // update structure may vary: message, edited_message, channel_post, etc.
+        lastUpdateId = Math.max(lastUpdateId || 0, update.update_id || 0);
+
+        // Determine message content and sender
+        let text = '';
+        if (update.message && update.message.text) {
+          text = update.message.text;
+          const from = update.message.from && update.message.from.username
+                        ? update.message.from.username
+                        : (update.message.from && (update.message.from.first_name || update.message.from.last_name))
+                          || 'unknown';
+          // Show who sent it
+          appendMessage(from + ': ' + text, (update.message.from && update.message.from.is_bot) ? 'me' : 'other');
+        } else if (update.channel_post && update.channel_post.text) {
+          appendMessage('channel: ' + update.channel_post.text, 'other');
+        } else {
+          // For unknown update types, show JSON
+          appendMessage('Update: ' + JSON.stringify(update), 'other');
+        }
+      });
+    }
+    statusEl.textContent = 'Last poll: ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    console.error('poll error', err);
+    statusEl.textContent = 'Poll error (network/CORS?)';
+  }
+}
+
+/* Start polling loop */
+function startPolling() {
+  // first quick poll to load history, then interval
+  pollUpdates();
+  setInterval(pollUpdates, pollInterval);
+}
+
+/* Run */
+startPolling();
+
+</script>
+</body>
+</html>
