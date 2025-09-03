@@ -1,135 +1,83 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Group — Last Message</title>
-  <meta name="viewport" content="width=360, initial-scale=1">
-  <style>
-    body { font-family: Arial, Helvetica, sans-serif; padding:12px; max-width:420px; margin:auto; }
-    h2 { margin:4px 0 10px 0; font-size:18px; }
-    #card { border:1px solid #ddd; padding:10px; border-radius:8px; background:#fff; }
-    #msgText { font-size:16px; margin:8px 0; }
-    #meta { color:#555; font-size:13px; margin-bottom:10px; }
-    #status { color:#666; font-size:13px; margin-top:8px; }
-    button { padding:8px 10px; font-size:14px; cursor:pointer; }
-    small.warn { color: #b33; display:block; margin-top:10px; }
-  </style>
+<meta charset="UTF-8">
+<title>Group Bots Messages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body { font-family: Arial; max-width: 400px; margin: auto; padding: 10px; }
+  h2 { margin-bottom: 10px; }
+  #messages { border: 1px solid #ccc; padding: 8px; height: 300px; overflow-y: auto; background: #f9f9f9; }
+  .msg { margin-bottom: 8px; padding: 6px; border-radius: 6px; background: #e6ffe6; }
+  .bot { font-weight: bold; }
+  .time { font-size: 11px; color: #555; }
+  button { margin-top: 10px; padding: 6px 8px; cursor: pointer; }
+</style>
 </head>
 <body>
-  <h2>Group — Last Received Message</h2>
 
-  <div id="card">
-    <div id="msgText">No message yet.</div>
-    <div id="meta"></div>
-    <button id="refreshBtn">Refresh now</button>
-    <div id="status">Status: idle</div>
-  </div>
-
-  <p style="margin-top:14px"><small class="warn">
-    Warning: This page uses the Bot Token in client-side JavaScript (not secure). For production, use a server-side proxy.
-  </small></p>
+<h2>Last Messages from Bots in Group</h2>
+<div id="messages">Loading...</div>
+<button id="refreshBtn">Refresh Now</button>
 
 <script>
-/* ======= CONFIG - replace these with your values ======= */
-const BOT_TOKEN = "8350662693:AAFF5QO5Pp34fkhiL1TpkqJpiuQ_pUf2sj8";         // e.g. "123456:ABC-DEF..."
-const GROUP_CHAT_ID = -1002914225587;                  // replace with your group id (number)
-const POLL_MS = 3000;                                  // poll interval in ms
-/* ====================================================== */
-
+const BOT_TOKEN = "8350662693:AAFF5QO5Pp34fkhiL1TpkqJpiuQ_pUf2sj8";
+const GROUP_CHAT_ID = -1002914225587;
 const API_BASE = "https://api.telegram.org/bot" + BOT_TOKEN;
-const msgTextEl = document.getElementById('msgText');
-const metaEl = document.getElementById('meta');
-const statusEl = document.getElementById('status');
+const POLL_MS = 3000;
+
+const messagesEl = document.getElementById('messages');
 const refreshBtn = document.getElementById('refreshBtn');
 
-let running = false;
+let lastUpdateId = 0;
 
-/** Format unix epoch (seconds) to human string */
-function formatDate(ts) {
+function formatTime(ts) {
+  const d = new Date(ts * 1000);
+  return d.toLocaleString();
+}
+
+function appendMessage(botName, text, date) {
+  const div = document.createElement('div');
+  div.className = "msg";
+  div.innerHTML = `<span class="bot">${botName}</span>: ${text}<br><span class="time">${formatTime(date)}</span>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+async function fetchBotMessages() {
   try {
-    const d = new Date(ts * 1000);
-    return d.toLocaleString();
-  } catch(e) {
-    return String(ts);
-  }
-}
-
-/** Show a message on UI */
-function showMessage(text, fromName, dateSeconds) {
-  msgTextEl.textContent = text || "(no text)";
-  metaEl.textContent = "From: " + (fromName || "unknown") + " • " + (dateSeconds ? formatDate(dateSeconds) : "");
-}
-
-/** Update status */
-function setStatus(s) {
-  statusEl.textContent = "Status: " + s;
-}
-
-/** Fetch updates and extract last message for GROUP_CHAT_ID */
-async function fetchLastGroupMessage() {
-  setStatus("fetching updates...");
-  try {
-    // get recent updates (no offset, so we get history). We limit to 100 to avoid huge responses.
-    const res = await fetch(API_BASE + "/getUpdates?limit=100");
-    if (!res.ok) {
-      setStatus("HTTP Error: " + res.status);
-      console.error("HTTP error", res.status, await res.text());
-      return;
-    }
+    const url = API_BASE + '/getUpdates?timeout=0' + (lastUpdateId ? '&offset=' + (lastUpdateId + 1) : '');
+    const res = await fetch(url);
     const data = await res.json();
-    if (!data.ok) {
-      setStatus("API error: " + (data.description || "unknown"));
-      console.error("API error", data);
-      return;
-    }
+    if (!data.ok) return;
 
-    const updates = Array.isArray(data.result) ? data.result : [];
-    // filter updates that have a message (or channel_post) and belong to our group
-    const groupMsgs = updates.filter(u => {
-      const m = u.message || u.channel_post || u.edited_message;
-      return m && m.chat && Number(m.chat.id) === Number(GROUP_CHAT_ID);
+    const updates = data.result;
+    updates.forEach(upd => {
+      lastUpdateId = upd.update_id;
+      const m = upd.message || upd.channel_post || upd.edited_message;
+      if (!m || !m.chat) return;
+
+      // only messages in our group
+      if (Number(m.chat.id) !== Number(GROUP_CHAT_ID)) return;
+
+      // only messages sent by bots
+      if (m.from && m.from.is_bot) {
+        const botName = m.from.username || m.from.first_name || "bot";
+        const text = m.text || m.caption || "(no text)";
+        const date = m.date || Math.floor(Date.now()/1000);
+        appendMessage(botName, text, date);
+      }
     });
-
-    if (groupMsgs.length === 0) {
-      setStatus("No messages found for this group yet.");
-      return;
-    }
-
-    // pick the update with the greatest update_id (latest)
-    groupMsgs.sort((a,b) => (a.update_id || 0) - (b.update_id || 0));
-    const last = groupMsgs[groupMsgs.length - 1];
-    const m = last.message || last.channel_post || last.edited_message;
-    const text = m.text || (m.caption ? m.caption : "(no text)");
-    const from = (m.from && (m.from.username || m.from.first_name || m.from.last_name)) || (m.sender_chat && m.sender_chat.title) || "bot/unknown";
-    const date = m.date || last.date || null;
-
-    showMessage(text, from, date);
-    setStatus("Loaded last message (update_id: " + (last.update_id || "?") + ").");
   } catch (err) {
-    console.error("fetch error", err);
-    setStatus("Network/CORS error: " + (err.message || err));
+    console.error("Fetch error:", err);
   }
 }
 
-/* Poll loop */
-async function pollLoop() {
-  if (running) return;
-  running = true;
-  try {
-    await fetchLastGroupMessage();
-  } finally {
-    running = false;
-  }
-}
+// polling
+setInterval(fetchBotMessages, POLL_MS);
+fetchBotMessages(); // initial fetch
 
-/* Start periodic polling */
-let pollTimer = setInterval(pollLoop, POLL_MS);
-pollLoop(); // initial
-
-/* Manual refresh button */
-refreshBtn.addEventListener('click', () => {
-  pollLoop();
-});
+refreshBtn.addEventListener('click', fetchBotMessages);
 </script>
 </body>
 </html>
