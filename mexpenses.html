@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -31,64 +32,70 @@
     .income-text { color: #16a34a; font-weight: bold; }
     .expense-text { color: #dc2626; font-weight: bold; }
     .remaining-text { color: #2563eb; font-weight: bold; }
+    .delete-all { background: #b91c1c; width: 100%; margin-top: 10px; }
+    .delete-all:hover { background: #7f1d1d; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>💰 Mom Expenses Manager</h2><div id="authSection">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="login()">Login</button>
-  <button onclick="logout()">Logout</button>
-</div>
+    <h2>💰 Mom Expenses Manager</h2>
+    
+    <div id="authSection">
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <button onclick="logout()">Logout</button>
+    </div>
 
-<div id="appSection" style="display:none;">
+    <div id="appSection" style="display:none;">
+      <!-- Summary -->
+      <div class="collapsible" id="summaryBox">
+        <h3>
+          Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
+          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
+        </h3>
+        <div class="collapsible-content" id="summaryContent">
+          <div id="incomeSummary"></div>
+          <div id="categorySummary"></div>
+          <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
+        </div>
+      </div>
 
-  <!-- Summary -->
-  <div class="collapsible" id="summaryBox">
-    <h3>
-      Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
-      <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
-    </h3>
-    <div class="collapsible-content" id="summaryContent">
-      <div id="incomeSummary"></div>
-      <div id="categorySummary"></div>
-      <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
+      <!-- Incomes -->
+      <div class="collapsible" id="incomeBox">
+        <h3>Add Income</h3>
+        <div class="collapsible-content" id="incomeContent">
+          <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
+          <input type="number" id="incomeAmount" placeholder="Income Amount">
+          <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="collapsible" id="categoryBox">
+        <h3>Categories</h3>
+        <div class="collapsible-content" id="categoryContent">
+          <input type="text" id="catInput" placeholder="Category Name">
+          <button onclick="addCategory()">Add Category</button>
+          <div id="catList"></div>
+        </div>
+      </div>
+
+      <!-- Expenses -->
+      <input type="text" id="descInput" placeholder="Expense Description">
+      <input type="number" id="amountInput" placeholder="Expense Amount">
+      <select id="categorySelect"></select>
+      <select id="incomeSelect"></select>
+      <button id="addExpenseBtn" onclick="addExpense()">Add Expense</button>
+
+      <h3>Expenses</h3>
+      <button class="delete-all" onclick="deleteAllExpenses()">❌ Delete All Expenses</button>
+      <div id="list"></div>
     </div>
   </div>
 
-  <!-- Incomes -->
-  <div class="collapsible" id="incomeBox">
-    <h3>Add Income</h3>
-    <div class="collapsible-content" id="incomeContent">
-      <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
-      <input type="number" id="incomeAmount" placeholder="Income Amount">
-      <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
-    </div>
-  </div>
-
-  <!-- Categories -->
-  <div class="collapsible" id="categoryBox">
-    <h3>Categories</h3>
-    <div class="collapsible-content" id="categoryContent">
-      <input type="text" id="catInput" placeholder="Category Name">
-      <button onclick="addCategory()">Add Category</button>
-      <div id="catList"></div>
-    </div>
-  </div>
-
-  <!-- Expenses -->
-  <input type="text" id="descInput" placeholder="Expense Description">
-  <input type="number" id="amountInput" placeholder="Expense Amount">
-  <select id="categorySelect"></select>
-  <select id="incomeSelect"></select>
-  <button id="addExpenseBtn" onclick="addExpense()">Add Expense</button>
-
-  <h3>Expenses</h3>
-  <div id="list"></div>
-</div>
-
-  </div>  <!-- Firebase -->  <script type="module">
+  <!-- Firebase -->
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -107,16 +114,16 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // 🔹 Changed to momexpenses
     const incomesRef = ref(db, "momexpenses/incomes");
     const expensesRef = ref(db, "momexpenses/items");
     const categoriesRef = ref(db, "momexpenses/categories");
 
-    const PASSWORD = "Confirm";
+    const PASSWORD = "Confirm";       // For normal actions
+    const DELETE_ALL_PASSWORD = "deleteall"; // For deleting all expenses
 
-    function askPassword() {
+    function askPassword(expected) {
       const input = prompt("Enter password:");
-      return input === PASSWORD;
+      return input === expected;
     }
 
     function formatDate(timestamp) {
@@ -156,7 +163,7 @@
     // Income
     let editingIncomeId = null;
     window.saveIncome = async function() {
-      if (!askPassword()) return alert("❌ Incorrect password!");
+      if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
       const desc = incomeDesc.value.trim();
       const amount = parseFloat(incomeAmount.value);
       if (!desc || isNaN(amount)) return;
@@ -183,7 +190,7 @@
           row.innerHTML = `
             <div class="income-info"><strong>${i.desc}</strong>: ₹${i.remaining} (Total ₹${i.amount})</div>
             <div class="income-actions">
-              <button class="inline-btn deleteIncome" data-id="${c.key}" data-name="${i.desc}">Delete</button>
+              <button class="inline-btn deleteIncome" data-id="${c.key}">Delete</button>
               <button class="inline-btn editIncome" data-id="${c.key}" data-desc="${i.desc}" data-amount="${i.amount}">Edit</button>
             </div>`;
           incomeSummary.appendChild(row);
@@ -197,14 +204,14 @@
 
         document.querySelectorAll(".deleteIncome").forEach(btn=>{
           btn.onclick=async()=>{
-            if(!askPassword()) return;
+            if(!askPassword(PASSWORD)) return;
             if(!confirm("Delete income?")) return;
             await remove(ref(db,"momexpenses/incomes/"+btn.dataset.id));
           }
         });
         document.querySelectorAll(".editIncome").forEach(btn=>{
           btn.onclick=()=>{
-            if(!askPassword()) return;
+            if(!askPassword(PASSWORD)) return;
             editingIncomeId = btn.dataset.id;
             incomeDesc.value = btn.dataset.desc;
             incomeAmount.value = btn.dataset.amount;
@@ -217,7 +224,7 @@
 
     // Categories
     window.addCategory = async function() {
-      if (!askPassword()) return alert("❌ Incorrect password!");
+      if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
       const name = catInput.value.trim();
       if(!name) return alert("Enter category name!");
       await push(categoriesRef,{name});
@@ -242,7 +249,7 @@
         });
         document.querySelectorAll(".deleteCat").forEach(btn=>{
           btn.onclick=async()=>{
-            if(!askPassword()) return;
+            if(!askPassword(PASSWORD)) return;
             if(!confirm("Delete category?")) return;
             await remove(ref(db,"momexpenses/categories/"+btn.dataset.id));
           };
@@ -252,7 +259,7 @@
 
     // Expenses
     window.addExpense=async function(){
-      if(!askPassword()) return alert("❌ Incorrect password!");
+      if(!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
       const desc=descInput.value.trim();
       const amount=parseFloat(amountInput.value);
       const cat=categorySelect.value;
@@ -291,7 +298,7 @@
         });
         document.querySelectorAll(".delete").forEach(btn=>{
           btn.onclick=async()=>{
-            if(!askPassword()) return;
+            if(!askPassword(PASSWORD)) return;
             if(!confirm("Delete expense?")) return;
             const id=btn.dataset.id; const incomeId=btn.dataset.incomeid; const amt=+btn.dataset.amount;
             const incSnap=await get(ref(db,"momexpenses/incomes/"+incomeId));
@@ -305,5 +312,23 @@
         });
       });
     }
-  </script></body>
+
+    // Delete all expenses (uses DELETE_ALL_PASSWORD)
+    window.deleteAllExpenses = async function() {
+      if (!askPassword(DELETE_ALL_PASSWORD)) return alert("❌ Incorrect password!");
+      if (!confirm("⚠️ This will delete ALL expenses. Continue?")) return;
+
+      const snap = await get(expensesRef);
+      if (!snap.exists()) return;
+
+      const updates = {};
+      snap.forEach(c => {
+        updates[`momexpenses/items/${c.key}`] = null;
+      });
+
+      await update(ref(db), updates);
+      alert("✅ All expenses deleted!");
+    };
+  </script>
+</body>
 </html>
