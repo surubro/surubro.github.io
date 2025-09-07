@@ -29,7 +29,6 @@
     .inline-btn.deleteIncome, .inline-btn.deleteCat { background:#dc2626; }
     .inline-btn.deleteIncome:hover, .inline-btn.deleteCat:hover { background:#b91c1c; }
     .inline-btn.editIncome:hover { background:#1d4ed8; }
-    .income-text { color: #16a34a; font-weight: bold; }
     .expense-text { color: #dc2626; font-weight: bold; }
     .remaining-text { color: #2563eb; font-weight: bold; }
     .delete-all { background: #b91c1c; width: 100%; margin-top: 10px; }
@@ -51,13 +50,13 @@
       <!-- Summary -->
       <div class="collapsible" id="summaryBox">
         <h3>
-          Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
-          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
+          Summary — 
+          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span> | 
+          <span class="remaining-text">Remaining: ₹<span id="totalRemaining">0</span></span>
         </h3>
         <div class="collapsible-content" id="summaryContent">
           <div id="incomeSummary"></div>
           <div id="categorySummary"></div>
-          <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
         </div>
       </div>
 
@@ -118,8 +117,8 @@
     const expensesRef = ref(db, "momexpenses/items");
     const categoriesRef = ref(db, "momexpenses/categories");
 
-    const PASSWORD = "Confirm";       // For normal actions
-    const DELETE_ALL_PASSWORD = "deleteall"; // For deleting all expenses
+    const PASSWORD = "Confirm";
+    const DELETE_ALL_PASSWORD = "deleteall";
 
     function askPassword(expected) {
       const input = prompt("Enter password:");
@@ -179,10 +178,9 @@
     function loadIncomes() {
       onValue(incomesRef, (snap) => {
         incomeSummary.innerHTML = ""; incomeSelect.innerHTML = "";
-        let totalIncome = 0, totalRemaining = 0;
+        let totalRemaining = 0;
         snap.forEach((c) => {
           const i = c.val();
-          totalIncome += +i.amount; 
           totalRemaining += +i.remaining;
 
           const row = document.createElement("div");
@@ -199,7 +197,6 @@
           opt.value = c.key; opt.textContent = i.desc; incomeSelect.appendChild(opt);
         });
 
-        document.getElementById("totalIncome").innerText = totalIncome;
         document.getElementById("totalRemaining").innerText = totalRemaining;
 
         document.querySelectorAll(".deleteIncome").forEach(btn=>{
@@ -313,7 +310,7 @@
       });
     }
 
-    // Delete all expenses (uses DELETE_ALL_PASSWORD)
+    // Delete all expenses
     window.deleteAllExpenses = async function() {
       if (!askPassword(DELETE_ALL_PASSWORD)) return alert("❌ Incorrect password!");
       if (!confirm("⚠️ This will delete ALL expenses. Continue?")) return;
