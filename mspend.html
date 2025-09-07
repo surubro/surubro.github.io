@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Spendings</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafb; color:#111827; }
+    .container { max-width:720px; margin:0 auto; padding:18px; }
+    h2 { text-align:center; margin:6px 0 18px; }
+    .card { background:#fff; padding:14px; margin:10px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+    input, select, button { width:100%; padding:10px; margin:8px 0; border-radius:8px; border:1px solid #d1d5db; box-sizing:border-box; font-size:14px; }
+    button { background:#4f46e5; color:#fff; border:none; cursor:pointer; }
+    button:hover { opacity:0.95; }
+    .delete { background:#dc2626; color:#fff; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
+    .edit { background:#2563eb; color:#fff; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
+    .muted { color:#6b7280; font-size:13px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .small-btn { padding:6px 10px; font-size:13px; border-radius:8px; }
+    .collapsible { background:#eef2ff; padding:12px; border-radius:12px; margin:10px 0; }
+    .collapsible h3 { margin:0; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+    .collapsible-content { display:none; margin-top:10px; }
+    .summary-key { display:flex; gap:10px; align-items:center; }
+    .income-text { color:#16a34a; font-weight:700; }
+    .expense-text { color:#dc2626; font-weight:700; }
+    .footer { text-align:center; margin-top:14px; font-size:13px; color:#6b7280; }
+    @media (max-width:420px){ .container{padding:10px;} input,select,button{font-size:13px;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>💰 My Spending</h2>
+
+    <!-- Auth -->
+    <div id="authSection" class="card">
+      <input type="email" id="email" placeholder="Email (for Firebase auth)">
+      <input type="password" id="password" placeholder="Password">
+      <div class="row">
+        <button id="loginBtn" class="small-btn">Login</button>
+        <button id="logoutBtn" class="small-btn" style="background:#9ca3af;">Logout</button>
+      </div>
+      <div class="muted">Verify email in Firebase console for login to work.</div>
+    </div>
+
+    <div id="appSection" style="display:none;">
+
+      <!-- Summary -->
+      <div class="collapsible" id="summaryBox">
+        <h3>
+          <span>Summary</span>
+          <span class="summary-key">
+            <span class="expense-text">Spent: ₹<span id="totalExpenses">0</span></span> |
+            <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> |
+            <b>Remaining: ₹<span id="remainingBalance">0</span></b>
+          </span>
+        </h3>
+        <div class="collapsible-content" id="summaryContent">
+          <div id="incomeSummary" class="muted"></div>
+          <div id="categorySummary" class="muted"></div>
+        </div>
+      </div>
+
+      <!-- Salary -->
+      <div class="collapsible" id="salaryBox">
+        <h3 id="salaryBoxTitle">Add Salary</h3>
+        <div class="collapsible-content" id="salaryContent">
+          <input type="text" id="salaryName" placeholder="Income Source">
+          <input type="number" id="salaryAmount" placeholder="Amount">
+          <button id="salarySaveBtn" class="small-btn">Save Salary</button>
+          <button id="deleteAllSalariesBtn" class="small-btn delete" style="width:auto;">Delete All Salaries</button>
+          <div id="salaryList" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="collapsible" id="categoryBox">
+        <h3 id="categoryBoxTitle">Add Category</h3>
+        <div class="collapsible-content" id="categoryContent">
+          <input type="text" id="categoryName" placeholder="Category name">
+          <button id="categorySaveBtn" class="small-btn">Save Category</button>
+          <button id="deleteAllCategoriesBtn" class="small-btn delete" style="width:auto;">Delete All Categories</button>
+          <div id="categoryList" style="margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- Add Spending -->
+      <div class="card">
+        <h3>Add Spending</h3>
+        <input type="text" id="descInput" placeholder="Description">
+        <input type="number" id="amountInput" placeholder="Amount">
+        <select id="categorySelect"><option value="">-- choose category --</option></select>
+        <button id="addExpenseBtn" class="small-btn">Add Spending</button>
+        <button id="deleteAllExpensesBtn" class="small-btn delete" style="width:auto;">Delete All Expenses</button>
+      </div>
+
+      <!-- Spending list -->
+      <h3>Spending Entries</h3>
+      <div id="list"></div>
+
+      <div class="footer">Made with ❤️ by Surendra Sonawane</div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Database root
+    const DB_ROOT = "mspend";
+    const salariesRef = ref(db, `${DB_ROOT}/salaries`);
+    const categoriesRef = ref(db, `${DB_ROOT}/categories`);
+    const itemsRef = ref(db, `${DB_ROOT}/items`);
+
+    // Elements
+    const authSection=document.getElementById("authSection");
+    const appSection=document.getElementById("appSection");
+    const loginBtn=document.getElementById("loginBtn");
+    const logoutBtn=document.getElementById("logoutBtn");
+    const emailEl=document.getElementById("email");
+    const passwordEl=document.getElementById("password");
+
+    const descInput=document.getElementById("descInput");
+    const amountInput=document.getElementById("amountInput");
+    const categorySelect=document.getElementById("categorySelect");
+    const addExpenseBtn=document.getElementById("addExpenseBtn");
+    const deleteAllExpensesBtn=document.getElementById("deleteAllExpensesBtn");
+    const listEl=document.getElementById("list");
+
+    const totalIncomeEl=document.getElementById("totalIncome");
+    const totalExpensesEl=document.getElementById("totalExpenses");
+    const remainingBalanceEl=document.getElementById("remainingBalance");
+    const incomeSummary=document.getElementById("incomeSummary");
+    const categorySummary=document.getElementById("categorySummary");
+
+    // --- PASSWORDS ---
+    const EXPENSES_PASSWORD = "deleteall"; // for deleting all expenses
+    const GENERAL_PASSWORD = "Confirm";    // for other deletes
+
+    function askPassword(expected){
+      return prompt("Enter password:") === expected;
+    }
+
+    // Collapsible toggle
+    document.querySelectorAll(".collapsible h3").forEach(h=>{
+      h.addEventListener("click",()=>{
+        const c=h.parentElement.querySelector(".collapsible-content");
+        c.style.display=(c.style.display==="block")?"none":"block";
+      });
+    });
+
+    // Auth
+    loginBtn.addEventListener("click",()=>{
+      const email=emailEl.value.trim();
+      const pwd=passwordEl.value;
+      if(!email||!pwd){alert("Enter credentials");return;}
+      signInWithEmailAndPassword(auth,email,pwd).catch(e=>alert(e.message));
+    });
+    logoutBtn.addEventListener("click",()=>signOut(auth));
+
+    onAuthStateChanged(auth,user=>{
+      if(user&&user.emailVerified){authSection.style.display="none";appSection.style.display="block";loadItems();}
+      else{authSection.style.display="block";appSection.style.display="none";}
+    });
+
+    // --- Expenses ---
+    addExpenseBtn.addEventListener("click",async()=>{
+      const desc=descInput.value.trim();
+      const amt=parseFloat(amountInput.value);
+      const catId=categorySelect.value;
+      if(!desc||isNaN(amt)||amt<=0) return alert("Invalid entry");
+      if(!catId) return alert("Choose category");
+      const snap=await get(ref(db,`${DB_ROOT}/categories/${catId}`));
+      if(!snap.exists()) return alert("Category missing");
+      await push(itemsRef,{desc,amount:amt,categoryId:catId,categoryName:snap.val().name,date:Date.now()});
+      descInput.value="";amountInput.value="";
+    });
+
+    deleteAllExpensesBtn.addEventListener("click",async()=>{
+      if(!askPassword(EXPENSES_PASSWORD)) return alert("Wrong password!");
+      if(confirm("Delete ALL expenses?")) await remove(ref(db,`${DB_ROOT}/items`));
+    });
+
+    function loadItems(){
+      onValue(itemsRef,snap=>{
+        listEl.innerHTML="";
+        let total=0;
+        snap.forEach(ch=>{
+          const v=ch.val(); total+=(v.amount||0);
+          const div=document.createElement("div");
+          div.className="card";
+          div.innerHTML=`<b>${v.desc}</b> - ₹${v.amount}<div class="muted">${v.categoryName}</div>`;
+          listEl.prepend(div);
+        });
+        totalExpensesEl.innerText=total;
+        updateRemaining();
+      });
+    }
+
+    function updateRemaining(){
+      const income=parseFloat(totalIncomeEl.innerText)||0;
+      const expenses=parseFloat(totalExpensesEl.innerText)||0;
+      remainingBalanceEl.innerText=(income-expenses).toFixed(2);
+    }
+  </script>
+</body>
+</html>
