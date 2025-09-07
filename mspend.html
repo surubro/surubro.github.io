@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>M Total Spend </title>
+  <title>Mom Expenses Manager</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
@@ -29,7 +29,6 @@
     .inline-btn.deleteIncome, .inline-btn.deleteCat { background:#dc2626; }
     .inline-btn.deleteIncome:hover, .inline-btn.deleteCat:hover { background:#b91c1c; }
     .inline-btn.editIncome:hover { background:#1d4ed8; }
-    .income-text { color: #16a34a; font-weight: bold; }
     .expense-text { color: #dc2626; font-weight: bold; }
     .remaining-text { color: #2563eb; font-weight: bold; }
     .delete-all { background: #b91c1c; width: 100%; margin-top: 10px; }
@@ -38,7 +37,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>💰 MMM Total Spend</h2>
+    <h2>💰 Mom Expenses Manager</h2>
     
     <div id="authSection">
       <input type="email" id="email" placeholder="Email">
@@ -51,13 +50,13 @@
       <!-- Summary -->
       <div class="collapsible" id="summaryBox">
         <h3>
-          Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
-          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
+          Summary — 
+          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span> | 
+          <span class="remaining-text">Remaining: ₹<span id="totalRemaining">0</span></span>
         </h3>
         <div class="collapsible-content" id="summaryContent">
           <div id="incomeSummary"></div>
           <div id="categorySummary"></div>
-          <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
         </div>
       </div>
 
@@ -114,13 +113,12 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // 🔄 changed momexpenses → mspend
     const incomesRef = ref(db, "mspend/incomes");
     const expensesRef = ref(db, "mspend/items");
     const categoriesRef = ref(db, "mspend/categories");
 
-    const PASSWORD = "Confirm";       // For normal actions
-    const DELETE_ALL_PASSWORD = "deleteall"; // For deleting all expenses
+    const PASSWORD = "Confirm";
+    const DELETE_ALL_PASSWORD = "deleteall";
 
     function askPassword(expected) {
       const input = prompt("Enter password:");
@@ -180,10 +178,9 @@
     function loadIncomes() {
       onValue(incomesRef, (snap) => {
         incomeSummary.innerHTML = ""; incomeSelect.innerHTML = "";
-        let totalIncome = 0, totalRemaining = 0;
+        let totalRemaining = 0;
         snap.forEach((c) => {
           const i = c.val();
-          totalIncome += +i.amount; 
           totalRemaining += +i.remaining;
 
           const row = document.createElement("div");
@@ -200,7 +197,6 @@
           opt.value = c.key; opt.textContent = i.desc; incomeSelect.appendChild(opt);
         });
 
-        document.getElementById("totalIncome").innerText = totalIncome;
         document.getElementById("totalRemaining").innerText = totalRemaining;
 
         document.querySelectorAll(".deleteIncome").forEach(btn=>{
