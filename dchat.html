@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Send txt..</title>
+  <title>Chat App (Auth Required)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -103,20 +103,21 @@
 
   document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
+  function autoScroll() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
   onAuthStateChanged(auth, user => {
     if (user && user.emailVerified) {
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("chatUI").classList.remove("hidden");
       loadMessages();
+      setTimeout(autoScroll, 200); // scroll to bottom right after showing chat
     } else {
       document.getElementById("chatUI").classList.add("hidden");
       document.getElementById("loginScreen").classList.remove("hidden");
     }
   });
-
-  function autoScroll() {
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
 
   function loadMessages() {
     chatBox.innerHTML = "";
