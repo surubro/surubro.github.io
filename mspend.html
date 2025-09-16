@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MMMM total  Spend</title>
+  <title>MMMM total Spend %</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
@@ -37,7 +37,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>💰 MMM total  Spend</h2>
+    <h2>💰 MMM total Spend</h2>
     
     <div id="authSection">
       <input type="email" id="email" placeholder="Email">
@@ -177,10 +177,14 @@
 
     function loadIncomes() {
       onValue(incomesRef, (snap) => {
-        incomeSummary.innerHTML = ""; incomeSelect.innerHTML = "";
+        incomeSummary.innerHTML = ""; 
+        incomeSelect.innerHTML = "";
         let totalRemaining = 0;
+        let totalIncome = 0;
+
         snap.forEach((c) => {
           const i = c.val();
+          totalIncome += +i.amount;
           totalRemaining += +i.remaining;
 
           const row = document.createElement("div");
@@ -194,10 +198,13 @@
           incomeSummary.appendChild(row);
 
           const opt = document.createElement("option");
-          opt.value = c.key; opt.textContent = i.desc; incomeSelect.appendChild(opt);
+          opt.value = c.key; 
+          opt.textContent = i.desc; 
+          incomeSelect.appendChild(opt);
         });
 
-        document.getElementById("totalRemaining").innerText = totalRemaining;
+        window._totalIncome = totalIncome;
+        window._totalRemaining = totalRemaining;
 
         document.querySelectorAll(".deleteIncome").forEach(btn=>{
           btn.onclick=async()=>{
@@ -230,7 +237,8 @@
 
     function loadCategories(){
       onValue(categoriesRef,(snap)=>{
-        catList.innerHTML=""; categorySelect.innerHTML="";
+        catList.innerHTML=""; 
+        categorySelect.innerHTML="";
         snap.forEach(c=>{
           const cat=c.val();
           const row=document.createElement("div");
@@ -241,8 +249,11 @@
               <button class="inline-btn deleteCat" data-id="${c.key}">Delete</button>
             </div>`;
           catList.appendChild(row);
+
           const opt=document.createElement("option");
-          opt.value=cat.name; opt.textContent=cat.name; categorySelect.appendChild(opt);
+          opt.value=cat.name; 
+          opt.textContent=cat.name; 
+          categorySelect.appendChild(opt);
         });
         document.querySelectorAll(".deleteCat").forEach(btn=>{
           btn.onclick=async()=>{
@@ -274,43 +285,61 @@
       descInput.value=""; amountInput.value=""; categorySelect.value="";
     };
 
-    function loadExpenses(){
-      onValue(expensesRef,(snap)=>{
-        list.innerHTML=""; let total=0; let catTotals={};
-        snap.forEach(c=>{
-          const e=c.val(); total+=+e.amount;
-          catTotals[e.category]=(catTotals[e.category]||0)+ +e.amount;
-          const div=document.createElement("div");
-          div.className="card";
-          div.innerHTML=`
-            <div><strong>${e.desc}</strong> - ₹${e.amount} (${e.category})<br><small>From: ${e.incomeName}</small></div>
+    function loadExpenses() {
+      onValue(expensesRef, (snap) => {
+        list.innerHTML = ""; 
+        let total = 0; 
+        let catTotals = {};
+
+        snap.forEach((c) => {
+          const e = c.val(); 
+          total += +e.amount;
+          catTotals[e.category] = (catTotals[e.category] || 0) + +e.amount;
+
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div><strong>${e.desc}</strong> - ₹${e.amount} (${e.category})<br>
+            <small>From: ${e.incomeName}</small></div>
             <small>${formatDate(e.date)}</small>
             <div class="actions"><button class="delete" data-id="${c.key}" data-incomeid="${e.incomeId}" data-amount="${e.amount}">Delete</button></div>`;
           list.prepend(div);
         });
-        document.getElementById("totalExpenses").innerText=total;
-        categorySummary.innerHTML="<h4>By Category:</h4>";
-        Object.keys(catTotals).forEach(cat=>{
-          categorySummary.innerHTML+=`<p>${cat}: ₹${catTotals[cat]}</p>`;
+
+        let totalIncome = window._totalIncome || 0;
+        let totalRemaining = window._totalRemaining || 0;
+        let expPercent = totalIncome ? ((total / totalIncome) * 100).toFixed(1) : 0;
+        let remPercent = totalIncome ? ((totalRemaining / totalIncome) * 100).toFixed(1) : 0;
+
+        document.querySelector(".expense-text").innerHTML = `Expenses: ₹<span id="totalExpenses">${total}</span> (${expPercent}%)`;
+        document.querySelector(".remaining-text").innerHTML = `Remaining: ₹<span id="totalRemaining">${totalRemaining}</span> (${remPercent}%)`;
+
+        categorySummary.innerHTML = "<h4>By Category:</h4>";
+        Object.keys(catTotals).forEach(cat => {
+          const percent = total ? ((catTotals[cat] / total) * 100).toFixed(1) : 0;
+          categorySummary.innerHTML += `<p>${cat}: ₹${catTotals[cat]} (${percent}%)</p>`;
         });
-        document.querySelectorAll(".delete").forEach(btn=>{
-          btn.onclick=async()=>{
-            if(!askPassword(PASSWORD)) return;
-            if(!confirm("Delete expense?")) return;
-            const id=btn.dataset.id; const incomeId=btn.dataset.incomeid; const amt=+btn.dataset.amount;
-            const incSnap=await get(ref(db,"mspend/incomes/"+incomeId));
-            if(!incSnap.exists()) return;
-            const rem=incSnap.val().remaining||0;
-            const updates={};
-            updates[`mspend/incomes/${incomeId}/remaining`]=rem+amt;
-            updates[`mspend/items/${id}`]=null;
-            await update(ref(db),updates);
+
+        document.querySelectorAll(".delete").forEach(btn => {
+          btn.onclick = async () => {
+            if (!askPassword(PASSWORD)) return;
+            if (!confirm("Delete expense?")) return;
+            const id = btn.dataset.id; 
+            const incomeId = btn.dataset.incomeid; 
+            const amt = +btn.dataset.amount;
+            const incSnap = await get(ref(db, "mspend/incomes/" + incomeId));
+            if (!incSnap.exists()) return;
+            const rem = incSnap.val().remaining || 0;
+            const updates = {};
+            updates[`mspend/incomes/${incomeId}/remaining`] = rem + amt;
+            updates[`mspend/items/${id}`] = null;
+            await update(ref(db), updates);
           };
         });
       });
     }
 
-    // Delete all expenses (uses DELETE_ALL_PASSWORD)
+    // Delete all expenses
     window.deleteAllExpenses = async function() {
       if (!askPassword(DELETE_ALL_PASSWORD)) return alert("❌ Incorrect password!");
       if (!confirm("⚠️ This will delete ALL expenses. Continue?")) return;
@@ -319,9 +348,7 @@
       if (!snap.exists()) return;
 
       const updates = {};
-      snap.forEach(c => {
-        updates[`mspend/items/${c.key}`] = null;
-      });
+      snap.forEach(c => { updates[`mspend/items/${c.key}`] = null; });
 
       await update(ref(db), updates);
       alert("✅ All expenses deleted!");
