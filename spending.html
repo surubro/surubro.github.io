@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Spend</title>
+  <title>My %Spend</title>
   <style>
-    /* ---- Styling kept similar to your long original UI ---- */
+    /* ---- Styling kept exactly like your long original UI ---- */
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 600px; margin: 18px auto; padding: 18px; }
     h2 { text-align: center; margin-bottom: 12px; }
@@ -35,8 +35,12 @@
     .delete-all:hover { background:#7f1d1d; }
     .small-muted { color:#666; font-size:0.94rem; }
     .list-empty { text-align:center; color:#777; padding:12px 0; }
-    .expense-item { margin-bottom:10px; padding:10px; border-radius:10px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+    .expense-item { margin-bottom:10px; padding:10px; border-radius:10px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.04); position:relative; cursor:pointer; }
     .meta { font-size:0.9rem; color:#666; margin-top:6px; }
+    /* Hide delete button by default; show on hover or when .show-delete class is present */
+    .expense-item .actions .delete { display: none; }
+    .expense-item:hover .actions .delete,
+    .expense-item.show-delete .actions .delete { display: inline-block; }
   </style>
 </head>
 <body>
@@ -116,12 +120,11 @@
 
   <!-- Firebase + App Logic -->
   <script type="module">
-    // ----------------- Firebase SDK imports -----------------
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // ----------------- YOUR FIREBASE CONFIG (kept as provided) -----------------
+    // ---------- CONFIG ----------
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -132,21 +135,20 @@
       appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
     };
 
-    // ----------------- Initialize -----------------
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // ----------------- DB paths (consistent) -----------------
+    // DB refs (use same "spending" everywhere)
     const incomesRef = ref(db, "spending/salaries");
     const expensesRef = ref(db, "spending/items");
     const categoriesRef = ref(db, "spending/categories");
 
-    // ----------------- Passwords (kept as before) -----------------
+    // passwords
     const PASSWORD = "Confirm";
     const DELETE_ALL_PASSWORD = "deleteall";
 
-    // ----------------- Helpers -----------------
+    // helpers
     function askPassword(expected) {
       const input = prompt("Enter password:");
       return input === expected;
@@ -157,7 +159,7 @@
       return d.toLocaleDateString("en-GB") + ", " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     }
 
-    // ----------------- Collapsible toggles -----------------
+    // collapse toggle
     function setupToggle(boxId, contentId) {
       const box = document.getElementById(boxId);
       const content = document.getElementById(contentId);
@@ -170,15 +172,13 @@
     setupToggle("incomeBox", "incomeContent");
     setupToggle("categoryBox", "categoryContent");
 
-    // ----------------- Auth functions -----------------
+    // Auth
     window.login = function() {
       const email = document.getElementById("email").value;
       const pwd = document.getElementById("password").value;
       signInWithEmailAndPassword(auth, email, pwd).catch(err => alert("Login error: " + err.message));
     };
-    window.logout = function() {
-      signOut(auth).catch(err => console.error(err));
-    };
+    window.logout = function() { signOut(auth).catch(err => console.error(err)); };
 
     onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
@@ -193,7 +193,7 @@
       }
     });
 
-    // ----------------- Incomes -----------------
+    // ---------- Incomes ----------
     window.saveIncome = async function() {
       if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
       const desc = document.getElementById("incomeDesc").value.trim();
@@ -230,10 +230,8 @@
           totalIncomeAmount += Number(val.amount || 0);
         });
 
-        // provisional remaining shown here; final remaining recalculated in loadExpenses (when expenses known)
         document.getElementById("totalRemaining").innerText = totalRemainingFromIncomes;
 
-        // attach income handlers (delete/edit)
         Array.from(document.getElementsByClassName("deleteIncome")).forEach(btn => {
           btn.onclick = async () => {
             if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
@@ -247,8 +245,7 @@
             const id = btn.dataset.id;
             const desc = btn.dataset.desc;
             const amount = btn.dataset.amount;
-            if (!confirm("Editing income will replace it (old entry removed). Continue?")) return;
-            // prefill fields and remove old one
+            if (!confirm("Editing income will replace it. Continue?")) return;
             document.getElementById("incomeDesc").value = desc;
             document.getElementById("incomeAmount").value = amount;
             remove(ref(db, `spending/salaries/${id}`));
@@ -258,7 +255,7 @@
       });
     }
 
-    // ----------------- Categories -----------------
+    // ---------- Categories ----------
     window.addCategory = async function() {
       if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
       const name = document.getElementById("catInput").value.trim();
@@ -294,7 +291,7 @@
       });
     }
 
-    // ----------------- Expenses -----------------
+    // ---------- Expenses ----------
     async function getIncomeSnapshotMap() {
       const snap = await get(incomesRef);
       const map = {};
@@ -318,14 +315,12 @@
       const income = incSnap.val();
       if ((Number(income.remaining) || 0) < amount) return alert("Not enough balance in selected income!");
 
-      // create new expense and update income.remaining atomically
       const newRef = push(expensesRef);
       const updates = {};
       updates[`spending/items/${newRef.key}`] = { desc, amount, category: cat, incomeName: income.desc, incomeId, date: Date.now() };
       updates[`spending/salaries/${incomeId}/remaining`] = (Number(income.remaining) || 0) - amount;
       await update(ref(db), updates);
 
-      // clear inputs
       document.getElementById("descInput").value = "";
       document.getElementById("amountInput").value = "";
       document.getElementById("categorySelect").value = "";
@@ -338,20 +333,14 @@
         list.innerHTML = "";
         let totalSpent = 0;
         const catTotals = {};
-        const byIncomeRefund = {}; // for deleteAll refund calculation
 
         const items = [];
         snap.forEach(child => {
           items.push({ id: child.key, data: child.val() });
           totalSpent += Number(child.val().amount || 0);
           catTotals[child.val().category] = (catTotals[child.val().category] || 0) + Number(child.val().amount || 0);
-
-          // collect per-income totals for refund if needed
-          const incId = child.val().incomeId;
-          if (incId) byIncomeRefund[incId] = (byIncomeRefund[incId] || 0) + Number(child.val().amount || 0);
         });
 
-        // render expenses newest-first
         if (items.length === 0) {
           list.innerHTML = `<div class="list-empty">No expenses yet</div>`;
         } else {
@@ -359,24 +348,31 @@
             const e = item.data;
             const div = document.createElement("div");
             div.className = "expense-item";
+            div.dataset.id = item.id;
             div.innerHTML = `
               <div><strong>${e.desc}</strong> - ₹${e.amount} (${e.category})</div>
               <div class="meta">From: ${e.incomeName || "—"} • ${formatDate(e.date)}</div>
               <div class="actions" style="margin-top:8px;">
                 <button class="delete" data-id="${item.id}" data-incomeid="${e.incomeId || ''}" data-amount="${e.amount}">Delete</button>
               </div>`;
+            // click toggles visibility of delete button
+            div.addEventListener("click", (ev) => {
+              // avoid toggling when clicking the delete button itself (it will run its own handler)
+              const target = ev.target;
+              if (target && (target.classList.contains('delete') || target.closest('.delete'))) return;
+              div.classList.toggle("show-delete");
+            });
             list.appendChild(div);
           });
         }
 
-        // compute total income to calculate remaining percent
+        // compute total income to calculate remaining
         const incomesSnap = await get(incomesRef);
         let totalIncome = 0;
         if (incomesSnap.exists()) {
           incomesSnap.forEach(c => totalIncome += Number(c.val().amount || 0));
         }
 
-        // display totals
         document.getElementById("totalExpenses").innerText = totalSpent;
         document.getElementById("totalRemaining").innerText = (totalIncome - totalSpent);
 
@@ -390,19 +386,21 @@
         const remainingPercent = totalIncome ? (((totalIncome - totalSpent) / totalIncome) * 100).toFixed(2) : "0.00";
         categorySummary.innerHTML += `<p><strong>Remaining:</strong> ₹${(totalIncome - totalSpent)} (${remainingPercent}%)</p>`;
 
-        // attach delete handlers for each expense
+        // attach delete handlers (buttons are hidden by default; shown on hover or click)
         Array.from(document.getElementsByClassName("delete")).forEach(btn => {
-          btn.onclick = async () => {
+          btn.onclick = async (ev) => {
+            ev.stopPropagation(); // prevent div click toggle
             if (!askPassword(PASSWORD)) return alert("❌ Incorrect password!");
             if (!confirm("Delete expense?")) return;
             const id = btn.dataset.id;
             const incomeId = btn.dataset.incomeid;
             const amt = Number(btn.dataset.amount || 0);
-            // refund amount to income.remaining (if income exists) and remove expense atomically
-            const incSnap = incomeId ? await get(ref(db, `spending/salaries/${incomeId}`)) : null;
-            const currentRemaining = (incSnap && incSnap.exists()) ? (Number(incSnap.val().remaining) || 0) : 0;
             const updates = {};
-            if (incomeId) updates[`spending/salaries/${incomeId}/remaining`] = currentRemaining + amt;
+            if (incomeId) {
+              const incSnap = await get(ref(db, `spending/salaries/${incomeId}`));
+              const currentRemaining = (incSnap && incSnap.exists()) ? (Number(incSnap.val().remaining) || 0) : 0;
+              updates[`spending/salaries/${incomeId}/remaining`] = currentRemaining + amt;
+            }
             updates[`spending/items/${id}`] = null;
             await update(ref(db), updates);
           };
@@ -412,7 +410,6 @@
 
     // ----------------- Delete All expenses -----------------
     window.deleteAllExpenses = async function() {
-      // check password via prompt (we keep same behavior)
       if (!askPassword(DELETE_ALL_PASSWORD)) return alert("❌ Incorrect password!");
       if (!confirm("⚠️ This will delete ALL expenses. Continue?")) return;
 
@@ -422,9 +419,8 @@
         return;
       }
 
-      // Build updates: set each expense node to null, AND refund amounts back to incomes
       const updates = {};
-      const refundMap = {}; // incomeId -> amount to refund
+      const refundMap = {};
 
       snap.forEach(c => {
         const item = c.val();
@@ -433,7 +429,6 @@
         if (incId) refundMap[incId] = (refundMap[incId] || 0) + Number(item.amount || 0);
       });
 
-      // read current income remaining values and add refunds
       const incomesSnap = await get(incomesRef);
       if (incomesSnap.exists()) {
         incomesSnap.forEach(c => {
