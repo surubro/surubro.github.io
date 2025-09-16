@@ -2,60 +2,215 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat App (Auth Required)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chat App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #eaeff1; display: flex; flex-direction: column; height: 100vh; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f2f6;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
     .hidden { display: none !important; }
 
-    /* Login Screen */
-    #loginScreen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; }
-    #loginScreen input { padding: 10px; font-size: 16px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; width: 220px; }
-    #loginScreen button { padding: 8px 16px; font-size: 15px; background: #007bff; border: none; color: white; border-radius: 5px; cursor: pointer; }
+    /* --- Login Screen --- */
+    #loginScreen {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+    }
+    .login-card {
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 320px;
+      text-align: center;
+    }
+    .login-card h2 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .login-card input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    .login-card button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
-    /* Chat */
-    .chat-box { flex: 1; overflow-y: auto; padding: 20px; background: #f8f9fa; }
-    .message { position: relative; background: #d1e7dd; padding: 12px 16px; margin: 10px 0; border-radius: 10px; max-width: 70%; display: flex; justify-content: space-between; align-items: center; }
-    .message:hover { background: #c3dbcf; }
-    .tick { margin-left: 10px; font-size: 13px; color: #4caf50; white-space: nowrap; }
-    .delete-btn { display: none; position: absolute; top: 8px; right: 10px; background-color: crimson; color: white; border: none; border-radius: 5px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+    /* --- Chat UI --- */
+    #chatUI {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+    }
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      background: #e5ddd5;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      padding: 10px 14px;
+      margin: 6px 0;
+      border-radius: 12px;
+      max-width: 75%;
+      word-wrap: break-word;
+      position: relative;
+    }
+    .sent {
+      align-self: flex-end;
+      background: #dcf8c6;
+      border-bottom-right-radius: 0;
+    }
+    .received {
+      align-self: flex-start;
+      background: #fff;
+      border-bottom-left-radius: 0;
+    }
+    .tick {
+      display: block;
+      font-size: 11px;
+      color: gray;
+      margin-top: 3px;
+      text-align: right;
+    }
+    .delete-btn {
+      display: none;
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 11px;
+      cursor: pointer;
+    }
     .message:hover .delete-btn { display: inline-block; }
 
-    .input-container { display: flex; align-items: center; padding: 15px 20px; background: #fff; border-top: 1px solid #ccc; }
-    .input-container textarea { flex: 1; resize: none; padding: 12px 16px; font-size: 16px; border: 1px solid #ccc; border-radius: 25px; outline: none; height: 44px; }
-    .send-btn { background: #007bff; border: none; color: white; margin-left: 10px; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
-    .clear-all { background: #dc3545; color: #fff; border: none; padding: 10px 16px; margin-left: 10px; font-size: 14px; border-radius: 5px; cursor: pointer; }
+    .input-container {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background: #fff;
+      border-top: 1px solid #ccc;
+    }
+    .input-container textarea {
+      flex: 1;
+      resize: none;
+      padding: 10px 14px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      outline: none;
+      height: 42px;
+    }
+    .send-btn {
+      background: #007bff;
+      border: none;
+      color: white;
+      margin-left: 8px;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .clear-all, #logoutBtn {
+      background: #555;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      margin-left: 8px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .clear-all { background: #dc3545; }
 
-    /* Password Modal */
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; }
-    .modal-content { background: #fff; padding: 20px; border-radius: 10px; width: 300px; text-align: center; animation: fadeIn 0.3s ease; }
-    .modal-content input { padding: 8px; width: 80%; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; }
-    .modal-content button { margin-top: 15px; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; }
+    /* --- Modal --- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 280px;
+      text-align: center;
+    }
+    .modal-content input {
+      width: 90%;
+      padding: 10px;
+      margin-top: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .modal-content button {
+      margin-top: 15px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     .btn-confirm { background: #007bff; color: white; }
     .btn-cancel { background: gray; color: white; margin-left: 10px; }
-    @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
   </style>
 </head>
 <body>
 
-<!-- Login Screen -->
+<!-- Login -->
 <div id="loginScreen">
-  <h2>Login to Continue</h2>
-  <input type="email" id="loginEmail" placeholder="Email">
-  <input type="password" id="loginPassword" placeholder="Password">
-  <button id="loginBtn">Login</button>
-  <small>Only verified accounts can access.</small>
+  <div class="login-card">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button id="loginBtn">Login</button>
+  </div>
 </div>
 
-<!-- Chat UI -->
+<!-- Chat -->
 <div id="chatUI" class="hidden">
   <div class="chat-box" id="chatBox"></div>
   <div class="input-container">
     <textarea id="messageInput" placeholder="Type a message..."></textarea>
-    <button class="send-btn" onclick="sendMessage()" title="Send"><i class="fas fa-paper-plane"></i></button>
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
     <button class="clear-all" onclick="showPasswordModal('clear')">Clear All</button>
-    <button id="logoutBtn" class="clear-all" style="background:#555;">Logout</button>
+    <button id="logoutBtn">Logout</button>
   </div>
 </div>
 
@@ -90,35 +245,37 @@
   const db = getDatabase(app);
   const messagesRef = ref(db, "messages");
   const chatBox = document.getElementById("chatBox");
-
-  const correctPassword = "Confirm"; // password for delete/clear
+  const correctPassword = "deleteall";
   let deleteTarget = null;
-
-  // Login
-  document.getElementById("loginBtn").onclick = () => {
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-    signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
-  };
-
-  document.getElementById("logoutBtn").onclick = () => signOut(auth);
 
   function autoScroll() {
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
+  // Login
+  document.getElementById("loginBtn").onclick = () => {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+    if (!email || !password) { alert("Enter email & password"); return; }
+    signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
+  };
+
+  document.getElementById("logoutBtn").onclick = () => signOut(auth);
+
+  // Auth
   onAuthStateChanged(auth, user => {
-    if (user && user.emailVerified) {
+    if (user) {
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("chatUI").classList.remove("hidden");
       loadMessages();
-      setTimeout(autoScroll, 200); // scroll to bottom right after showing chat
+      setTimeout(autoScroll, 600); // scroll when chat opens
     } else {
       document.getElementById("chatUI").classList.add("hidden");
       document.getElementById("loginScreen").classList.remove("hidden");
     }
   });
 
+  // Load messages
   function loadMessages() {
     chatBox.innerHTML = "";
     onChildAdded(messagesRef, snapshot => {
@@ -126,7 +283,7 @@
       const key = snapshot.key;
 
       const div = document.createElement("div");
-      div.className = "message";
+      div.className = "message " + (data.sender === auth.currentUser?.uid ? "sent" : "received");
 
       const textSpan = document.createElement("span");
       textSpan.textContent = data.text;
@@ -135,19 +292,12 @@
       tick.className = "tick";
       if (data.timestamp) {
         const date = new Date(data.timestamp);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = date.toLocaleString('default', { month: 'short' });
-        let hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12 || 12;
-        tick.textContent = `${day}/${month} ${hours}:${minutes} ${ampm} ✔✔`;
-      } else {
-        tick.textContent = `✔✔`;
+        const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        tick.textContent = time + " ✔✔";
       }
 
       const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
+      deleteBtn.textContent = "Del";
       deleteBtn.className = "delete-btn";
       deleteBtn.onclick = e => {
         e.stopPropagation();
@@ -159,72 +309,56 @@
       div.appendChild(tick);
       div.appendChild(deleteBtn);
       chatBox.appendChild(div);
-
       autoScroll();
     });
+
+    setTimeout(autoScroll, 1000); // after loading old messages
   }
 
-  // Send Message
+  // Send
   window.sendMessage = () => {
     const input = document.getElementById("messageInput");
     const text = input.value.trim();
     if (!text) return;
     input.disabled = true;
-    push(messagesRef, { text, timestamp: Date.now() })
+    push(messagesRef, { text, timestamp: Date.now(), sender: auth.currentUser?.uid })
       .then(() => input.value = "")
-      .catch(() => alert("Message failed. Check connection."))
+      .catch(() => alert("Message failed"))
       .finally(() => {
         input.disabled = false;
         autoScroll();
       });
   };
 
-  // Handle Enter / Ctrl+Enter
-  const messageInput = document.getElementById("messageInput");
-  messageInput.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      if (e.ctrlKey) {
-        // insert newline
-        const pos = messageInput.selectionStart;
-        messageInput.value = messageInput.value.slice(0, pos) + "\n" + messageInput.value.slice(pos);
-        messageInput.selectionStart = messageInput.selectionEnd = pos + 1;
-      } else {
-        e.preventDefault();
-        sendMessage();
-      }
+  // Enter key = send
+  document.getElementById("messageInput").addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.ctrlKey) {
+      e.preventDefault();
+      sendMessage();
     }
   });
 
-  // Modal Functions
+  // Modal
   window.showPasswordModal = (action = 'single') => {
     deleteTarget = (action === 'clear') ? { type: 'clear' } : deleteTarget;
     document.getElementById("passwordModal").style.display = "flex";
     document.getElementById("clearPassword").value = "";
   };
-
   window.closePasswordModal = () => {
     document.getElementById("passwordModal").style.display = "none";
   };
-
   window.verifyPassword = () => {
     const enteredPassword = document.getElementById("clearPassword").value;
     if (enteredPassword === correctPassword) {
       if (deleteTarget?.type === 'clear') {
-        if (confirm("Are you sure you want to clear all messages?")) {
-          remove(messagesRef).then(() => {
-            chatBox.innerHTML = "";
-            alert("All messages cleared.");
-          });
-        }
+        remove(messagesRef).then(() => chatBox.innerHTML = "");
       } else if (deleteTarget?.type === 'single') {
-        if (confirm("Delete this message?")) {
-          remove(ref(db, `messages/${deleteTarget.key}`));
-          deleteTarget.element.remove();
-        }
+        remove(ref(db, `messages/${deleteTarget.key}`));
+        deleteTarget.element.remove();
       }
       closePasswordModal();
     } else {
-      alert("Incorrect password. Access denied.");
+      alert("Wrong password");
     }
   };
 </script>
