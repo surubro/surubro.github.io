@@ -291,7 +291,8 @@
         document.getElementById("totalExpenses").innerText=total;
         categorySummary.innerHTML="<h4>By Category:</h4>";
         Object.keys(catTotals).forEach(cat=>{
-          categorySummary.innerHTML+=`<p>${cat}: ₹${catTotals[cat]}</p>`;
+          const percent=((catTotals[cat]/total)*100).toFixed(1);
+          categorySummary.innerHTML+=`<p>${cat}: ₹${catTotals[cat]} (${percent}%)</p>`;
         });
         document.querySelectorAll(".delete").forEach(btn=>{
           btn.onclick=async()=>{
