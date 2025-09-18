@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Firebase File Upload (with Error Debug)</title>
+  <title>Firebase File Upload (Exact Errors)</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
@@ -21,6 +21,7 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
+    // 🔹 Show message box
     function showMessage(msg, type="info") {
       const box = document.getElementById("messageBox");
       box.style.display = "block";
@@ -47,7 +48,7 @@
           showMessage("✅ Login successful");
         })
         .catch((error) => {
-          showMessage("❌ " + error.code + " | " + error.message, "error");
+          showMessage("❌ " + error.code + "\n" + error.message + "\n\nStack:\n" + error.stack, "error");
         });
     };
 
@@ -62,12 +63,6 @@
       const storageRef = ref(storage, "uploads/" + user.uid + "/" + file.name);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
-      let stuckCheck = setTimeout(() => {
-        if (uploadTask.snapshot.bytesTransferred === 0) {
-          showMessage("⚠️ Upload stuck at 0% — check Firebase Storage rules or network issues.", "error");
-        }
-      }, 5000); // warn after 5s at 0%
-
       uploadTask.on(
         "state_changed",
         (snapshot) => {
@@ -75,19 +70,16 @@
           showMessage("⏳ Uploading... " + progress.toFixed(2) + "%");
         },
         (error) => {
-          clearTimeout(stuckCheck);
-          // Full dev-tools style output
-          showMessage("❌ ERROR\n" + JSON.stringify({
-            code: error.code,
-            message: error.message,
-            name: error.name,
-            stack: error.stack
-          }, null, 2), "error");
+          // 🔹 Show raw Firebase error exactly like console
+          let errorOutput = "❌ ERROR\n";
+          errorOutput += "Code: " + error.code + "\n";
+          errorOutput += "Message: " + error.message + "\n";
+          if (error.stack) errorOutput += "\nStack:\n" + error.stack;
+          showMessage(errorOutput, "error");
         },
         () => {
-          clearTimeout(stuckCheck);
           getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            showMessage("✅ Uploaded! File URL:\n" + url);
+            showMessage("✅ Uploaded!\nURL: " + url);
           });
         }
       );
@@ -100,13 +92,13 @@
     button { cursor: pointer; }
 
     #messageBox {
-      white-space: pre-wrap; /* keep line breaks for error stack */
+      white-space: pre-wrap; /* keep line breaks + stack formatting */
       margin: 20px auto;
       padding: 12px;
       border-radius: 5px;
       display: none;
-      width: 90%;
-      max-width: 600px;
+      width: 95%;
+      max-width: 700px;
       text-align: left;
       font-size: 14px;
     }
