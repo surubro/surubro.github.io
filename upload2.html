@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>File Upload</title>
+  <title>Firebase File Upload</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f9fafb;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       height: 100vh;
       margin: 0;
     }
@@ -20,23 +19,27 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
       width: 320px;
+      text-align: center;
     }
-    input[type="file"] {
-      margin: 15px 0;
+    input, button {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
     button {
-      padding: 10px 18px;
-      border: none;
       background: #4caf50;
       color: white;
-      border-radius: 6px;
+      border: none;
       cursor: pointer;
-      font-size: 14px;
     }
     button:hover {
       background: #43a047;
+    }
+    .hidden {
+      display: none;
     }
     .status {
       margin-top: 12px;
@@ -44,22 +47,40 @@
       color: #333;
       word-wrap: break-word;
     }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+    progress {
+      width: 100%;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>Upload File</h2>
-    <input type="file" id="fileInput" />
-    <br />
-    <button onclick="uploadFile()">Upload</button>
-    <div class="status" id="status"></div>
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <div id="loginStatus" class="status"></div>
+
+    <div id="uploadSection" class="hidden">
+      <h2>Upload File</h2>
+      <input type="file" id="fileInput" />
+      <button onclick="uploadFile()">Upload</button>
+      <progress id="progressBar" value="0" max="100"></progress>
+      <div id="uploadStatus" class="status"></div>
+    </div>
   </div>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
     // ✅ Your Firebase config
     const firebaseConfig = {
@@ -76,32 +97,87 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
+    // 🔹 Login
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const status = document.getElementById("loginStatus");
+
+      status.textContent = "⏳ Logging in...";
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          status.textContent = "✅ Logged in!";
+          status.className = "status success";
+          document.getElementById("uploadSection").classList.remove("hidden");
+        })
+        .catch((error) => {
+          status.textContent = "❌ Login failed: " + error.message;
+          status.className = "status error";
+        });
+    }
+
+    // 🔹 File Upload
     function uploadFile() {
       const file = document.getElementById("fileInput").files[0];
-      const status = document.getElementById("status");
+      const status = document.getElementById("uploadStatus");
+      const progressBar = document.getElementById("progressBar");
 
       if (!file) {
-        status.textContent = "⚠️ Please choose a file first.";
+        status.textContent = "⚠️ Please select a file.";
+        status.className = "status error";
         return;
       }
 
-      // Check if user logged in (Firebase Auth)
-      onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          status.textContent = "❌ Please log in to upload files.";
-          return;
+      const user = auth.currentUser;
+      if (!user) {
+        status.textContent = "❌ You must log in first.";
+        status.className = "status error";
+        return;
+      }
+
+      status.textContent = "⏳ Starting upload...";
+      status.className = "status";
+
+      const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on("state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          progressBar.value = progress;
+          status.textContent = `Uploading: ${progress.toFixed(0)}%`;
+          status.className = "status";
+        },
+        (error) => {
+          status.textContent = "❌ Upload error: " + error.message;
+          status.className = "status error";
+        },
+        async () => {
+          try {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            status.innerHTML = `✅ Upload complete! <br> <a href="${url}" target="_blank">${url}</a>`;
+            status.className = "status success";
+          } catch (err) {
+            status.textContent = "❌ Could not fetch file URL: " + err.message;
+            status.className = "status error";
+          }
         }
-
-        const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
-
-        uploadBytes(storageRef, file).then(async () => {
-          const url = await getDownloadURL(storageRef);
-          status.innerHTML = `✅ Uploaded! <br> <a href="${url}" target="_blank">${url}</a>`;
-        }).catch((error) => {
-          status.textContent = "❌ Upload failed: " + error.message;
-        });
-      });
+      );
     }
+
+    // 🔹 Show upload section if already logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("uploadSection").classList.remove("hidden");
+        document.getElementById("loginStatus").textContent = "✅ Already logged in.";
+        document.getElementById("loginStatus").className = "status success";
+      }
+    });
+
+    // Expose functions
+    window.login = login;
+    window.uploadFile = uploadFile;
   </script>
 </body>
 </html>
