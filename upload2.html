@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Fire File Upload (Fixed)</title>
+  <title>Firebase File Upload (Simple UI)</title>
   <script type="module">
     // Import Firebase v9 (modular)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -23,38 +23,44 @@
     const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // 🔹 Helpers to show messages
-    function showError(message) {
-      document.getElementById("error").innerText = "❌ " + message;
-      document.getElementById("status").innerText = "";
+    // 🔹 Show messages in box
+    function showMessage(message, type="info") {
+      const box = document.getElementById("messageBox");
+      box.innerText = message;
+      box.style.display = "block";
+
+      if (type === "error") {
+        box.style.backgroundColor = "#fee2e2";
+        box.style.border = "1px solid #dc2626";
+        box.style.color = "#991b1b";
+      } else {
+        box.style.backgroundColor = "#e6ffed";
+        box.style.border = "1px solid #22c55e";
+        box.style.color = "#166534";
+      }
     }
 
-    function showStatus(message) {
-      document.getElementById("status").innerText = "✅ " + message;
-      document.getElementById("error").innerText = "";
-    }
-
-    // 🔹 Login function
+    // 🔹 Login
     window.login = function () {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
       signInWithEmailAndPassword(auth, email, password)
         .then(() => {
-          showStatus("Login successful!");
+          showMessage("✅ Login successful");
         })
         .catch((error) => {
-          showError(error.message);
+          showMessage("❌ " + error.message, "error");
         });
     };
 
-    // 🔹 Upload file function
+    // 🔹 Upload
     window.uploadFile = function () {
       const file = document.getElementById("fileInput").files[0];
-      if (!file) return showError("Select a file first!");
+      if (!file) return showMessage("❌ Please select a file first!", "error");
 
       const user = auth.currentUser;
-      if (!user) return showError("Please login first!");
+      if (!user) return showMessage("❌ Please login first!", "error");
 
       const storageRef = ref(storage, "uploads/" + user.uid + "/" + file.name);
       const uploadTask = uploadBytesResumable(storageRef, file);
@@ -63,36 +69,48 @@
         "state_changed",
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          document.getElementById("status").innerText = "Uploading... " + progress.toFixed(2) + "%";
+          showMessage("⏳ Uploading... " + progress.toFixed(2) + "%");
         },
         (error) => {
-          showError(error.message);
+          showMessage("❌ " + error.message, "error");
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            showStatus("Uploaded! File URL: " + url);
+            showMessage("✅ Uploaded! File URL: " + url);
           });
         }
       );
     };
   </script>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #status { margin-top: 10px; color: green; }
-    #error { margin-top: 10px; color: red; font-weight: bold; }
+    body { font-family: Arial, sans-serif; margin: 30px; text-align: center; }
+    input, button { margin: 8px 0; padding: 10px; width: 250px; }
+    button { cursor: pointer; }
+
+    #messageBox {
+      margin: 20px auto;
+      padding: 12px;
+      border-radius: 5px;
+      display: none;
+      width: 80%;
+      max-width: 400px;
+      font-weight: bold;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <h2>Login & Upload</h2>
   
-  <input type="email" id="email" placeholder="Email"><br><br>
-  <input type="password" id="password" placeholder="Password"><br><br>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
   <button onclick="login()">Login</button><br><br>
 
-  <input type="file" id="fileInput"><br><br>
+  <input type="file" id="fileInput"><br>
   <button onclick="uploadFile()">Upload File</button>
   
-  <p id="status"></p>
-  <p id="error"></p>
+  <!-- 🔹 One box for all messages -->
+  <div id="messageBox"></div>
 </body>
 </html>
