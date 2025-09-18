@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Firebase File Upload (Simple UI)</title>
+  <title>Firebase File Upload (with Error Debug)</title>
   <script type="module">
-    // Import Firebase v9 (modular)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
     import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
@@ -18,16 +17,14 @@
       appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
     };
 
-    // 🔹 Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const storage = getStorage(app);
 
-    // 🔹 Show messages in box
-    function showMessage(message, type="info") {
+    function showMessage(msg, type="info") {
       const box = document.getElementById("messageBox");
-      box.innerText = message;
       box.style.display = "block";
+      box.innerText = msg;
 
       if (type === "error") {
         box.style.backgroundColor = "#fee2e2";
@@ -50,7 +47,7 @@
           showMessage("✅ Login successful");
         })
         .catch((error) => {
-          showMessage("❌ " + error.message, "error");
+          showMessage("❌ " + error.code + " | " + error.message, "error");
         });
     };
 
@@ -65,6 +62,12 @@
       const storageRef = ref(storage, "uploads/" + user.uid + "/" + file.name);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
+      let stuckCheck = setTimeout(() => {
+        if (uploadTask.snapshot.bytesTransferred === 0) {
+          showMessage("⚠️ Upload stuck at 0% — check Firebase Storage rules or network issues.", "error");
+        }
+      }, 5000); // warn after 5s at 0%
+
       uploadTask.on(
         "state_changed",
         (snapshot) => {
@@ -72,11 +75,19 @@
           showMessage("⏳ Uploading... " + progress.toFixed(2) + "%");
         },
         (error) => {
-          showMessage("❌ " + error.message, "error");
+          clearTimeout(stuckCheck);
+          // Full dev-tools style output
+          showMessage("❌ ERROR\n" + JSON.stringify({
+            code: error.code,
+            message: error.message,
+            name: error.name,
+            stack: error.stack
+          }, null, 2), "error");
         },
         () => {
+          clearTimeout(stuckCheck);
           getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-            showMessage("✅ Uploaded! File URL: " + url);
+            showMessage("✅ Uploaded! File URL:\n" + url);
           });
         }
       );
@@ -84,24 +95,25 @@
   </script>
 
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; text-align: center; }
+    body { font-family: monospace; margin: 30px; text-align: center; }
     input, button { margin: 8px 0; padding: 10px; width: 250px; }
     button { cursor: pointer; }
 
     #messageBox {
+      white-space: pre-wrap; /* keep line breaks for error stack */
       margin: 20px auto;
       padding: 12px;
       border-radius: 5px;
       display: none;
-      width: 80%;
-      max-width: 400px;
-      font-weight: bold;
-      text-align: center;
+      width: 90%;
+      max-width: 600px;
+      text-align: left;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <h2>Login & Upload</h2>
+  <h2>Firebase Upload Debug</h2>
   
   <input type="email" id="email" placeholder="Email"><br>
   <input type="password" id="password" placeholder="Password"><br>
@@ -110,7 +122,6 @@
   <input type="file" id="fileInput"><br>
   <button onclick="uploadFile()">Upload File</button>
   
-  <!-- 🔹 One box for all messages -->
   <div id="messageBox"></div>
 </body>
 </html>
