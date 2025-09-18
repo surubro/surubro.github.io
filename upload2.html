@@ -3,139 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>upload (Exact Errors)</title>
+<title>Firebase File Manager</title>
 
-<!-- Firebase v9 modular -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-    authDomain: "striped-acrobat-342207.firebaseapp.com",
-    projectId: "striped-acrobat-342207",
-    storageBucket: "striped-acrobat-342207.appspot.com",
-    messagingSenderId: "367114842706",
-    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-  };
+// 🔹 Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+  authDomain: "striped-acrobat-342207.firebaseapp.com",
+  projectId: "striped-acrobat-342207",
+  storageBucket: "striped-acrobat-342207.appspot.com",
+  messagingSenderId: "367114842706",
+  appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-  const messageBox = document.getElementById("messageBox");
-  const loginBtn = document.getElementById("loginBtn");
-  const fileInput = document.getElementById("fileInput");
-  const uploadBtn = document.getElementById("uploadBtn");
+// 🔹 Elements
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const fileInput = document.getElementById("fileInput");
+const uploadBtn = document.getElementById("uploadBtn");
+const fileListDiv = document.getElementById("fileList");
+const messageBox = document.getElementById("messageBox");
 
-  function showMessage(msg, type="info") {
-    messageBox.style.display = "block";
-    messageBox.innerText = msg;
-
-    if (type === "error") {
-      messageBox.style.backgroundColor = "#fee2e2";
-      messageBox.style.border = "1px solid #dc2626";
-      messageBox.style.color = "#991b1b";
-    } else {
-      messageBox.style.backgroundColor = "#e6ffed";
-      messageBox.style.border = "1px solid #22c55e";
-      messageBox.style.color = "#166534";
-    }
+// 🔹 Show messages
+function showMessage(msg, type="info") {
+  messageBox.style.display = "block";
+  messageBox.innerText = msg;
+  if (type === "error") {
+    messageBox.style.backgroundColor = "#fee2e2";
+    messageBox.style.border = "1px solid #dc2626";
+    messageBox.style.color = "#991b1b";
+  } else {
+    messageBox.style.backgroundColor = "#e6ffed";
+    messageBox.style.border = "1px solid #22c55e";
+    messageBox.style.color = "#166534";
   }
+}
 
-  loginBtn.onclick = async () => {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+// 🔹 Login
+loginBtn.onclick = async () => {
+  const email = emailInput.value;
+  const password = passwordInput.value;
+  if (!email || !password) return showMessage("❌ Email and password required!", "error");
 
-    if (!email || !password) return showMessage("❌ Email and password required!", "error");
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showMessage("✅ Login successful");
+  } catch (error) {
+    let msg = `❌ LOGIN ERROR\nCode: ${error.code}\nMessage: ${error.message}`;
+    if (error.stack) msg += `\nStack:\n${error.stack}`;
+    showMessage(msg, "error");
+  }
+};
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      if (!user.emailVerified) {
-        showMessage("❌ Email not verified. Please verify your email first.", "error");
-      } else {
-        showMessage(`✅ Login successful: ${user.email}`);
-      }
-    } catch (error) {
-      // Display full error
-      let msg = `❌ LOGIN ERROR\nCode: ${error.code}\nMessage: ${error.message}`;
+// 🔹 Logout
+logoutBtn.onclick = async () => {
+  try {
+    await signOut(auth);
+    showMessage("✅ Logged out");
+  } catch (err) {
+    showMessage(`❌ Logout error: ${err.message || err}`, "error");
+  }
+};
+
+// 🔹 Upload
+uploadBtn.onclick = async () => {
+  const file = fileInput.files[0];
+  if (!file) return showMessage("❌ Please select a file!", "error");
+
+  const storageRef = ref(storage, `uploads/${file.name}`);
+  const uploadTask = uploadBytesResumable(storageRef, file);
+
+  uploadTask.on(
+    "state_changed",
+    snapshot => {
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      showMessage(`⏳ Uploading... ${progress.toFixed(2)}%`);
+    },
+    error => {
+      let msg = `❌ UPLOAD ERROR\nCode: ${error.code}\nMessage: ${error.message}`;
       if (error.stack) msg += `\nStack:\n${error.stack}`;
       showMessage(msg, "error");
-    }
-  };
-
-  uploadBtn.onclick = async () => {
-    const file = fileInput.files[0];
-    if (!file) return showMessage("❌ Please select a file first!", "error");
-
-    const user = auth.currentUser;
-    if (!user) return showMessage("❌ Please login first!", "error");
-
-    const storageRef = ref(storage, `uploads/${user.uid}/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      "state_changed",
-      snapshot => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        showMessage(`⏳ Uploading... ${progress.toFixed(2)}%`);
-      },
-      error => {
-        // Show exact Firebase error
-        let msg = `❌ UPLOAD ERROR\nCode: ${error.code}\nMessage: ${error.message}`;
-        if (error.stack) msg += `\nStack:\n${error.stack}`;
-        showMessage(msg, "error");
-      },
-      async () => {
-        try {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          showMessage(`✅ Upload complete!\nURL: ${url}`);
-        } catch (err) {
-          let msg = `❌ ERROR GETTING DOWNLOAD URL\n${err.message || err}`;
-          showMessage(msg, "error");
-        }
+    },
+    async () => {
+      try {
+        const url = await getDownloadURL(uploadTask.snapshot.ref);
+        showMessage(`✅ Upload complete!\nURL: ${url}`);
+        listFiles(); // refresh list
+      } catch (err) {
+        showMessage(`❌ ERROR getting download URL: ${err.message || err}`, "error");
       }
-    );
-  };
-
-  // Optional: Show message if user already logged in
-  onAuthStateChanged(auth, user => {
-    if (user && user.emailVerified) {
-      showMessage(`✅ Already logged in as ${user.email}`);
     }
-  });
+  );
+};
 
+// 🔹 List files
+async function listFiles() {
+  try {
+    const listRef = ref(storage, "uploads/");
+    const res = await listAll(listRef);
+    fileListDiv.innerHTML = "";
+    if (res.items.length === 0) {
+      fileListDiv.innerText = "No files uploaded yet.";
+      return;
+    }
+    for (let itemRef of res.items) {
+      const url = await getDownloadURL(itemRef);
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.innerText = itemRef.name;
+      const div = document.createElement("div");
+      div.appendChild(a);
+      fileListDiv.appendChild(div);
+    }
+  } catch (err) {
+    showMessage(`❌ ERROR listing files: ${err.message || err}`, "error");
+  }
+}
+
+// 🔹 Auth state
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    uploadBtn.disabled = false;
+    fileInput.disabled = false;
+    listFiles();
+    showMessage(`✅ Logged in as ${user.email}`);
+  } else {
+    loginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+    uploadBtn.disabled = true;
+    fileInput.disabled = true;
+    fileListDiv.innerHTML = "";
+    showMessage("Please login to upload and view files");
+  }
+});
 </script>
 
 <style>
-  body { font-family: monospace; margin: 30px; text-align: center; }
-  input, button { margin: 8px 0; padding: 10px; width: 250px; }
-  button { cursor: pointer; }
-  #messageBox {
-    white-space: pre-wrap;
-    margin: 20px auto;
-    padding: 12px;
-    border-radius: 5px;
-    display: none;
-    width: 95%;
-    max-width: 700px;
-    text-align: left;
-    font-size: 14px;
-  }
+body { font-family: monospace; margin: 30px; text-align: center; }
+input, button { margin: 8px 0; padding: 10px; width: 250px; }
+button { cursor: pointer; }
+#messageBox {
+  white-space: pre-wrap;
+  margin: 20px auto;
+  padding: 12px;
+  border-radius: 5px;
+  display: none;
+  width: 95%;
+  max-width: 700px;
+  text-align: left;
+  font-size: 14px;
+}
+#fileList { margin-top: 20px; text-align: left; max-width: 700px; margin-left:auto; margin-right:auto; }
+#fileList div { margin: 5px 0; }
 </style>
 </head>
 <body>
-<h2>Firebase Upload Debug</h2>
+
+<h2>Firebase File Manager</h2>
 
 <input type="email" id="email" placeholder="Email"><br>
 <input type="password" id="password" placeholder="Password"><br>
-<button id="loginBtn">Login</button><br><br>
+<button id="loginBtn">Login</button>
+<button id="logoutBtn" style="display:none;">Logout</button><br><br>
 
-<input type="file" id="fileInput"><br>
-<button id="uploadBtn">Upload File</button>
+<input type="file" id="fileInput" disabled><br>
+<button id="uploadBtn" disabled>Upload File</button>
 
 <div id="messageBox"></div>
+<h3>Uploaded Files:</h3>
+<div id="fileList"></div>
+
 </body>
 </html>
