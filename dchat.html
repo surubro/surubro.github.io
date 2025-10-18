@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Send Txt..</title>
+  <title>Send Txt</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
@@ -95,12 +95,10 @@
   const messagesRef = ref(db, "messages");
   const chatBox = document.getElementById("chatBox");
 
-  // separate passwords
-  const clearAllPassword = "deleteall";      // for clearing all messages
-  const singleDeletePassword = "Confirm";  // for deleting one message
+  const clearAllPassword = "deleteall";
+  const singleDeletePassword = "Confirm";
   let deleteTarget = null;
 
-  // Login
   document.getElementById("loginBtn").onclick = () => {
     const email = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
@@ -113,12 +111,17 @@
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
+  // Force scroll to bottom when page loads
+  window.onload = () => {
+    autoScroll();
+  };
+
   onAuthStateChanged(auth, user => {
     if (user && user.emailVerified) {
       document.getElementById("loginScreen").classList.add("hidden");
       document.getElementById("chatUI").classList.remove("hidden");
       loadMessages();
-      setTimeout(autoScroll, 500); // scroll to bottom after load
+      setTimeout(autoScroll, 500);
     } else {
       document.getElementById("chatUI").classList.add("hidden");
       document.getElementById("loginScreen").classList.remove("hidden");
@@ -162,10 +165,9 @@
       autoScroll();
     });
 
-    setTimeout(autoScroll, 1000); // final scroll
+    setTimeout(autoScroll, 1000);
   }
 
-  // Send Message
   window.sendMessage = () => {
     const input = document.getElementById("messageInput");
     const text = input.value.trim();
@@ -180,7 +182,6 @@
       });
   };
 
-  // Handle Enter / Ctrl+Enter
   const messageInput = document.getElementById("messageInput");
   messageInput.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -195,7 +196,6 @@
     }
   });
 
-  // Modal Functions
   window.showPasswordModal = (action = 'single') => {
     deleteTarget = (action === 'clear') ? { type: 'clear' } : deleteTarget;
     document.getElementById("passwordModal").style.display = "flex";
@@ -222,7 +222,6 @@
         alert("Incorrect password for clearing all messages.");
       }
     } 
-    
     else if (deleteTarget?.type === 'single') {
       if (enteredPassword === singleDeletePassword) {
         if (confirm("Delete this message?")) {
