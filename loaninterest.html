@@ -107,6 +107,7 @@
     <div class="result" id="result" style="display:none;">
       <div><span>Total Payment:</span> <span id="totalPayment">₹0</span></div>
       <div><span>Total Interest Paid:</span> <span id="totalInterest">₹0</span></div>
+      <div><span>Interest % of Loan:</span> <span id="interestPercent">0%</span></div>
     </div>
   </div>
 
@@ -127,9 +128,11 @@
 
       const totalPayment = emi * tenure;
       const totalInterest = totalPayment - loanAmount;
+      const interestPercent = (totalInterest / loanAmount) * 100;
 
       document.getElementById('totalPayment').textContent = '₹' + formatINR(totalPayment.toFixed(0));
       document.getElementById('totalInterest').textContent = '₹' + formatINR(totalInterest.toFixed(0));
+      document.getElementById('interestPercent').textContent = interestPercent.toFixed(2) + '%';
       document.getElementById('result').style.display = 'block';
     }
   </script>
