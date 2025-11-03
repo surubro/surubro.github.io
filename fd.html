@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FD Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      margin: 40px;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 15px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+    .value-box {
+      background: #e8fff4;
+      padding: 8px 12px;
+      border-radius: 5px;
+      display: inline-block;
+      font-weight: 600;
+      color: #00b36b;
+      min-width: 100px;
+      text-align: center;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+    .result span {
+      float: right;
+      font-weight: 600;
+    }
+    .chart-container {
+      width: 250px;
+      height: 250px;
+      margin: auto;
+    }
+    .flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>FD Calculator</h2>
+    <div class="card">
+      <div class="flex">
+        <div style="flex: 1; min-width: 280px;">
+          <div class="section">
+            <label>Total investment</label>
+            <input type="range" id="investment" min="1000" max="1000000" step="1000" value="100000" oninput="calculateFD()">
+            <div class="value-box">₹ <span id="investmentVal">100000</span></div>
+          </div>
+
+          <div class="section">
+            <label>Rate of interest (p.a)</label>
+            <input type="range" id="interest" min="1" max="15" step="0.1" value="6.5" oninput="calculateFD()">
+            <div class="value-box"><span id="interestVal">6.5</span>%</div>
+          </div>
+
+          <div class="section">
+            <label>Time period (Years)</label>
+            <input type="range" id="years" min="1" max="20" step="1" value="5" oninput="calculateFD()">
+            <div class="value-box"><span id="yearsVal">5</span></div>
+          </div>
+
+          <div class="result">
+            <div>Invested amount <span id="investedAmt">₹1,00,000</span></div>
+            <div>Est. returns <span id="returnsAmt">₹38,042</span></div>
+            <div><b>Total value</b> <span id="totalAmt">₹1,38,042</span></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="fdChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ctx = document.getElementById('fdChart').getContext('2d');
+    let chart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Total investment', 'Total returns'],
+        datasets: [{
+          data: [100000, 38042],
+          backgroundColor: ['#f0f2ff', '#4b6ef5'],
+          borderWidth: 0
+        }]
+      },
+      options: { cutout: '70%', plugins: { legend: { display: false } } }
+    });
+
+    function formatINR(num) {
+      return num.toLocaleString('en-IN');
+    }
+
+    function calculateFD() {
+      let p = parseFloat(document.getElementById('investment').value);
+      let r = parseFloat(document.getElementById('interest').value);
+      let t = parseFloat(document.getElementById('years').value);
+
+      // compound interest yearly
+      let maturity = p * Math.pow((1 + r / 100), t);
+      let returns = maturity - p;
+
+      document.getElementById('investmentVal').textContent = formatINR(p);
+      document.getElementById('interestVal').textContent = r;
+      document.getElementById('yearsVal').textContent = t;
+
+      document.getElementById('investedAmt').textContent = "₹" + formatINR(p);
+      document.getElementById('returnsAmt').textContent = "₹" + formatINR(Math.round(returns));
+      document.getElementById('totalAmt').textContent = "₹" + formatINR(Math.round(maturity));
+
+      chart.data.datasets[0].data = [p, Math.round(returns)];
+      chart.update();
+    }
+
+    calculateFD();
+  </script>
+</body>
+</html>
