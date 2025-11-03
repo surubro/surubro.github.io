@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Interest Calculator</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      margin: 40px;
+      color: #333;
+    }
+    .container {
+      max-width: 400px;
+      margin: auto;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4b6ef5;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3d5ede;
+    }
+    .result {
+      margin-top: 20px;
+      line-height: 1.8;
+    }
+    .result span {
+      float: right;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Loan Interest Calculator</h2>
+
+    <label>Loan Amount (₹)</label>
+    <input type="number" id="loanAmount" placeholder="Enter loan amount" value="500000">
+
+    <label>Tenure (Months)</label>
+    <input type="number" id="tenure" placeholder="Enter months" value="60">
+
+    <label>Monthly EMI (₹)</label>
+    <input type="number" id="emi" placeholder="Enter EMI amount" value="10624">
+
+    <button onclick="calculateInterest()">Calculate</button>
+
+    <div class="result" id="result" style="display:none;">
+      <div>Total Payment <span id="totalPayment">₹0</span></div>
+      <div>Total Interest Paid <span id="totalInterest">₹0</span></div>
+    </div>
+  </div>
+
+  <script>
+    function formatINR(num) {
+      return num.toLocaleString('en-IN');
+    }
+
+    function calculateInterest() {
+      const loanAmount = parseFloat(document.getElementById('loanAmount').value);
+      const months = parseInt(document.getElementById('tenure').value);
+      const emi = parseFloat(document.getElementById('emi').value);
+
+      if (isNaN(loanAmount) || isNaN(months) || isNaN(emi) || loanAmount <= 0 || months <= 0 || emi <= 0) {
+        alert("Please enter valid numbers for all fields.");
+        return;
+      }
+
+      const totalPayment = emi * months;
+      const totalInterest = totalPayment - loanAmount;
+
+      document.getElementById('totalPayment').textContent = "₹" + formatINR(totalPayment.toFixed(0));
+      document.getElementById('totalInterest').textContent = "₹" + formatINR(totalInterest.toFixed(0));
+      document.getElementById('result').style.display = "block";
+    }
+  </script>
+</body>
+</html>
