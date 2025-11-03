@@ -39,15 +39,24 @@
       width: 100%;
       cursor: pointer;
     }
-    .value-box {
+    .input-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       background: #e8fff4;
-      padding: 8px 12px;
       border-radius: 5px;
-      display: inline-block;
+      padding: 6px 10px;
+      width: fit-content;
+    }
+    .input-box input {
+      border: none;
+      background: transparent;
       font-weight: 600;
       color: #00b36b;
-      min-width: 100px;
-      text-align: center;
+      width: 90px;
+      font-size: 1rem;
+      text-align: right;
+      outline: none;
     }
     .result {
       margin-top: 20px;
@@ -80,20 +89,20 @@
         <div style="flex: 1; min-width: 280px;">
           <div class="section">
             <label>Total investment</label>
-            <input type="range" id="investment" min="1000" max="1000000" step="1000" value="100000" oninput="calculateFD()">
-            <div class="value-box">₹ <span id="investmentVal">100000</span></div>
+            <input type="range" id="investmentRange" min="1000" max="1000000" step="1000" value="100000" oninput="syncInputs()">
+            <div class="input-box">₹ <input type="number" id="investmentVal" value="100000" min="1000" max="1000000" step="1000" oninput="syncRanges()"></div>
           </div>
 
           <div class="section">
             <label>Rate of interest (p.a)</label>
-            <input type="range" id="interest" min="1" max="15" step="0.1" value="6.5" oninput="calculateFD()">
-            <div class="value-box"><span id="interestVal">6.5</span>%</div>
+            <input type="range" id="interestRange" min="1" max="15" step="0.1" value="6.5" oninput="syncInputs()">
+            <div class="input-box"><input type="number" id="interestVal" value="6.5" step="0.1" min="1" max="15" oninput="syncRanges()">%</div>
           </div>
 
           <div class="section">
             <label>Time period (Years)</label>
-            <input type="range" id="years" min="1" max="20" step="1" value="5" oninput="calculateFD()">
-            <div class="value-box"><span id="yearsVal">5</span></div>
+            <input type="range" id="yearsRange" min="1" max="20" step="1" value="5" oninput="syncInputs()">
+            <div class="input-box"><input type="number" id="yearsVal" value="5" min="1" max="20" oninput="syncRanges()"></div>
           </div>
 
           <div class="result">
@@ -130,17 +139,12 @@
     }
 
     function calculateFD() {
-      let p = parseFloat(document.getElementById('investment').value);
-      let r = parseFloat(document.getElementById('interest').value);
-      let t = parseFloat(document.getElementById('years').value);
+      let p = parseFloat(document.getElementById('investmentVal').value);
+      let r = parseFloat(document.getElementById('interestVal').value);
+      let t = parseFloat(document.getElementById('yearsVal').value);
 
-      // compound interest yearly
       let maturity = p * Math.pow((1 + r / 100), t);
       let returns = maturity - p;
-
-      document.getElementById('investmentVal').textContent = formatINR(p);
-      document.getElementById('interestVal').textContent = r;
-      document.getElementById('yearsVal').textContent = t;
 
       document.getElementById('investedAmt').textContent = "₹" + formatINR(p);
       document.getElementById('returnsAmt').textContent = "₹" + formatINR(Math.round(returns));
@@ -148,6 +152,22 @@
 
       chart.data.datasets[0].data = [p, Math.round(returns)];
       chart.update();
+    }
+
+    // Sync slider → input
+    function syncInputs() {
+      document.getElementById('investmentVal').value = document.getElementById('investmentRange').value;
+      document.getElementById('interestVal').value = document.getElementById('interestRange').value;
+      document.getElementById('yearsVal').value = document.getElementById('yearsRange').value;
+      calculateFD();
+    }
+
+    // Sync input → slider
+    function syncRanges() {
+      document.getElementById('investmentRange').value = document.getElementById('investmentVal').value;
+      document.getElementById('interestRange').value = document.getElementById('interestVal').value;
+      document.getElementById('yearsRange').value = document.getElementById('yearsVal').value;
+      calculateFD();
     }
 
     calculateFD();
