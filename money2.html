@@ -1,171 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Money Tracker</title>
+  <meta charset="UTF-8">
+  <title>Money Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f4f4f4;
-    }
-
-    #container {
-      max-width: 400px;
-      margin: auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 16px;
-    }
-
-    button {
-      background: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #45a049;
-    }
-
-    .entry {
-      padding: 10px;
-      background: #e9e9e9;
-      margin-top: 10px;
-      border-radius: 8px;
-    }
-
-    .entry button {
-      width: auto;
-      margin-right: 5px;
-      background: #333;
-    }
-
-    .delete-btn {
-      background: red !important;
-    }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; }
+    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+    #loginDiv, #appDiv { padding:20px; }
+    input, button { padding:10px; margin:5px 0; font-size:16px; width:100%; box-sizing:border-box; border-radius:6px; border:1px solid #ccc; }
+    button { background:#4CAF50; color:white; border:none; cursor:pointer; font-weight:bold; }
+    button:hover { opacity:0.9; }
+    .card { background:white; padding:15px; margin:10px 0; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center; }
+    .card strong { display:block; margin-bottom:5px; }
+    .actions button { background:#2196F3; margin-left:5px; padding:6px 10px; font-size:14px; }
+    .actions button:last-child { background:#f44336; }
+    #totalBox { background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); font-size:18px; font-weight:bold; text-align:center; margin-bottom:15px; }
   </style>
 </head>
 <body>
+  <header>💰 Money Manager</header>
 
-<div id="container">
-  <h2>Money Tracker</h2>
+  <!-- Login Section -->
+  <div id="loginDiv">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
 
-  <input type="text" id="desc" placeholder="Description">
-  <input type="number" id="amount" placeholder="Amount">
+  <!-- App Section -->
+  <div id="appDiv" style="display:none;">
+    <div id="totalBox">Total: ₹<span id="total">0</span></div>
 
-  <button onclick="addMoney()">Add</button>
+    <h2>Add Entry</h2>
+    <input type="text" id="desc" placeholder="Description">
+    <input type="number" id="amount" placeholder="Amount">
+    <button onclick="addMoney()">➕ Add</button>
+    <button onclick="logout()">Logout</button>
 
-  <h3>Records</h3>
-  <div id="list"></div>
+    <h2>Entries</h2>
+    <div id="list"></div>
+  </div>
 
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-<!-- Firebase Scripts -->
-<script type="module">
-  // Import Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    push,
-    onValue,
-    update,
-    remove
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    // --- Firebase Config ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
 
-  // Your Firebase Config
-  const firebaseConfig = {
-    apiKey: "YOUR-API-KEY",
-    authDomain: "YOUR-DOMAIN",
-    databaseURL: "YOUR-DATABASE-URL",
-    projectId: "YOUR-ID",
-    storageBucket: "YOUR-BUCKET",
-    messagingSenderId: "YOUR-SENDER",
-    appId: "YOUR-APP-ID"
-  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+    const moneyRef = ref(db, "money2");  // ✔ now storing in money2
 
-  // Init
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  // NEW DATABASE LOCATION
-  const moneyRef = ref(db, "money2");
-
-  // Add Data
-  window.addMoney = function () {
-    let desc = document.getElementById("desc").value.trim();
-    let amount = document.getElementById("amount").value;
-
-    if (!desc || !amount) {
-      alert("Enter both fields");
-      return;
-    }
-
-    push(moneyRef, {
-      desc: desc,
-      amount: parseFloat(amount)
+    // --- Auth State ---
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        document.getElementById("loginDiv").style.display = "none";
+        document.getElementById("appDiv").style.display = "block";
+      } else {
+        document.getElementById("loginDiv").style.display = "block";
+        document.getElementById("appDiv").style.display = "none";
+      }
     });
 
-    document.getElementById("desc").value = "";
-    document.getElementById("amount").value = "";
-  };
+    // --- Login ---
+    window.login = function () {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
+    };
 
-  // Load Data
-  onValue(moneyRef, (snap) => {
-    const list = document.getElementById("list");
-    list.innerHTML = "";
+    // --- Logout ---
+    window.logout = function () { signOut(auth); };
 
-    snap.forEach((child) => {
-      let id = child.key;
-      let data = child.val();
+    // --- Add Entry ---
+    window.addMoney = function () {
+      let desc = document.getElementById("desc").value.trim();
+      let amount = parseFloat(document.getElementById("amount").value);
+      if (desc && !isNaN(amount)) {
+        push(moneyRef, { desc, amount });
+        document.getElementById("desc").value = "";
+        document.getElementById("amount").value = "";
+      }
+    };
 
-      let div = document.createElement("div");
-      div.className = "entry";
+    // --- Edit Amount Only ---
+    window.editMoney = function (id, oldAmount) {
+      let newAmountStr = prompt("Edit amount:", oldAmount);
+      if (newAmountStr === null) return;
+      let newAmount = parseFloat(newAmountStr);
+      if (!isNaN(newAmount)) {
+        update(ref(db, "money2/" + id), { amount: newAmount });
+      } else {
+        alert("Invalid amount!");
+      }
+    };
 
-      div.innerHTML = `
-        <strong>${data.desc}</strong><br>
-        Amount: ₹${data.amount}<br><br>
+    // --- Delete Entry ---
+    window.deleteMoney = function (id) {
+      if (confirm("Delete this record?")) {
+        remove(ref(db, "money2/" + id));
+      }
+    };
 
-        <button onclick="editMoney('${id}', ${data.amount})">Edit Amount</button>
-        <button class="delete-btn" onclick="deleteMoney('${id}')">Delete</button>
-      `;
+    // --- Display Entries ---
+    onValue(moneyRef, (snapshot) => {
+      let listDiv = document.getElementById("list");
+      listDiv.innerHTML = "";
+      let total = 0;
 
-      list.appendChild(div);
+      snapshot.forEach((childSnap) => {
+        let id = childSnap.key;
+        let item = childSnap.val();
+        total += Number(item.amount);
+
+        let div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div>
+            <strong>${item.desc}</strong>
+            ₹${item.amount}
+          </div>
+          <div class="actions">
+            <button onclick="editMoney('${id}', ${item.amount})">Edit</button>
+            <button onclick="deleteMoney('${id}')">Delete</button>
+          </div>
+        `;
+        listDiv.prepend(div);
+      });
+
+      document.getElementById("total").innerText = total.toFixed(2);
     });
-  });
-
-  // Edit Amount Only
-  window.editMoney = function (id, oldAmount) {
-    let newAmountStr = prompt("Edit amount:", oldAmount);
-    if (newAmountStr === null) return;
-
-    let newAmount = parseFloat(newAmountStr);
-    if (isNaN(newAmount)) {
-      alert("Invalid amount!");
-      return;
-    }
-
-    update(ref(db, "money2/" + id), { amount: newAmount });
-  };
-
-  // Delete Entry
-  window.deleteMoney = function (id) {
-    if (confirm("Delete this entry?")) {
-      remove(ref(db, "money2/" + id));
-    }
-  };
-</script>
-
+  </script>
 </body>
 </html>
