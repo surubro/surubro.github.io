@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expenses Tracker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
+    .container { max-width: 600px; margin: auto; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+    button { background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
+    button:hover { background: #4338ca; }
+    .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    .delete { background: #dc2626; }
+    .delete:hover { background: #b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>💰 Expenses Tracker</h2>
+
+    <input type="text" id="descInput" placeholder="Expense Description">
+    <input type="number" id="amountInput" placeholder="Expense Amount">
+    <button onclick="addExpense()">Add Expense</button>
+    <button onclick="exportCSV()">Export to CSV</button>
+
+    <h3>Expenses</h3>
+    <div id="list"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+      authDomain: "striped-acrobat-342207.firebaseapp.com",
+      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+      projectId: "striped-acrobat-342207",
+      storageBucket: "striped-acrobat-342207.appspot.com",
+      messagingSenderId: "367114842706",
+      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const expensesRef = ref(db, "expenses");
+
+    function formatDate(timestamp) {
+      const d = new Date(timestamp);
+      return d.toLocaleDateString("en-GB") + " " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    // Add expense
+    window.addExpense = async function() {
+      const desc = descInput.value.trim();
+      const amount = parseFloat(amountInput.value);
+      if(!desc || isNaN(amount)) return alert("Enter valid data!");
+      await push(expensesRef, { desc, amount, date: Date.now() });
+      descInput.value=""; amountInput.value="";
+    };
+
+    // Load expenses
+    onValue(expensesRef, snap => {
+      list.innerHTML = "";
+      snap.forEach(c => {
+        const e = c.val();
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div><strong>${e.desc}</strong> - ₹${e.amount}</div>
+          <small>${formatDate(e.date)}</small>
+          <div class="actions">
+            <button class="delete" onclick="deleteExpense('${c.key}')">Delete</button>
+          </div>`;
+        list.prepend(div);
+      });
+    });
+
+    window.deleteExpense = async function(id) {
+      if(confirm("Delete this expense?")) {
+        await remove(ref(db,"expenses/"+id));
+      }
+    };
+
+    // Export to CSV
+    window.exportCSV = function() {
+      const rows = [["Description","Amount","Date"]];
+      list.querySelectorAll(".card").forEach(card=>{
+        const desc = card.querySelector("strong").innerText;
+        const amount = card.querySelector("div").innerText.split(" - ₹")[1];
+        const date = card.querySelector("small").innerText;
+        rows.push([desc, amount, date]);
+      });
+      let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "expenses.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  </script>
+</body>
+</html>
