@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expenses Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expenses export</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
     .container { max-width: 600px; margin: auto; padding: 20px; }
@@ -19,7 +19,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>💰 Expenses Tracker</h2>
+    <h2>💰 Expenses expo</h2>
 
     <input type="text" id="descInput" placeholder="Expense Description">
     <input type="number" id="amountInput" placeholder="Expense Amount">
@@ -30,7 +30,6 @@
     <div id="list"></div>
   </div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -47,7 +46,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const expensesRef = ref(db, "expenses");
+    const expensesRef = ref(db, "mspend/items"); // Firebase path
 
     function formatDate(timestamp) {
       const d = new Date(timestamp);
@@ -66,6 +65,7 @@
     // Load expenses
     onValue(expensesRef, snap => {
       list.innerHTML = "";
+      if (!snap.exists()) return;
       snap.forEach(c => {
         const e = c.val();
         const div = document.createElement("div");
@@ -80,13 +80,14 @@
       });
     });
 
+    // Delete expense
     window.deleteExpense = async function(id) {
       if(confirm("Delete this expense?")) {
-        await remove(ref(db,"expenses/"+id));
+        await remove(ref(db, "mspend/items/" + id));
       }
     };
 
-    // Export to CSV
+    // Export CSV
     window.exportCSV = function() {
       const rows = [["Description","Amount","Date"]];
       list.querySelectorAll(".card").forEach(card=>{
