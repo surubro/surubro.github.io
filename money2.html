@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Money Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+
+    #container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    .entry {
+      padding: 10px;
+      background: #e9e9e9;
+      margin-top: 10px;
+      border-radius: 8px;
+    }
+
+    .entry button {
+      width: auto;
+      margin-right: 5px;
+      background: #333;
+    }
+
+    .delete-btn {
+      background: red !important;
+    }
+  </style>
+</head>
+<body>
+
+<div id="container">
+  <h2>Money Tracker</h2>
+
+  <input type="text" id="desc" placeholder="Description">
+  <input type="number" id="amount" placeholder="Amount">
+
+  <button onclick="addMoney()">Add</button>
+
+  <h3>Records</h3>
+  <div id="list"></div>
+
+</div>
+
+<!-- Firebase Scripts -->
+<script type="module">
+  // Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    onValue,
+    update,
+    remove
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+  // Your Firebase Config
+  const firebaseConfig = {
+    apiKey: "YOUR-API-KEY",
+    authDomain: "YOUR-DOMAIN",
+    databaseURL: "YOUR-DATABASE-URL",
+    projectId: "YOUR-ID",
+    storageBucket: "YOUR-BUCKET",
+    messagingSenderId: "YOUR-SENDER",
+    appId: "YOUR-APP-ID"
+  };
+
+  // Init
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // NEW DATABASE LOCATION
+  const moneyRef = ref(db, "money2");
+
+  // Add Data
+  window.addMoney = function () {
+    let desc = document.getElementById("desc").value.trim();
+    let amount = document.getElementById("amount").value;
+
+    if (!desc || !amount) {
+      alert("Enter both fields");
+      return;
+    }
+
+    push(moneyRef, {
+      desc: desc,
+      amount: parseFloat(amount)
+    });
+
+    document.getElementById("desc").value = "";
+    document.getElementById("amount").value = "";
+  };
+
+  // Load Data
+  onValue(moneyRef, (snap) => {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    snap.forEach((child) => {
+      let id = child.key;
+      let data = child.val();
+
+      let div = document.createElement("div");
+      div.className = "entry";
+
+      div.innerHTML = `
+        <strong>${data.desc}</strong><br>
+        Amount: ₹${data.amount}<br><br>
+
+        <button onclick="editMoney('${id}', ${data.amount})">Edit Amount</button>
+        <button class="delete-btn" onclick="deleteMoney('${id}')">Delete</button>
+      `;
+
+      list.appendChild(div);
+    });
+  });
+
+  // Edit Amount Only
+  window.editMoney = function (id, oldAmount) {
+    let newAmountStr = prompt("Edit amount:", oldAmount);
+    if (newAmountStr === null) return;
+
+    let newAmount = parseFloat(newAmountStr);
+    if (isNaN(newAmount)) {
+      alert("Invalid amount!");
+      return;
+    }
+
+    update(ref(db, "money2/" + id), { amount: newAmount });
+  };
+
+  // Delete Entry
+  window.deleteMoney = function (id) {
+    if (confirm("Delete this entry?")) {
+      remove(ref(db, "money2/" + id));
+    }
+  };
+</script>
+
+</body>
+</html>
