@@ -37,9 +37,12 @@
     <button onclick="addMoney()">➕ Add</button>
     <button onclick="logout()">Logout</button>
 
+    <!-- TOTAL AT TOP -->
+    <div id="totalBox">Total: ₹<span id="total">0</span></div>
+
     <h2>Entries</h2>
     <div id="list"></div>
-    <div id="totalBox">Total: ₹<span id="total">0</span></div>
+
   </div>
 
   <script type="module">
@@ -47,7 +50,6 @@
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // --- Firebase Config ---
     const firebaseConfig = {
       apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
       authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -63,7 +65,7 @@
     const auth = getAuth();
     const moneyRef = ref(db, "money");
 
-    // --- Auth State ---
+    // Auth State
     onAuthStateChanged(auth, (user) => {
       if (user && user.emailVerified) {
         document.getElementById("loginDiv").style.display = "none";
@@ -74,15 +76,17 @@
       }
     });
 
-    // --- Login / Logout ---
+    // Login
     window.login = function () {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       signInWithEmailAndPassword(auth, email, password).catch(err => alert(err.message));
     };
+
+    // Logout
     window.logout = function () { signOut(auth); };
 
-    // --- Add Entry ---
+    // Add Entry
     window.addMoney = function () {
       let desc = document.getElementById("desc").value.trim();
       let amount = parseFloat(document.getElementById("amount").value);
@@ -93,28 +97,27 @@
       }
     };
 
-    // --- Edit Entry ---
+    // EDIT ONLY AMOUNT
     window.editMoney = function (id, oldDesc, oldAmount) {
-      let newDesc = prompt("Edit description:", oldDesc);
-      if (newDesc === null) return; // cancelled
       let newAmountStr = prompt("Edit amount:", oldAmount);
-      if (newAmountStr === null) return; // cancelled
+      if (newAmountStr === null) return;
+
       let newAmount = parseFloat(newAmountStr);
-      if (newDesc.trim() && !isNaN(newAmount)) {
-        update(ref(db, "money/" + id), { desc: newDesc.trim(), amount: newAmount });
+      if (!isNaN(newAmount)) {
+        update(ref(db, "money/" + id), { amount: newAmount });
       } else {
-        alert("Invalid values!");
+        alert("Invalid amount!");
       }
     };
 
-    // --- Delete Entry ---
+    // Delete Entry
     window.deleteMoney = function (id) {
       if (confirm("Delete this record?")) {
         remove(ref(db, "money/" + id));
       }
     };
 
-    // --- Display Entries ---
+    // Display Entries
     onValue(moneyRef, (snapshot) => {
       let listDiv = document.getElementById("list");
       listDiv.innerHTML = "";
@@ -133,7 +136,7 @@
             ₹${item.amount}
           </div>
           <div class="actions">
-            <button onclick="editMoney('${id}', \`${item.desc.replace(/`/g, "\\`")}\`, ${item.amount})">Edit</button>
+            <button onclick="editMoney('${id}', '${item.desc}', ${item.amount})">Edit</button>
             <button onclick="deleteMoney('${id}')">Delete</button>
           </div>
         `;
