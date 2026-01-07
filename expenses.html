@@ -7,14 +7,14 @@
 
 <style>
 body{
-    font-family: Segoe UI, Arial, sans-serif;
+    font-family:Segoe UI, Arial, sans-serif;
     background:#f4f4f4;
     margin:0;
     padding:20px;
 }
 
 .container{
-    max-width:600px;
+    max-width:900px;
     margin:auto;
 }
 
@@ -26,25 +26,32 @@ h1{
 
 h2{
     font-size:18px;
-    margin:20px 0 10px;
+    margin:25px 0 12px;
     border-bottom:1px solid #007bff;
     padding-bottom:4px;
 }
 
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+}
+
+/* CARD */
 .bill-item{
     background:#fff;
-    padding:8px 12px;
-    margin-bottom:8px;
+    padding:10px 12px;
     display:flex;
     justify-content:space-between;
     align-items:center;
     border-radius:6px;
     box-shadow:0 1px 3px rgba(0,0,0,0.1);
-    font-size:15px;
+    font-size:14px;
 }
 
 button{
-    font-size:14px;
+    font-size:13px;
     padding:4px 10px;
     border:none;
     border-radius:4px;
@@ -57,6 +64,7 @@ button:disabled{
     background:#bbb;
 }
 
+/* CUSTOM */
 .custom-add{
     display:flex;
     gap:8px;
@@ -71,6 +79,7 @@ input{
     border:1px solid #ccc;
 }
 
+/* FOOTER */
 #total{
     position:fixed;
     bottom:0;
@@ -83,6 +92,13 @@ input{
     text-align:center;
     font-weight:bold;
 }
+
+/* MOBILE */
+@media(max-width:600px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
 </style>
 </head>
 
@@ -92,18 +108,22 @@ input{
 <h1>Bill Tracker</h1>
 
 <h2>Monthly Payments</h2>
-<div class="bill-item"><span>Electricity – ₹900</span><button onclick="add(this,1000)">Add</button></div>
-<div class="bill-item"><span>Gas – ₹900</span><button onclick="add(this,1000)">Add</button></div>
-<div class="bill-item"><span>Water – ₹150</span><button onclick="add(this,150)">Add</button></div>
-<div class="bill-item"><span>SIM (My+Mom) – ₹600</span><button onclick="add(this,600)">Add</button></div>
-<div class="bill-item"><span>DTH – ₹420</span><button onclick="add(this,400)">Add</button></div>
-<div class="bill-item"><span>SIM Sumit – ₹350</span><button onclick="add(this,350)">Add</button></div>
-<div class="bill-item"><span>Property Tax – ₹450</span><button onclick="add(this,500)">Add</button></div>
+<div class="grid">
+    <div class="bill-item"><span>Electricity – ₹900</span><button onclick="add(this,1000)">Add</button></div>
+    <div class="bill-item"><span>Gas – ₹900</span><button onclick="add(this,1000)">Add</button></div>
+    <div class="bill-item"><span>Water – ₹150</span><button onclick="add(this,150)">Add</button></div>
+    <div class="bill-item"><span>SIM (My+Mom) – ₹600</span><button onclick="add(this,600)">Add</button></div>
+    <div class="bill-item"><span>DTH – ₹420</span><button onclick="add(this,400)">Add</button></div>
+    <div class="bill-item"><span>SIM Sumit – ₹350</span><button onclick="add(this,350)">Add</button></div>
+    <div class="bill-item"><span>Property Tax – ₹450</span><button onclick="add(this,500)">Add</button></div>
+</div>
 
 <h2>Wants</h2>
-<div class="bill-item"><span>SIM Dad – ₹250</span><button onclick="add(this,150)">Add</button></div>
-<div class="bill-item"><span>WiFi – ₹600</span><button onclick="add(this,600)">Add</button></div>
-<div class="bill-item"><span>Subscription – ₹200</span><button onclick="add(this,200)">Add</button></div>
+<div class="grid">
+    <div class="bill-item"><span>SIM Dad – ₹250</span><button onclick="add(this,150)">Add</button></div>
+    <div class="bill-item"><span>WiFi – ₹600</span><button onclick="add(this,600)">Add</button></div>
+    <div class="bill-item"><span>Subscription – ₹200</span><button onclick="add(this,200)">Add</button></div>
+</div>
 
 <div class="custom-add">
     <input type="number" id="custom" placeholder="Custom amount">
