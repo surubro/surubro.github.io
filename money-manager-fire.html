@@ -19,38 +19,32 @@ body{
   padding:12px;
 }
 .card{
-  background:#ffffff;
+  background:#fff;
   border-radius:10px;
   padding:12px;
   margin-bottom:12px;
   box-shadow:0 3px 10px rgba(0,0,0,.1);
 }
-h3,h4{margin:6px 0;color:#111}
+h3,h4{margin:6px 0}
 input,select{
   width:100%;
   padding:9px;
   margin:6px 0;
   border-radius:6px;
   border:1px solid #ccc;
-  background:#fff;
-  color:#000;
 }
 button{
   width:100%;
   padding:10px;
-  margin-top:6px;
   border:none;
   border-radius:6px;
   background:#1976d2;
   color:#fff;
-  font-size:15px;
 }
-button:hover{opacity:.9}
 button.danger{background:#d32f2f}
 button.small{
   width:auto;
   padding:4px 8px;
-  font-size:13px;
   margin-right:6px;
 }
 .hidden{display:none}
@@ -61,13 +55,10 @@ button.small{
   cursor:pointer;
 }
 .entry{
-  padding:6px 0;
   border-bottom:1px solid #eee;
+  padding:6px 0;
 }
-.total{
-  font-weight:bold;
-  margin-top:6px;
-}
+.total{font-weight:bold;margin-top:6px}
 </style>
 </head>
 <body>
@@ -102,10 +93,10 @@ button.small{
     <h3>💰 Update Balance</h3>
     <select id="balanceBank"></select>
     <input id="balanceValue" type="number" placeholder="New balance">
-    <button onclick="updateBalance()">Update</button>
+    <button onclick="updateBalance()">Update Balance</button>
   </div>
 
-  <!-- ENTRY -->
+  <!-- ADD / EDIT ENTRY -->
   <div class="card">
     <h3>➕ Entry</h3>
     <select id="entryBank"></select>
@@ -117,10 +108,9 @@ button.small{
   <!-- BANK LIST -->
   <div id="bankList"></div>
 
-  <!-- TOTAL -->
   <div class="card total" id="grandTotal"></div>
-
 </div>
+
 </div>
 
 <script type="module">
@@ -128,6 +118,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
   authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -142,103 +133,103 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-let banksRef;
-let editing=null;
+let userId = null;
+let editing = null;
 
 /* AUTH */
-window.login=()=>{
-  signInWithEmailAndPassword(auth,email.value,password.value)
-  .catch(e=>alert(e.message));
+window.login = () => {
+  signInWithEmailAndPassword(auth, email.value, password.value)
+    .catch(e => alert(e.message));
 };
-window.logout=()=>signOut(auth);
+window.logout = () => signOut(auth);
 
-onAuthStateChanged(auth,u=>{
-  if(u){
+onAuthStateChanged(auth, user => {
+  if (user) {
+    userId = user.uid;
     loginBox.classList.add("hidden");
     appBox.classList.remove("hidden");
-    banksRef=ref(db,`bankManager/${u.uid}`);
-    load();
-  }else{
+    loadBanks();
+  } else {
     loginBox.classList.remove("hidden");
     appBox.classList.add("hidden");
   }
 });
 
 /* BANK */
-window.addBank=()=>{
-  if(!bankName.value)return;
-  set(ref(db,`${banksRef.key}/${bankName.value}`),{
-    balance:Number(bankInit.value||0)
+window.addBank = () => {
+  if (!bankName.value) return;
+  set(ref(db, `bankManager/${userId}/${bankName.value}`), {
+    balance: Number(bankInit.value || 0)
   });
-  bankName.value="";
-  bankInit.value="";
+  bankName.value = "";
+  bankInit.value = "";
 };
 
-window.updateBalance=()=>{
-  update(ref(db,`${banksRef.key}/${balanceBank.value}`),{
-    balance:Number(balanceValue.value)
+window.updateBalance = () => {
+  update(ref(db, `bankManager/${userId}/${balanceBank.value}`), {
+    balance: Number(balanceValue.value)
   });
-  balanceValue.value="";
+  balanceValue.value = "";
 };
 
-window.delBank=b=>{
-  if(confirm("Delete bank?")){
-    remove(ref(db,`${banksRef.key}/${b}`));
+window.delBank = b => {
+  if (confirm("Delete bank?")) {
+    remove(ref(db, `bankManager/${userId}/${b}`));
   }
 };
 
 /* ENTRY */
-window.saveEntry=()=>{
-  if(!entryBank.value)return;
-  const path=`${banksRef.key}/${entryBank.value}/entries`;
-  if(editing){
-    set(ref(db,`${path}/${editing}`),{
-      name:entryName.value,
-      amount:Number(entryAmount.value)
+window.saveEntry = () => {
+  if (!entryBank.value) return;
+  const base = `bankManager/${userId}/${entryBank.value}/entries`;
+  if (editing) {
+    set(ref(db, `${base}/${editing}`), {
+      name: entryName.value,
+      amount: Number(entryAmount.value)
     });
-    editing=null;
-    entryBtn.textContent="Add Entry";
-  }else{
-    push(ref(db,path),{
-      name:entryName.value,
-      amount:Number(entryAmount.value)
+    editing = null;
+    entryBtn.textContent = "Add Entry";
+  } else {
+    push(ref(db, base), {
+      name: entryName.value,
+      amount: Number(entryAmount.value)
     });
   }
-  entryName.value="";
-  entryAmount.value="";
+  entryName.value = "";
+  entryAmount.value = "";
 };
 
-window.editEntry=(b,id,n,a)=>{
-  entryBank.value=b;
-  entryName.value=n;
-  entryAmount.value=a;
-  editing=id;
-  entryBtn.textContent="Update Entry";
+window.editEntry = (b, id, n, a) => {
+  entryBank.value = b;
+  entryName.value = n;
+  entryAmount.value = a;
+  editing = id;
+  entryBtn.textContent = "Update Entry";
 };
 
-window.delEntry=(b,id)=>{
-  remove(ref(db,`${banksRef.key}/${b}/entries/${id}`));
+window.delEntry = (b, id) => {
+  remove(ref(db, `bankManager/${userId}/${b}/entries/${id}`));
 };
 
 /* LOAD */
-function load(){
-  onValue(banksRef,s=>{
-    const d=s.val()||{};
-    bankList.innerHTML="";
-    entryBank.innerHTML="";
-    balanceBank.innerHTML="";
-    let gb=0,gu=0;
+function loadBanks() {
+  onValue(ref(db, `bankManager/${userId}`), snap => {
+    const data = snap.val() || {};
+    bankList.innerHTML = "";
+    entryBank.innerHTML = "";
+    balanceBank.innerHTML = "";
+    let gb = 0, gu = 0;
 
-    for(const b in d){
-      entryBank.innerHTML+=`<option>${b}</option>`;
-      balanceBank.innerHTML+=`<option>${b}</option>`;
-      let used=0;
-      let entries="";
-      if(d[b].entries){
-        for(const id in d[b].entries){
-          const e=d[b].entries[id];
-          used+=e.amount;
-          entries+=`
+    for (const b in data) {
+      entryBank.innerHTML += `<option>${b}</option>`;
+      balanceBank.innerHTML += `<option>${b}</option>`;
+      let used = 0, entries = "";
+
+      if (data[b].entries) {
+        for (const id in data[b].entries) {
+          const e = data[b].entries[id];
+          used += e.amount;
+          entries += `
           <div class="entry">
             ${e.name} – ₹${e.amount}<br>
             <button class="small" onclick="editEntry('${b}','${id}','${e.name}',${e.amount})">✏</button>
@@ -247,7 +238,7 @@ function load(){
         }
       }
 
-      bankList.innerHTML+=`
+      bankList.innerHTML += `
       <div class="card">
         <div class="bank-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
           <h4>${b}</h4>
@@ -255,13 +246,14 @@ function load(){
         </div>
         <div class="hidden">${entries}</div>
         <div class="total">
-          Balance ₹${d[b].balance} | Used ₹${used} | Remaining ₹${d[b].balance-used}
+          Balance ₹${data[b].balance} | Used ₹${used} | Remaining ₹${data[b].balance - used}
         </div>
       </div>`;
-      gb+=d[b].balance;
-      gu+=used;
+
+      gb += data[b].balance;
+      gu += used;
     }
-    grandTotal.textContent=`TOTAL → Balance ₹${gb} | Used ₹${gu} | Remaining ₹${gb-gu}`;
+    grandTotal.textContent = `TOTAL → Balance ₹${gb} | Used ₹${gu} | Remaining ₹${gb - gu}`;
   });
 }
 </script>
