@@ -2,43 +2,72 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bank Manager</title>
 
 <style>
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:system-ui,Arial;
-  background:#f4f6f8;
+  background:#eef2f5;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont;
+  color:#222;
 }
 .container{
-  max-width:500px;
+  max-width:480px;
   margin:auto;
-  padding:10px;
+  padding:12px;
 }
 .card{
-  background:#fff;
+  background:#ffffff;
+  border-radius:10px;
   padding:12px;
   margin-bottom:12px;
-  border-radius:8px;
-  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  box-shadow:0 3px 10px rgba(0,0,0,.1);
 }
-input,select,button{
+h3,h4{margin:6px 0;color:#111}
+input,select{
   width:100%;
-  padding:8px;
+  padding:9px;
   margin:6px 0;
+  border-radius:6px;
+  border:1px solid #ccc;
+  background:#fff;
+  color:#000;
 }
 button{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
   border:none;
-  background:#007bff;
-  color:#fff;
   border-radius:6px;
+  background:#1976d2;
+  color:#fff;
+  font-size:15px;
 }
-button.danger{background:#dc3545}
-button.small{width:auto;padding:4px 8px;margin-right:6px}
-h3,h4{margin:6px 0}
+button:hover{opacity:.9}
+button.danger{background:#d32f2f}
+button.small{
+  width:auto;
+  padding:4px 8px;
+  font-size:13px;
+  margin-right:6px;
+}
 .hidden{display:none}
-.bank-title{cursor:pointer}
+.bank-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+}
+.entry{
+  padding:6px 0;
+  border-bottom:1px solid #eee;
+}
+.total{
+  font-weight:bold;
+  margin-top:6px;
+}
 </style>
 </head>
 <body>
@@ -46,15 +75,15 @@ h3,h4{margin:6px 0}
 <div class="container">
 
 <!-- LOGIN -->
-<div id="loginCard" class="card">
-  <h3>Login</h3>
+<div id="loginBox" class="card">
+  <h3>🔐 Login</h3>
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden">
+<div id="appBox" class="hidden">
 
   <div class="card">
     <button class="danger" onclick="logout()">Logout</button>
@@ -62,37 +91,34 @@ h3,h4{margin:6px 0}
 
   <!-- ADD BANK -->
   <div class="card">
-    <h3>Add Bank</h3>
-    <input id="newBank" placeholder="Bank name">
-    <input id="newBalance" type="number" placeholder="Initial balance">
+    <h3>🏦 Add Bank</h3>
+    <input id="bankName" placeholder="Bank name">
+    <input id="bankInit" type="number" placeholder="Initial balance">
     <button onclick="addBank()">Add Bank</button>
   </div>
 
   <!-- UPDATE BALANCE -->
   <div class="card">
-    <h3>Update Bank Balance</h3>
-    <select id="balanceBank">
-      <option value="">Select Bank</option>
-    </select>
-    <input id="bankBalance" type="number" placeholder="New balance">
-    <button onclick="updateBalance()">Update Balance</button>
+    <h3>💰 Update Balance</h3>
+    <select id="balanceBank"></select>
+    <input id="balanceValue" type="number" placeholder="New balance">
+    <button onclick="updateBalance()">Update</button>
   </div>
 
-  <!-- ADD / EDIT ENTRY -->
+  <!-- ENTRY -->
   <div class="card">
-    <h3>Add / Edit Entry</h3>
-    <select id="entryBank">
-      <option value="">Select Bank</option>
-    </select>
+    <h3>➕ Entry</h3>
+    <select id="entryBank"></select>
     <input id="entryName" placeholder="Entry name">
     <input id="entryAmount" type="number" placeholder="Amount">
     <button id="entryBtn" onclick="saveEntry()">Add Entry</button>
   </div>
 
   <!-- BANK LIST -->
-  <div id="banks"></div>
+  <div id="bankList"></div>
 
-  <div class="card" id="grand"></div>
+  <!-- TOTAL -->
+  <div class="card total" id="grandTotal"></div>
 
 </div>
 </div>
@@ -102,7 +128,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
   authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -117,142 +142,126 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* STATE */
 let banksRef;
-let editing = null;
+let editing=null;
 
 /* AUTH */
-window.login = ()=>{
+window.login=()=>{
   signInWithEmailAndPassword(auth,email.value,password.value)
   .catch(e=>alert(e.message));
 };
+window.logout=()=>signOut(auth);
 
-window.logout = ()=>signOut(auth);
-
-onAuthStateChanged(auth,user=>{
-  if(user){
-    loginCard.classList.add("hidden");
-    app.classList.remove("hidden");
-    banksRef = ref(db,`bankManager/users/${user.uid}/banks`);
-    loadBanks();
+onAuthStateChanged(auth,u=>{
+  if(u){
+    loginBox.classList.add("hidden");
+    appBox.classList.remove("hidden");
+    banksRef=ref(db,`bankManager/${u.uid}`);
+    load();
   }else{
-    loginCard.classList.remove("hidden");
-    app.classList.add("hidden");
+    loginBox.classList.remove("hidden");
+    appBox.classList.add("hidden");
   }
 });
 
-/* BANKS */
-window.addBank = ()=>{
-  const name=newBank.value.trim();
-  const bal=Number(newBalance.value);
-  if(!name||bal<0)return;
-
-  set(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${name}`),{
-    balance:bal
+/* BANK */
+window.addBank=()=>{
+  if(!bankName.value)return;
+  set(ref(db,`${banksRef.key}/${bankName.value}`),{
+    balance:Number(bankInit.value||0)
   });
-
-  newBank.value="";
-  newBalance.value="";
+  bankName.value="";
+  bankInit.value="";
 };
 
-window.updateBalance = ()=>{
-  if(!balanceBank.value)return;
-  update(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${balanceBank.value}`),{
-    balance:Number(bankBalance.value)
+window.updateBalance=()=>{
+  update(ref(db,`${banksRef.key}/${balanceBank.value}`),{
+    balance:Number(balanceValue.value)
   });
-  bankBalance.value="";
+  balanceValue.value="";
 };
 
-window.delBank = bank=>{
-  if(confirm("Delete bank and all entries?")){
-    remove(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${bank}`));
+window.delBank=b=>{
+  if(confirm("Delete bank?")){
+    remove(ref(db,`${banksRef.key}/${b}`));
   }
 };
 
-/* ENTRIES */
-window.saveEntry = ()=>{
-  const bank=entryBank.value;
-  const name=entryName.value.trim();
-  const amt=Number(entryAmount.value);
-  if(!bank||!name||amt<=0)return;
-
+/* ENTRY */
+window.saveEntry=()=>{
+  if(!entryBank.value)return;
+  const path=`${banksRef.key}/${entryBank.value}/entries`;
   if(editing){
-    set(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${editing.bank}/entries/${editing.id}`),
-      {name,amount:amt});
+    set(ref(db,`${path}/${editing}`),{
+      name:entryName.value,
+      amount:Number(entryAmount.value)
+    });
     editing=null;
     entryBtn.textContent="Add Entry";
   }else{
-    push(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${bank}/entries`),
-      {name,amount:amt});
+    push(ref(db,path),{
+      name:entryName.value,
+      amount:Number(entryAmount.value)
+    });
   }
-
   entryName.value="";
   entryAmount.value="";
 };
 
-window.editEntry=(bank,id,name,amt)=>{
-  entryBank.value=bank;
-  entryName.value=name;
-  entryAmount.value=amt;
-  editing={bank,id};
+window.editEntry=(b,id,n,a)=>{
+  entryBank.value=b;
+  entryName.value=n;
+  entryAmount.value=a;
+  editing=id;
   entryBtn.textContent="Update Entry";
 };
 
-window.delEntry=(bank,id)=>{
-  remove(ref(db,`bankManager/users/${auth.currentUser.uid}/banks/${bank}/entries/${id}`));
+window.delEntry=(b,id)=>{
+  remove(ref(db,`${banksRef.key}/${b}/entries/${id}`));
 };
 
-/* UI */
-window.toggle=id=>{
-  const e=document.getElementById("box-"+id);
-  e.style.display=e.style.display==="none"?"block":"none";
-};
+/* LOAD */
+function load(){
+  onValue(banksRef,s=>{
+    const d=s.val()||{};
+    bankList.innerHTML="";
+    entryBank.innerHTML="";
+    balanceBank.innerHTML="";
+    let gb=0,gu=0;
 
-function loadBanks(){
-  onValue(banksRef,snap=>{
-    const data=snap.val()||{};
-    let html="",gb=0,gu=0;
-
-    entryBank.innerHTML="<option value=''>Select Bank</option>";
-    balanceBank.innerHTML="<option value=''>Select Bank</option>";
-
-    for(const b in data){
+    for(const b in d){
       entryBank.innerHTML+=`<option>${b}</option>`;
       balanceBank.innerHTML+=`<option>${b}</option>`;
-
       let used=0;
-      html+=`
-      <div class="card">
-        <h4 class="bank-title" onclick="toggle('${b}')">
-          ${b.toUpperCase()}
-          <button class="small danger" onclick="delBank('${b}')">🗑</button>
-        </h4>
-        <div id="box-${b}" style="display:none">
-      `;
-
-      if(data[b].entries){
-        for(const id in data[b].entries){
-          const e=data[b].entries[id];
+      let entries="";
+      if(d[b].entries){
+        for(const id in d[b].entries){
+          const e=d[b].entries[id];
           used+=e.amount;
-          html+=`
-            ${e.name} ₹${e.amount}<br>
-            <button class="small" onclick="editEntry('${b}','${id}','${e.name}',${e.amount})">✏️</button>
+          entries+=`
+          <div class="entry">
+            ${e.name} – ₹${e.amount}<br>
+            <button class="small" onclick="editEntry('${b}','${id}','${e.name}',${e.amount})">✏</button>
             <button class="small danger" onclick="delEntry('${b}','${id}')">❌</button>
-            <br><br>
-          `;
+          </div>`;
         }
       }
 
-      html+=`</div>
-      <p>Balance ₹${data[b].balance} | Used ₹${used} | Remaining ₹${data[b].balance-used}</p>
+      bankList.innerHTML+=`
+      <div class="card">
+        <div class="bank-header" onclick="this.nextElementSibling.classList.toggle('hidden')">
+          <h4>${b}</h4>
+          <button class="small danger" onclick="event.stopPropagation();delBank('${b}')">🗑</button>
+        </div>
+        <div class="hidden">${entries}</div>
+        <div class="total">
+          Balance ₹${d[b].balance} | Used ₹${used} | Remaining ₹${d[b].balance-used}
+        </div>
       </div>`;
-
-      gb+=data[b].balance;
+      gb+=d[b].balance;
       gu+=used;
     }
-
-    banks.innerHTML=html;
-    grand.innerHTML=`Total ₹${gb} | Used ₹${gu} | Remaining ₹${gb-gu}`;
+    grandTotal.textContent=`TOTAL → Balance ₹${gb} | Used ₹${gu} | Remaining ₹${gb-gu}`;
   });
 }
 </script>
