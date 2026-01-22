@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bank Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{font-family:system-ui;background:#f5f5f5;padding:15px}
+.card{background:#fff;padding:15px;border-radius:8px;margin-bottom:12px}
+.hidden{display:none}
+input,select,button{width:100%;padding:8px;margin-bottom:8px}
+button{background:#2ecc71;color:#fff;border:none}
+.logout{background:#e74c3c}
+</style>
+</head>
+<body>
+
+<!-- 🔐 LOGIN -->
+<div id="loginBox" class="card">
+<h2>🔐 Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password">
+<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
+</div>
+
+<!-- 💰 APP -->
+<div id="app" class="hidden">
+
+<button class="logout" onclick="logout()">Logout</button>
+
+<div class="card">
+<h3>Add / Update Bank</h3>
+<input id="bankName" placeholder="Bank name (sbi)">
+<input id="bankBalance" type="number" placeholder="Balance">
+<button onclick="saveBank()">Save Bank</button>
+</div>
+
+<div class="card">
+<h3>Add Entry</h3>
+<select id="entryBank"></select>
+<input id="entryName" placeholder="Entry name">
+<input id="entryAmount" type="number" placeholder="Amount">
+<button onclick="addEntry()">Add Entry</button>
+</div>
+
+<div id="banks"></div>
+<div class="card" id="grand"></div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  set,
+  push,
+  onValue,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* 🔥 Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+  authDomain: "striped-acrobat-342207.firebaseapp.com",
+  databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+  projectId: "striped-acrobat-342207",
+  storageBucket: "striped-acrobat-342207.appspot.com",
+  messagingSenderId: "367114842706",
+  appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+};
+
+const appFB = initializeApp(firebaseConfig);
+const auth = getAuth(appFB);
+const db = getDatabase(appFB);
+
+let banksRef = null;
+
+/* 🔐 AUTH STATE */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginBox.classList.add("hidden");
+    app.classList.remove("hidden");
+
+    banksRef = ref(db, `bankManager/users/${user.uid}/banks`);
+    loadBanks();
+  } else {
+    loginBox.classList.remove("hidden");
+    app.classList.add("hidden");
+  }
+});
+
+/* AUTH ACTIONS */
+window.login = () =>
+  signInWithEmailAndPassword(auth, email.value, password.value)
+  .catch(e => alert(e.message));
+
+window.register = () =>
+  createUserWithEmailAndPassword(auth, email.value, password.value)
+  .catch(e => alert(e.message));
+
+window.logout = () => signOut(auth);
+
+/* 💰 SAVE BANK */
+window.saveBank = () => {
+  const name = bankName.value.trim().toLowerCase();
+  const balance = Number(bankBalance.value);
+  if (!name) return;
+
+  set(ref(db, `bankManager/users/${auth.currentUser.uid}/banks/${name}`), {
+    balance,
+    entries: {}
+  });
+
+  bankName.value = "";
+  bankBalance.value = "";
+};
+
+/* ➕ ADD ENTRY */
+window.addEntry = () => {
+  if (!entryBank.value) return;
+
+  push(ref(db, `bankManager/users/${auth.currentUser.uid}/banks/${entryBank.value}/entries`), {
+    name: entryName.value,
+    amount: Number(entryAmount.value)
+  });
+
+  entryName.value = "";
+  entryAmount.value = "";
+};
+
+/* ❌ DELETE ENTRY */
+window.delEntry = (bank,id) =>
+  remove(ref(db, `bankManager/users/${auth.currentUser.uid}/banks/${bank}/entries/${id}`));
+
+/* 📡 LOAD & RENDER */
+function loadBanks(){
+  onValue(banksRef, snap=>{
+    const data = snap.val() || {};
+    let html="", gb=0, gu=0;
+
+    entryBank.innerHTML="<option value=''>Select Bank</option>";
+
+    for(const b in data){
+      entryBank.innerHTML+=`<option value="${b}">${b}</option>`;
+      let used=0;
+
+      html+=`<div class="card"><h4>${b.toUpperCase()}</h4>`;
+
+      if(data[b].entries){
+        for(const id in data[b].entries){
+          const e=data[b].entries[id];
+          used+=e.amount;
+          html+=`${e.name} ₹${e.amount}
+            <button onclick="delEntry('${b}','${id}')">❌</button><br>`;
+        }
+      }
+
+      const rem=data[b].balance-used;
+      html+=`<p>Balance ₹${data[b].balance} | Used ₹${used} | Remaining ₹${rem}</p></div>`;
+
+      gb+=data[b].balance; gu+=used;
+    }
+
+    banks.innerHTML=html;
+    grand.innerHTML=`🏦 Total Balance ₹${gb} | Used ₹${gu} | Remaining ₹${gb-gu}`;
+  });
+}
+</script>
+
+</body>
+</html>
