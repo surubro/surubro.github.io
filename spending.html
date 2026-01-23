@@ -63,6 +63,17 @@ Summary
 </div>
 </div>
 
+<!-- INWARD CASH (NOT COUNTED) -->
+<div class="collapsible">
+<h3>Inward Cash</h3>
+<div class="collapsible-content">
+<input id="inwardName" placeholder="Name / Source">
+<input id="inwardAmount" type="number" placeholder="Amount">
+<button onclick="saveInward()">Save Inward Cash</button>
+<div id="inwardList"></div>
+</div>
+</div>
+
 <!-- CATEGORY -->
 <div class="collapsible">
 <h3>Categories</h3>
@@ -115,6 +126,7 @@ const auth=getAuth(app);
 const salariesRef=ref(db,"spending/salaries");
 const categoriesRef=ref(db,"spending/categories");
 const itemsRef=ref(db,"spending/items");
+const inwardRef=ref(db,"spending/inwardCash");
 
 const PASSWORD="Confirm";
 const ask=()=>prompt("Enter password")==PASSWORD;
@@ -128,10 +140,15 @@ window.logout=()=>signOut(auth);
 onAuthStateChanged(auth,u=>{
 authSection.style.display=u?"none":"block";
 appSection.style.display=u?"block":"none";
-if(u){loadSalaries();loadCategories();loadExpenses();}
+if(u){
+loadSalaries();
+loadCategories();
+loadExpenses();
+loadInward();
+}
 });
 
-/* TOGGLE */
+/* COLLAPSIBLE */
 document.querySelectorAll(".collapsible h3").forEach(h=>{
 h.onclick=()=>h.nextElementSibling.style.display=
 h.nextElementSibling.style.display=="block"?"none":"block";
@@ -178,7 +195,33 @@ salaryAmount.value=a;
 
 window.deleteSalary=async(id)=>{
 if(!ask())return;
-if(confirm("Delete salary?"))await remove(ref(db,"spending/salaries/"+id));
+await remove(ref(db,"spending/salaries/"+id));
+};
+
+/* INWARD CASH (NO CALCULATION) */
+window.saveInward=async()=>{
+if(!ask())return;
+const name=inwardName.value.trim();
+const amt=+inwardAmount.value;
+if(!name||amt<=0)return;
+await push(inwardRef,{name,amount:amt,date:Date.now()});
+inwardName.value=inwardAmount.value="";
+};
+
+function loadInward(){
+onValue(inwardRef,s=>{
+inwardList.innerHTML="";
+s.forEach(c=>{
+const v=c.val();
+inwardList.innerHTML+=`${v.name}: ₹${v.amount}
+<button onclick="deleteInward('${c.key}')">Delete</button><br>`;
+});
+});
+}
+
+window.deleteInward=async(id)=>{
+if(!ask())return;
+await remove(ref(db,"spending/inwardCash/"+id));
 };
 
 /* CATEGORY */
@@ -242,7 +285,7 @@ await remove(ref(db,"spending/items/"+id));
 /* DELETE ALL */
 window.deleteAllExpenses=async()=>{
 if(!ask())return;
-if(confirm("Delete ALL expenses?"))await remove(itemsRef);
+await remove(itemsRef);
 };
 
 /* CSV */
@@ -267,4 +310,4 @@ remaining.innerText=
 }
 </script>
 </body>
-  </html>
+</html>
