@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Category Spending Graph</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<style>
+body{
+  font-family:Arial;
+  background:#f9fafb;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  max-width:600px;
+  margin:auto;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+input,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  background:#4f46e5;
+  color:#fff;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="authSection" class="card">
+  <h3>🔐 Login</h3>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- GRAPH -->
+<div id="appSection" class="card" style="display:none">
+  <h2>📊 Spending by Category</h2>
+  <button onclick="logout()">Logout</button>
+  <canvas id="categoryChart" height="220"></canvas>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+/* FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+  authDomain: "striped-acrobat-342207.firebaseapp.com",
+  databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+  projectId: "striped-acrobat-342207"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+/* AUTH */
+window.login = () =>
+  signInWithEmailAndPassword(auth, email.value, password.value);
+window.logout = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  authSection.style.display = user ? "none" : "block";
+  appSection.style.display = user ? "block" : "none";
+  if (user) loadGraph();
+});
+
+/* CATEGORY GRAPH WITH VALUES */
+const itemsRef = ref(db, "spending/items");
+let chart = null;
+
+function loadGraph(){
+  onValue(itemsRef, snapshot => {
+    const categoryTotals = {};
+
+    snapshot.forEach(child => {
+      const v = child.val();
+      categoryTotals[v.category] =
+        (categoryTotals[v.category] || 0) + Number(v.amount);
+    });
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("categoryChart"), {
+      type: "bar",
+      data: {
+        labels: Object.keys(categoryTotals),
+        datasets: [{
+          data: Object.values(categoryTotals),
+          backgroundColor: "#4f46e5",
+          borderRadius: 6
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            anchor: "end",
+            align: "top",
+            color: "#111",
+            font: {
+              weight: "bold"
+            },
+            formatter: value => "₹" + value
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  });
+}
+</script>
+
+</body>
+</html>
