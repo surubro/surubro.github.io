@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pending Loan Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+
+    #loginDiv, #appDiv { padding:20px; }
+
+    input, button {
+      width:100%;
+      padding:10px;
+      margin:6px 0;
+      font-size:16px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button {
+      background:#4CAF50;
+      color:white;
+      font-weight:bold;
+      border:none;
+      cursor:pointer;
+    }
+
+    .box {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .tally {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      text-align:center;
+      font-weight:bold;
+    }
+
+    .opening { color:#673ab7; }
+    .loan { color:#f44336; }
+    .balance { color:#333; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+
+    .received {
+      color:#4CAF50;
+      font-weight:bold;
+    }
+
+    .actions button {
+      background:#2196F3;
+      margin-left:5px;
+      padding:6px 10px;
+      font-size:14px;
+    }
+
+    .actions .receivedBtn {
+      background:#4CAF50;
+    }
+
+    .actions .deleteBtn {
+      background:#f44336;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>💰 Pending Loan Manager</header>
+
+<!-- LOGIN -->
+<div id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="appDiv" style="display:none;">
+
+  <!-- OPENING -->
+  <div class="box">
+    <h3>Opening Loan Amount</h3>
+    <input type="number" id="openingInput" placeholder="Enter opening amount">
+    <button onclick="saveOpening()">Save / Update</button>
+  </div>
+
+  <!-- TALLY -->
+  <div class="box">
+    <h3>Loan Tally</h3>
+    <div class="tally">
+      <div class="opening">Opening<br>₹<span id="opening">0</span></div>
+      <div class="loan">Pending<br>₹<span id="loan">0</span></div>
+      <div class="balance">Balance<br>₹<span id="balance">0</span></div>
+    </div>
+  </div>
+
+  <!-- ADD LOAN -->
+  <div class="box">
+    <h3>Add Pending Loan</h3>
+    <input type="text" id="desc" placeholder="Loan description">
+    <input type="number" id="amount" placeholder="Loan amount">
+    <button onclick="addLoan()">➕ Add Loan</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <h3>Loans</h3>
+  <div id="list"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  const loanRef = ref(db, "pendingLoanAmount");
+  const openingRef = ref(db, "pendingLoanOpening");
+
+  let openingAmount = 0;
+
+  onAuthStateChanged(auth, user => {
+    loginDiv.style.display = user ? "none" : "block";
+    appDiv.style.display = user ? "block" : "none";
+  });
+
+  window.login = () =>
+    signInWithEmailAndPassword(auth, email.value, password.value)
+      .catch(e => alert(e.message));
+
+  window.logout = () => signOut(auth);
+
+  window.saveOpening = () => {
+    const v = parseFloat(openingInput.value);
+    if (!isNaN(v)) {
+      set(openingRef, v);
+      openingInput.value = "";
+    }
+  };
+
+  window.addLoan = () => {
+    const d = desc.value.trim();
+    const a = parseFloat(amount.value);
+    if (d && !isNaN(a) && a > 0) {
+      push(loanRef, {
+        desc: d,
+        amount: a,
+        status: "pending"
+      });
+      desc.value = "";
+      amount.value = "";
+    }
+  };
+
+  window.markReceived = (id) => {
+    const comment = prompt("Received comment (Cash / Bank):");
+    if (comment) {
+      update(ref(db, "pendingLoanAmount/" + id), {
+        status: "received",
+        receivedComment: comment,
+        receivedDate: new Date().toLocaleDateString()
+      });
+    }
+  };
+
+  window.deleteLoan = id => {
+    if (confirm("Delete this loan?")) {
+      remove(ref(db, "pendingLoanAmount/" + id));
+    }
+  };
+
+  onValue(openingRef, snap => {
+    openingAmount = snap.exists() ? snap.val() : 0;
+    opening.innerText = openingAmount.toFixed(2);
+  });
+
+  onValue(loanRef, snap => {
+    list.innerHTML = "";
+    let totalPending = 0;
+
+    snap.forEach(c => {
+      const data = c.val();
+      const id = c.key;
+
+      if (data.status !== "received") {
+        totalPending += Number(data.amount);
+      }
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <div>
+          <strong>${data.desc}</strong><br>
+          ₹${data.amount}<br>
+          ${data.status === "received"
+            ? `<span class="received">✔ Received (${data.receivedComment})</span>`
+            : `<span style="color:#f44336;">Pending</span>`
+          }
+        </div>
+
+        <div class="actions">
+          ${data.status === "pending"
+            ? `<button class="receivedBtn" onclick="markReceived('${id}')">Received</button>`
+            : ``
+          }
+          <button class="deleteBtn" onclick="deleteLoan('${id}')">Delete</button>
+        </div>
+      `;
+
+      list.prepend(div);
+    });
+
+    loan.innerText = totalPending.toFixed(2);
+    balance.innerText = (openingAmount - totalPending).toFixed(2);
+  });
+</script>
+
+</body>
+</html>
