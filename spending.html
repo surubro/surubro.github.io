@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spendings</title>
+<title>My Spendings.</title>
 
 <style>
 body{font-family:Arial;margin:0;background:#f9fafb}
@@ -27,7 +27,6 @@ button.green{background:#16a34a}
 <div class="container">
 <h2>💰 My Spending</h2>
 
-<!-- AUTH -->
 <div id="authSection" class="card">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
@@ -37,7 +36,6 @@ button.green{background:#16a34a}
 
 <div id="appSection" style="display:none">
 
-<!-- SUMMARY -->
 <div class="collapsible">
 <h3>
 Summary
@@ -52,7 +50,6 @@ Summary
 </div>
 </div>
 
-<!-- SALARY -->
 <div class="collapsible">
 <h3>Salary</h3>
 <div class="collapsible-content">
@@ -63,7 +60,6 @@ Summary
 </div>
 </div>
 
-<!-- INWARD CASH (NOT COUNTED) -->
 <div class="collapsible">
 <h3>Inward Cash</h3>
 <div class="collapsible-content">
@@ -74,7 +70,6 @@ Summary
 </div>
 </div>
 
-<!-- CATEGORY -->
 <div class="collapsible">
 <h3>Categories</h3>
 <div class="collapsible-content">
@@ -84,7 +79,6 @@ Summary
 </div>
 </div>
 
-<!-- ADD EXPENSE -->
 <div class="card">
 <h3>Add Expense</h3>
 <input id="descInput" placeholder="Description">
@@ -93,7 +87,6 @@ Summary
 <button onclick="addExpense()">Add Expense</button>
 </div>
 
-<!-- ACTIONS -->
 <div class="card">
 <button class="green" onclick="exportCSV()">⬇ Export CSV</button>
 <button class="danger" onclick="deleteAllExpenses()">🗑 Delete ALL Expenses</button>
@@ -110,7 +103,6 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-
 import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* CONFIG */
 const firebaseConfig={
 apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
 authDomain:"striped-acrobat-342207.firebaseapp.com",
@@ -122,14 +114,15 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 const auth=getAuth(app);
 
+/* DELETE PASSWORD ONLY */
+const DELETE_PASSWORD="Confirm";
+const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
+
 /* REFS */
 const salariesRef=ref(db,"spending/salaries");
 const categoriesRef=ref(db,"spending/categories");
 const itemsRef=ref(db,"spending/items");
 const inwardRef=ref(db,"spending/inwardCash");
-
-const PASSWORD="Confirm";
-const ask=()=>prompt("Enter password")==PASSWORD;
 
 let editSalaryId=null;
 
@@ -156,11 +149,9 @@ h.nextElementSibling.style.display=="block"?"none":"block";
 
 /* SALARY */
 window.saveSalary=async()=>{
-if(!ask())return;
 const name=salaryName.value.trim();
 const amt=+salaryAmount.value;
 if(!name||amt<=0)return;
-
 if(editSalaryId){
 await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt});
 editSalaryId=null;
@@ -176,8 +167,7 @@ salaryList.innerHTML="";
 let total=0;
 s.forEach(c=>{
 const v=c.val();total+=v.amount;
-salaryList.innerHTML+=`
-${v.name}: ₹${v.amount}
+salaryList.innerHTML+=`${v.name}: ₹${v.amount}
 <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
 <button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
 });
@@ -187,20 +177,18 @@ updateRemaining();
 }
 
 window.editSalary=(id,n,a)=>{
-if(!ask())return;
 editSalaryId=id;
 salaryName.value=n;
 salaryAmount.value=a;
 };
 
 window.deleteSalary=async(id)=>{
-if(!ask())return;
+if(!confirmDelete())return;
 await remove(ref(db,"spending/salaries/"+id));
 };
 
-/* INWARD CASH (NO CALCULATION) */
+/* INWARD */
 window.saveInward=async()=>{
-if(!ask())return;
 const name=inwardName.value.trim();
 const amt=+inwardAmount.value;
 if(!name||amt<=0)return;
@@ -220,13 +208,12 @@ inwardList.innerHTML+=`${v.name}: ₹${v.amount}
 }
 
 window.deleteInward=async(id)=>{
-if(!ask())return;
+if(!confirmDelete())return;
 await remove(ref(db,"spending/inwardCash/"+id));
 };
 
 /* CATEGORY */
 window.saveCategory=async()=>{
-if(!ask())return;
 push(categoriesRef,{name:categoryName.value});
 categoryName.value="";
 };
@@ -242,9 +229,9 @@ categoryList.innerHTML+=`${c.val().name}<br>`;
 });
 }
 
-/* EXPENSE */
+/* EXPENSE (CONFIRM ON ADD) */
 window.addExpense=async()=>{
-if(!ask())return;
+if(!confirm("Confirm add this expense?")) return;
 const cat=await get(ref(db,"spending/categories/"+categorySelect.value));
 await push(itemsRef,{
 desc:descInput.value,
@@ -271,20 +258,22 @@ list.innerHTML=`
 });
 totalExpenses.innerText=total;
 updateRemaining();
+
 categorySummary.innerHTML="";
-for(const k in summary)
-categorySummary.innerHTML+=`${k}: ₹${summary[k]}<br>`;
+for(const k in summary){
+const p=total?((summary[k]/total)*100).toFixed(1):0;
+categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
+}
 });
 }
 
 window.deleteExpense=async(id)=>{
-if(!ask())return;
+if(!confirmDelete())return;
 await remove(ref(db,"spending/items/"+id));
 };
 
-/* DELETE ALL */
 window.deleteAllExpenses=async()=>{
-if(!ask())return;
+if(!confirmDelete())return;
 await remove(itemsRef);
 };
 
@@ -303,7 +292,6 @@ a.download="expenses.csv";
 a.click();
 };
 
-/* CALC */
 function updateRemaining(){
 remaining.innerText=
 (+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
