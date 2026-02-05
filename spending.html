@@ -167,14 +167,15 @@ window.addSalary=async()=>{
 };
 async function loadSalary(){
  const s=await get(mRef("salary"));
- let arr=[],total=0;
  salaryList.innerHTML="";
- s.forEach(c=>arr.push({id:c.key,...c.val()}));
- arr.sort((a,b)=>a.date-b.date);
- arr.forEach(v=>{
-  total+=v.amount;
-  salaryList.innerHTML += `${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('salary','${v.id}')">Delete</button><br>`;
- });
+ let total=0;
+ if(s.exists()){
+   s.forEach(c=>{
+     const v=c.val();
+     total+=v.amount;
+     salaryList.innerHTML += `${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('salary','${c.key}')">Delete</button><br>`;
+   });
+ }
  income.innerText=total;calcRemaining();
 }
 
@@ -192,10 +193,12 @@ window.addInward=async()=>{
 async function loadInward(){
  const s=await get(mRef("inward"));
  inwardList.innerHTML="";
- s.forEach(c=>{
-  const v=c.val();
-  inwardList.innerHTML += `${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('inward','${c.key}')">Delete</button><br>`;
- });
+ if(s.exists()){
+   s.forEach(c=>{
+     const v=c.val();
+     inwardList.innerHTML += `${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('inward','${c.key}')">Delete</button><br>`;
+   });
+ }
 }
 
 /* CATEGORY */
@@ -210,12 +213,14 @@ async function loadCategories(){
  categorySelect.innerHTML="";
  categorySelectExpense.innerHTML="";
  categoryList.innerHTML="";
- s.forEach(c=>{
-   const name=c.val().name;
-   categorySelect.innerHTML += `<option>${name}</option>`;
-   categorySelectExpense.innerHTML += `<option>${name}</option>`;
-   categoryList.innerHTML += `${name} <button class="danger" onclick="deleteCategory('${c.key}')">Delete</button><br>`;
- });
+ if(s.exists()){
+   s.forEach(c=>{
+     const name=c.val().name;
+     categorySelect.innerHTML += `<option>${name}</option>`;
+     categorySelectExpense.innerHTML += `<option>${name}</option>`;
+     categoryList.innerHTML += `${name} <button class="danger" onclick="deleteCategory('${c.key}')">Delete</button><br>`;
+   });
+ }
 }
 
 /* DELETE CATEGORY */
@@ -242,27 +247,28 @@ window.addExpense=async()=>{
 /* LOAD EXPENSES */
 async function loadExpenses(){
  const s=await get(mRef("expenses"));
- let arr=[], total=0, summary={};
  expenseList.innerHTML="";
- s.forEach(c=>arr.push({id:c.key,...c.val()}));
- arr.sort((a,b)=>a.date-b.date);
- arr.forEach(v=>{
-  total+=v.amount;
-  summary[v.category]=(summary[v.category]||0)+v.amount;
-  expenseList.innerHTML += `
-   <div>
-    ${v.desc} - ₹${v.amount} (${v.category})
-    <div class="small">${new Date(v.date).toLocaleString()}</div>
-    <button class="danger" onclick="deleteItem('expenses','${v.id}')">Delete</button>
-    <hr>
-   </div>`;
- });
+ let total=0, summary={};
+ if(s.exists()){
+   s.forEach(c=>{
+     const v=c.val();
+     total+=v.amount;
+     summary[v.category]=(summary[v.category]||0)+v.amount;
+     expenseList.innerHTML += `
+       <div>
+         ${v.desc} - ₹${v.amount} (${v.category})
+         <div class="small">${new Date(v.date).toLocaleString()}</div>
+         <button class="danger" onclick="deleteItem('expenses','${c.key}')">Delete</button>
+         <hr>
+       </div>`;
+   });
+ }
  expense.innerText=total;
 
  categorySummary.innerHTML="";
  for(let k in summary){
-  const perc = total ? ((summary[k]/total)*100).toFixed(1) : 0;
-  categorySummary.innerHTML += `${k}: ₹${summary[k]} (${perc}%)<br>`;
+   const perc = total ? ((summary[k]/total)*100).toFixed(1) : 0;
+   categorySummary.innerHTML += `${k}: ₹${summary[k]} (${perc}%)<br>`;
  }
  calcRemaining();
 }
