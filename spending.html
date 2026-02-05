@@ -215,7 +215,7 @@ async function loadCategories(){
  });
 }
 
-/* DELETE CATEGORY (WITH CHECK) */
+/* DELETE CATEGORY */
 window.deleteCategory=async(id)=>{
  if(!confirmDelete()) return;
  if(confirm("Delete this category? (Expenses using it will remain)")){
@@ -259,9 +259,12 @@ async function loadExpenses(){
  });
  expense.innerText=total;
 
+ // CATEGORY-WISE PERCENTAGE
  categorySummary.innerHTML="";
- for(let k in summary)
-  categorySummary.innerHTML+=`${k}: ₹${summary[k]}<br>`;
+ for(let k in summary){
+  const perc = total ? ((summary[k]/total)*100).toFixed(1) : 0;
+  categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${perc}%)<br>`;
+ }
  calcRemaining();
 }
 
