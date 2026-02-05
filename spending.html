@@ -39,7 +39,7 @@ h2{text-align:center}
 <input type="month" id="monthPicker">
 </div>
 
-<!-- SUMMARY (OPEN BY DEFAULT) -->
+<!-- SUMMARY (OPEN) -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Summary ⌄</h3>
 <div class="content" style="display:block;">
@@ -58,7 +58,6 @@ h2{text-align:center}
 <input id="salaryAmount" type="number" placeholder="Amount">
 <button onclick="addSalary()">Save</button>
 <div id="salaryList"></div>
-<button class="danger" onclick="deleteAll('salary')">Delete All Salary</button>
 </div>
 </div>
 
@@ -70,7 +69,6 @@ h2{text-align:center}
 <input id="inwardAmount" type="number" placeholder="Amount">
 <button onclick="addInward()">Save</button>
 <div id="inwardList"></div>
-<button class="danger" onclick="deleteAll('inward')">Delete All Inward Cash</button>
 </div>
 </div>
 
@@ -80,8 +78,8 @@ h2{text-align:center}
 <div class="content">
 <input id="categoryName" placeholder="Category">
 <button onclick="addCategory()">Save</button>
-<select id="categorySelect"></select>
-<button class="danger" onclick="deleteAll('categories')">Delete All Categories</button>
+<select id="categorySelectExpense"></select>
+<div id="categoryList"></div>
 </div>
 </div>
 
@@ -90,16 +88,15 @@ h2{text-align:center}
 <h3>Add Expense</h3>
 <input id="desc" placeholder="Description">
 <input id="amt" type="number" placeholder="Amount">
-<select id="categorySelectExpense"></select>
+<select id="categorySelect"></select>
 <button onclick="addExpense()">Add Expense</button>
 </div>
 
-<!-- EXPENSE LIST (OPEN BY DEFAULT) -->
+<!-- EXPENSE LIST (OPEN) -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Expenses ⌄</h3>
 <div class="content" style="display:block;">
 <div id="expenseList"></div>
-<button class="danger" onclick="deleteAll('expenses')">Delete All Expenses</button>
 </div>
 </div>
 
@@ -170,10 +167,13 @@ window.addSalary=async()=>{
 async function loadSalary(){
  const s=await get(mRef("salary"));
  let arr=[],total=0;
- s.forEach(c=>arr.push(c.val()));
+ s.forEach(c=>arr.push({id:c.key,...c.val()}));
  arr.sort((a,b)=>a.date-b.date);
  salaryList.innerHTML="";
- arr.forEach(v=>{total+=v.amount;salaryList.innerHTML+=`${v.name}: ₹${v.amount}<br>`});
+ arr.forEach(v=>{
+  total+=v.amount;
+  salaryList.innerHTML+=`${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('salary','${v.id}')">Delete</button><br>`;
+ });
  income.innerText=total;calcRemaining();
 }
 
@@ -190,7 +190,10 @@ window.addInward=async()=>{
 async function loadInward(){
  const s=await get(mRef("inward"));
  inwardList.innerHTML="";
- s.forEach(c=>inwardList.innerHTML+=`${c.val().name}: ₹${c.val().amount}<br>`);
+ s.forEach(c=>{
+  const v=c.val();
+  inwardList.innerHTML+=`${v.name}: ₹${v.amount} <button class="danger" onclick="deleteItem('inward','${c.key}')">Delete</button><br>`;
+ });
 }
 
 /* CATEGORY */
@@ -203,11 +206,22 @@ async function loadCategories(){
  const s=await get(catRef);
  categorySelect.innerHTML="";
  categorySelectExpense.innerHTML="";
+ categoryList.innerHTML="";
  s.forEach(c=>{
    const name=c.val().name;
    categorySelect.innerHTML+=`<option>${name}</option>`;
    categorySelectExpense.innerHTML+=`<option>${name}</option>`;
+   categoryList.innerHTML+=`${name} <button class="danger" onclick="deleteCategory('${c.key}')">Delete</button><br>`;
  });
+}
+
+/* DELETE CATEGORY (WITH CHECK) */
+window.deleteCategory=async(id)=>{
+ if(!confirmDelete()) return;
+ if(confirm("Delete this category? (Expenses using it will remain)")){
+   await remove(ref(db,"spending/categories/"+id));
+   loadCategories();
+ }
 }
 
 /* EXPENSE */
@@ -216,7 +230,7 @@ window.addExpense=async()=>{
  await push(mRef("expenses"),{
   desc:desc.value,
   amount:+amt.value,
-  category:categorySelectExpense.value,
+  category:categorySelect.value,
   date:Date.now()
  });
  desc.value=amt.value="";
@@ -239,7 +253,7 @@ async function loadExpenses(){
    <div>
     ${v.desc} - ₹${v.amount} (${v.category})
     <div class="small">${new Date(v.date).toLocaleString()}</div>
-    <button class="danger" onclick="deleteExpense('${v.id}')">Delete</button>
+    <button class="danger" onclick="deleteItem('expenses','${v.id}')">Delete</button>
     <hr>
    </div>`;
  });
@@ -251,26 +265,16 @@ async function loadExpenses(){
  calcRemaining();
 }
 
-/* DELETE SINGLE EXPENSE */
-window.deleteExpense=async(id)=>{
+/* DELETE INDIVIDUAL ITEM */
+window.deleteItem=async(type,id)=>{
  if(!confirmDelete()) return;
- if(confirm("Delete this expense?")){
-  await remove(mRef("expenses/"+id));
-  loadExpenses();
+ if(confirm("Delete this item?")){
+   if(type==='salary') await remove(mRef("salary/"+id));
+   if(type==='inward') await remove(mRef("inward/"+id));
+   if(type==='expenses') await remove(mRef("expenses/"+id));
+   loadAll();
  }
-};
-
-/* DELETE ANY CATEGORY OF DATA */
-window.deleteAll=async(type)=>{
- if(!confirmDelete()) return;
- if(confirm(`Delete ALL ${type}?`)){
-  await remove(mRef(type==='categories'?'categories':type));
-  if(type==='categories') loadCategories();
-  if(type==='salary') loadSalary();
-  if(type==='inward') loadInward();
-  if(type==='expenses') loadExpenses();
- }
-};
+}
 
 /* REMAINING */
 function calcRemaining(){
