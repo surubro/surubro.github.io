@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monthly Spending</title>
+<title>Monthly Spending Tracker</title>
 <style>
 body{font-family:Arial;background:#f3f4f6;margin:0}
 .container{max-width:650px;margin:auto;padding:15px}
@@ -39,10 +39,10 @@ h2{text-align:center}
 <input type="month" id="monthPicker">
 </div>
 
-<!-- SUMMARY -->
+<!-- SUMMARY (OPEN BY DEFAULT) -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Summary ⌄</h3>
-<div class="content">
+<div class="content" style="display:block;">
 <div class="green">Income ₹<span id="income">0</span></div>
 <div class="red">Expense ₹<span id="expense">0</span></div>
 <b>Remaining ₹<span id="remaining">0</span></b>
@@ -58,6 +58,7 @@ h2{text-align:center}
 <input id="salaryAmount" type="number" placeholder="Amount">
 <button onclick="addSalary()">Save</button>
 <div id="salaryList"></div>
+<button class="danger" onclick="deleteAll('salary')">Delete All Salary</button>
 </div>
 </div>
 
@@ -69,6 +70,7 @@ h2{text-align:center}
 <input id="inwardAmount" type="number" placeholder="Amount">
 <button onclick="addInward()">Save</button>
 <div id="inwardList"></div>
+<button class="danger" onclick="deleteAll('inward')">Delete All Inward Cash</button>
 </div>
 </div>
 
@@ -79,6 +81,7 @@ h2{text-align:center}
 <input id="categoryName" placeholder="Category">
 <button onclick="addCategory()">Save</button>
 <select id="categorySelect"></select>
+<button class="danger" onclick="deleteAll('categories')">Delete All Categories</button>
 </div>
 </div>
 
@@ -87,15 +90,16 @@ h2{text-align:center}
 <h3>Add Expense</h3>
 <input id="desc" placeholder="Description">
 <input id="amt" type="number" placeholder="Amount">
+<select id="categorySelectExpense"></select>
 <button onclick="addExpense()">Add Expense</button>
 </div>
 
-<!-- EXPENSE LIST -->
+<!-- EXPENSE LIST (OPEN BY DEFAULT) -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Expenses ⌄</h3>
-<div class="content">
+<div class="content" style="display:block;">
 <div id="expenseList"></div>
-<button class="danger" onclick="deleteMonth()">Delete Month Data</button>
+<button class="danger" onclick="deleteAll('expenses')">Delete All Expenses</button>
 </div>
 </div>
 
@@ -198,23 +202,28 @@ window.addCategory=async()=>{
 async function loadCategories(){
  const s=await get(catRef);
  categorySelect.innerHTML="";
- s.forEach(c=>categorySelect.innerHTML+=`<option>${c.val().name}</option>`);
+ categorySelectExpense.innerHTML="";
+ s.forEach(c=>{
+   const name=c.val().name;
+   categorySelect.innerHTML+=`<option>${name}</option>`;
+   categorySelectExpense.innerHTML+=`<option>${name}</option>`;
+ });
 }
 
-/* EXPENSE (CONFIRM BEFORE ADD) */
+/* EXPENSE */
 window.addExpense=async()=>{
  if(!confirm("Confirm add this expense?")) return;
  await push(mRef("expenses"),{
   desc:desc.value,
   amount:+amt.value,
-  category:categorySelect.value,
+  category:categorySelectExpense.value,
   date:Date.now()
  });
  desc.value=amt.value="";
  loadExpenses();
 };
 
-/* LOAD EXPENSES (SORTED + DELETE BUTTON) */
+/* LOAD EXPENSES */
 async function loadExpenses(){
  const s=await get(mRef("expenses"));
  let arr=[], total=0, summary={};
@@ -228,7 +237,7 @@ async function loadExpenses(){
 
   expenseList.innerHTML+=`
    <div>
-    ${v.desc} - ₹${v.amount}
+    ${v.desc} - ₹${v.amount} (${v.category})
     <div class="small">${new Date(v.date).toLocaleString()}</div>
     <button class="danger" onclick="deleteExpense('${v.id}')">Delete</button>
     <hr>
@@ -251,12 +260,15 @@ window.deleteExpense=async(id)=>{
  }
 };
 
-/* DELETE MONTH (PASSWORD + CONFIRM) */
-window.deleteMonth=async()=>{
+/* DELETE ANY CATEGORY OF DATA */
+window.deleteAll=async(type)=>{
  if(!confirmDelete()) return;
- if(confirm("This will delete ALL data for this month. Continue?")){
-  await remove(ref(db,"spending/months/"+month()));
-  loadAll();
+ if(confirm(`Delete ALL ${type}?`)){
+  await remove(mRef(type==='categories'?'categories':type));
+  if(type==='categories') loadCategories();
+  if(type==='salary') loadSalary();
+  if(type==='inward') loadInward();
+  if(type==='expenses') loadExpenses();
  }
 };
 
