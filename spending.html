@@ -248,12 +248,12 @@ window.addExpense=async()=>{
 async function loadExpenses(){
  const s=await get(mRef("expenses"));
  expenseList.innerHTML="";
- let total=0, summary={};
+ let totalExpense=0, summary={};
  if(s.exists()){
    s.forEach(c=>{
      const v=c.val();
-     total+=v.amount;
-     summary[v.category]=(summary[v.category]||0)+v.amount;
+     totalExpense += v.amount;
+     summary[v.category] = (summary[v.category] || 0) + v.amount;
      expenseList.innerHTML += `
        <div>
          ${v.desc} - ₹${v.amount} (${v.category})
@@ -263,11 +263,13 @@ async function loadExpenses(){
        </div>`;
    });
  }
- expense.innerText=total;
+ expense.innerText = totalExpense;
 
+ // CATEGORY PERCENTAGE BASED ON TOTAL INCOME
+ const totalIncomeValue = +income.innerText || 0;
  categorySummary.innerHTML="";
  for(let k in summary){
-   const perc = total ? ((summary[k]/total)*100).toFixed(1) : 0;
+   const perc = totalIncomeValue ? ((summary[k]/totalIncomeValue)*100).toFixed(1) : 0;
    categorySummary.innerHTML += `${k}: ₹${summary[k]} (${perc}%)<br>`;
  }
  calcRemaining();
