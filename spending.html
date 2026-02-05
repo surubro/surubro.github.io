@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monthly Spending Tracker</title>
+<title>Monthly Spending Tracker ;</title>
 <style>
 body{font-family:Arial;background:#f3f4f6;margin:0}
 .container{max-width:650px;margin:auto;padding:15px}
@@ -39,7 +39,7 @@ h2{text-align:center}
 <input type="month" id="monthPicker">
 </div>
 
-<!-- SUMMARY (OPEN) -->
+<!-- SUMMARY -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Summary ⌄</h3>
 <div class="content" style="display:block;">
@@ -92,7 +92,7 @@ h2{text-align:center}
 <button onclick="addExpense()">Add Expense</button>
 </div>
 
-<!-- EXPENSE LIST (OPEN) -->
+<!-- EXPENSE LIST -->
 <div class="card collapsible">
 <h3 onclick="toggle(this)">Expenses ⌄</h3>
 <div class="content" style="display:block;">
@@ -156,6 +156,7 @@ async function loadAll(){
 
 /* SALARY */
 window.addSalary=async()=>{
+ if(!salaryName.value || !salaryAmount.value) return;
  await push(mRef("salary"),{
   name:salaryName.value,
   amount:+salaryAmount.value,
@@ -179,6 +180,7 @@ async function loadSalary(){
 
 /* INWARD */
 window.addInward=async()=>{
+ if(!inwardName.value || !inwardAmount.value) return;
  await push(mRef("inward"),{
   name:inwardName.value,
   amount:+inwardAmount.value,
@@ -198,6 +200,7 @@ async function loadInward(){
 
 /* CATEGORY */
 window.addCategory=async()=>{
+ if(!categoryName.value) return;
  await push(catRef,{name:categoryName.value});
  categoryName.value="";
  loadCategories();
@@ -226,6 +229,7 @@ window.deleteCategory=async(id)=>{
 
 /* EXPENSE */
 window.addExpense=async()=>{
+ if(!desc.value || !amt.value || !categorySelect.value) return;
  if(!confirm("Confirm add this expense?")) return;
  await push(mRef("expenses"),{
   desc:desc.value,
