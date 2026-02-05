@@ -83,7 +83,7 @@ h2{text-align:center}
 </div>
 </div>
 
-<!-- ADD EXPENSE (ALWAYS OPEN) -->
+<!-- ADD EXPENSE -->
 <div class="card">
 <h3>Add Expense</h3>
 <input id="desc" placeholder="Description">
@@ -148,9 +148,9 @@ monthPicker.onchange=loadAll;
 
 /* LOAD ALL */
 async function loadAll(){
+ await loadCategories(); // load categories first
  await loadSalary();
  await loadInward();
- await loadCategories();
  await loadExpenses();
 }
 
@@ -229,7 +229,7 @@ window.deleteCategory=async(id)=>{
 
 /* EXPENSE */
 window.addExpense=async()=>{
- if(!desc.value || !amt.value || !categorySelect.value) return;
+ if(!desc.value || !amt.value || !categorySelect.value) return alert("Please fill all fields!");
  if(!confirm("Confirm add this expense?")) return;
  await push(mRef("expenses"),{
   desc:desc.value,
@@ -263,7 +263,7 @@ async function loadExpenses(){
  });
  expense.innerText=total;
 
- // CATEGORY-WISE PERCENTAGE
+ // CATEGORY-WISE %
  categorySummary.innerHTML="";
  for(let k in summary){
   const perc = total ? ((summary[k]/total)*100).toFixed(1) : 0;
