@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Monthly Spending</title>
-
 <style>
 body{font-family:Arial;background:#f3f4f6;margin:0}
 .container{max-width:650px;margin:auto;padding:15px}
@@ -20,7 +19,6 @@ h2{text-align:center}
 .content{display:none;margin-top:10px}
 </style>
 </head>
-
 <body>
 <div class="container">
 
@@ -116,15 +114,13 @@ const firebaseConfig={
  databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
  projectId:"striped-acrobat-342207"
 };
-
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 const auth=getAuth(app);
 
 /* DELETE PROTECTION */
 const DELETE_PASSWORD = "Confirm";
-const confirmDelete = () =>
-  prompt("Enter delete password") === DELETE_PASSWORD;
+const confirmDelete = () => prompt("Enter delete password") === DELETE_PASSWORD;
 
 /* HELPERS */
 const month=()=>monthPicker.value;
@@ -139,7 +135,6 @@ window.toggle=h=>{
 
 /* AUTH */
 window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-
 onAuthStateChanged(auth,u=>{
  if(u){
   authSection.style.display="none";
@@ -209,7 +204,6 @@ async function loadCategories(){
 /* EXPENSE (CONFIRM BEFORE ADD) */
 window.addExpense=async()=>{
  if(!confirm("Confirm add this expense?")) return;
-
  await push(mRef("expenses"),{
   desc:desc.value,
   amount:+amt.value,
@@ -219,19 +213,26 @@ window.addExpense=async()=>{
  desc.value=amt.value="";
  loadExpenses();
 };
+
+/* LOAD EXPENSES (SORTED + DELETE BUTTON) */
 async function loadExpenses(){
  const s=await get(mRef("expenses"));
- let arr=[],total=0,summary={};
- s.forEach(c=>arr.push(c.val()));
+ let arr=[], total=0, summary={};
+ s.forEach(c=>arr.push({id:c.key,...c.val()}));
  arr.sort((a,b)=>a.date-b.date);
 
  expenseList.innerHTML="";
  arr.forEach(v=>{
   total+=v.amount;
   summary[v.category]=(summary[v.category]||0)+v.amount;
-  expenseList.innerHTML+=
-    `${v.desc} - ₹${v.amount}
-     <div class="small">${new Date(v.date).toLocaleString()}</div><hr>`;
+
+  expenseList.innerHTML+=`
+   <div>
+    ${v.desc} - ₹${v.amount}
+    <div class="small">${new Date(v.date).toLocaleString()}</div>
+    <button class="danger" onclick="deleteExpense('${v.id}')">Delete</button>
+    <hr>
+   </div>`;
  });
  expense.innerText=total;
 
@@ -241,7 +242,16 @@ async function loadExpenses(){
  calcRemaining();
 }
 
-/* DELETE MONTH (PASSWORD PROTECTED) */
+/* DELETE SINGLE EXPENSE */
+window.deleteExpense=async(id)=>{
+ if(!confirmDelete()) return;
+ if(confirm("Delete this expense?")){
+  await remove(mRef("expenses/"+id));
+  loadExpenses();
+ }
+};
+
+/* DELETE MONTH (PASSWORD + CONFIRM) */
 window.deleteMonth=async()=>{
  if(!confirmDelete()) return;
  if(confirm("This will delete ALL data for this month. Continue?")){
@@ -255,6 +265,5 @@ function calcRemaining(){
  remaining.innerText=(+income.innerText||0)-(+expense.innerText||0);
 }
 </script>
-
 </body>
 </html>
