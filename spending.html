@@ -114,11 +114,9 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 const auth=getAuth(app);
 
-/* DELETE PASSWORD ONLY */
 const DELETE_PASSWORD="Confirm";
 const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
 
-/* REFS */
 const salariesRef=ref(db,"spending/salaries");
 const categoriesRef=ref(db,"spending/categories");
 const itemsRef=ref(db,"spending/items");
@@ -126,7 +124,6 @@ const inwardRef=ref(db,"spending/inwardCash");
 
 let editSalaryId=null;
 
-/* AUTH */
 window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
 window.logout=()=>signOut(auth);
 
@@ -141,7 +138,6 @@ loadInward();
 }
 });
 
-/* COLLAPSIBLE */
 document.querySelectorAll(".collapsible h3").forEach(h=>{
 h.onclick=()=>h.nextElementSibling.style.display=
 h.nextElementSibling.style.display=="block"?"none":"block";
@@ -256,12 +252,15 @@ list.innerHTML=`
 <button onclick="deleteExpense('${c.key}')">Delete</button>
 </div>`+list.innerHTML;
 });
+
 totalExpenses.innerText=total;
 updateRemaining();
 
 categorySummary.innerHTML="";
+const income = +totalIncome.innerText || 0;
+
 for(const k in summary){
-const p=total?((summary[k]/total)*100).toFixed(1):0;
+const p = income ? ((summary[k] / income) * 100).toFixed(1) : 0;
 categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
 }
 });
@@ -277,46 +276,28 @@ if(!confirmDelete())return;
 await remove(itemsRef);
 };
 
-/* ✅ FIXED CSV EXPORT */
+/* CSV EXPORT */
 window.exportCSV = async () => {
-  let csv = "Type,Name/Description,Amount,Category,Date\n";
-  const esc = v => `"${String(v ?? "").replace(/"/g,'""')}"`;
+let csv="Type,Name/Description,Amount,Category,Date\n";
+const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
 
-  const salariesSnap = await get(salariesRef);
-  const inwardSnap   = await get(inwardRef);
-  const expensesSnap = await get(itemsRef);
+const s1=await get(salariesRef);
+const s2=await get(inwardRef);
+const s3=await get(itemsRef);
 
-  if (salariesSnap.exists()) {
-    salariesSnap.forEach(c=>{
-      const v=c.val();
-      csv+=`Salary,${esc(v.name)},${v.amount},,\n`;
-    });
-  }
+if(s1.exists())s1.forEach(c=>csv+=`Salary,${esc(c.val().name)},${c.val().amount},,\n`);
+if(s2.exists())s2.forEach(c=>csv+=`Inward Cash,${esc(c.val().name)},${c.val().amount},,${esc(new Date(c.val().date).toLocaleString())}\n`);
+if(s3.exists())s3.forEach(c=>csv+=`Expense,${esc(c.val().desc)},${c.val().amount},${esc(c.val().category)},${esc(new Date(c.val().date).toLocaleString())}\n`);
 
-  if (inwardSnap.exists()) {
-    inwardSnap.forEach(c=>{
-      const v=c.val();
-      csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())}\n`;
-    });
-  }
-
-  if (expensesSnap.exists()) {
-    expensesSnap.forEach(c=>{
-      const v=c.val();
-      csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())}\n`;
-    });
-  }
-
-  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="full_spending_report.csv";
-  a.click();
+const b=new Blob([csv],{type:"text/csv"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(b);
+a.download="full_spending_report.csv";
+a.click();
 };
 
 function updateRemaining(){
-remaining.innerText=
-(+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
+remaining.innerText=(+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
 }
 </script>
 </body>
