@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Money 1</title>
+  <title>Money 1..</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -132,9 +132,9 @@
   const db = getDatabase(app);
   const auth = getAuth();
 
-  // ✅ UPDATED DATABASE STRING
-  const expenseRef = ref(db, "moneytally1");
-  const openingRef = ref(db, "openingBalance");
+  // 🔥 UPDATED DATABASE PATHS
+  const expenseRef = ref(db, "themoneytally1bro/expenses");
+  const openingRef = ref(db, "themoneytally1bro/openingBalance");
 
   let openingAmount = 0;
 
@@ -170,13 +170,13 @@
   window.editExpense = (id, oldAmount) => {
     const n = parseFloat(prompt("Edit amount:", oldAmount));
     if (!isNaN(n) && n > 0) {
-      update(ref(db, "moneytally1/" + id), { amount: n });
+      update(ref(db, "themoneytally1bro/expenses/" + id), { amount: n });
     }
   };
 
   window.deleteExpense = id => {
     if (confirm("Delete this expense?")) {
-      remove(ref(db, "moneytally1/" + id));
+      remove(ref(db, "themoneytally1bro/expenses/" + id));
     }
   };
 
