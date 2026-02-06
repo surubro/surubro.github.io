@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CSV Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  background:#f9fafb;
+  margin:0;
+}
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
+h2{
+  text-align:center;
+}
+input{
+  margin:10px 0;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+  background:#fff;
+}
+th,td{
+  border:1px solid #e5e7eb;
+  padding:8px;
+  text-align:left;
+}
+th{
+  background:#eef2ff;
+}
+tr:nth-child(even){
+  background:#f9fafb;
+}
+.small{
+  color:#6b7280;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h2>📄 CSV Viewer</h2>
+  <input type="file" accept=".csv" id="fileInput">
+  <div class="small">Select a CSV file to preview</div>
+
+  <div id="tableContainer"></div>
+</div>
+
+<script>
+document.getElementById("fileInput").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(){
+    const text = reader.result.trim();
+    const rows = parseCSV(text);
+    renderTable(rows);
+  };
+  reader.readAsText(file);
+});
+
+function parseCSV(text){
+  const rows = [];
+  let row = [];
+  let current = "";
+  let inQuotes = false;
+
+  for(let i=0;i<text.length;i++){
+    const char = text[i];
+
+    if(char === '"' ){
+      inQuotes = !inQuotes;
+    }
+    else if(char === "," && !inQuotes){
+      row.push(current);
+      current = "";
+    }
+    else if(char === "\n" && !inQuotes){
+      row.push(current);
+      rows.push(row);
+      row = [];
+      current = "";
+    }
+    else{
+      current += char;
+    }
+  }
+  row.push(current);
+  rows.push(row);
+  return rows;
+}
+
+function renderTable(rows){
+  let html = "<table>";
+  rows.forEach((r,i)=>{
+    html += "<tr>";
+    r.forEach(c=>{
+      html += i === 0 ? `<th>${c}</th>` : `<td>${c}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</table>";
+  document.getElementById("tableContainer").innerHTML = html;
+}
+</script>
+</body>
+</html>
