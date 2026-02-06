@@ -2,319 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Spending App</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spendings.</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f9fafb}
+body{font-family:Arial;background:#f9fafb;margin:0}
 .container{max-width:600px;margin:auto;padding:15px}
-h2{text-align:center}
-.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
-input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
-button{background:#4f46e5;color:#fff;border:none}
-button.danger{background:#dc2626}
-button.green{background:#16a34a}
-.collapsible{background:#eef2ff;padding:12px;border-radius:12px;margin:10px 0}
-.collapsible h3{margin:0;cursor:pointer;display:flex;justify-content:space-between}
-.collapsible-content{display:none;margin-top:8px}
-.expense{color:#dc2626;font-weight:bold}
-.income{color:#16a34a;font-weight:bold}
-.muted{color:#6b7280;font-size:13px}
+.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px}
+button{padding:10px;width:100%;margin-top:8px}
 </style>
 </head>
 
 <body>
 <div class="container">
-<h2>💰 My Spending</h2>
 
-<div id="authSection" class="card">
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<button onclick="logout()">Logout</button>
-</div>
+<h2>💰 Spending</h2>
 
-<div id="appSection" style="display:none">
-
-<div class="collapsible">
-<h3>
-Summary
-<span>
-<span class="expense">Spent ₹<span id="totalExpenses">0</span></span> |
-<b>Remaining ₹<span id="remaining">0</span></b>
-</span>
-</h3>
-<div class="collapsible-content">
-<div class="income">Total Income ₹<span id="totalIncome">0</span></div>
-<div id="categorySummary"></div>
-</div>
+<div class="card" id="auth">
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
 </div>
 
-<div class="collapsible">
-<h3>Salary</h3>
-<div class="collapsible-content">
-<input id="salaryName" placeholder="Income Source">
-<input id="salaryAmount" type="number" placeholder="Amount">
-<button onclick="saveSalary()">Save / Update</button>
-<div id="salaryList"></div>
-</div>
+<div class="card" id="app" style="display:none">
+  <button onclick="exportCSV()">⬇ Export CSV</button>
 </div>
 
-<div class="collapsible">
-<h3>Inward Cash</h3>
-<div class="collapsible-content">
-<input id="inwardName" placeholder="Name / Source">
-<input id="inwardAmount" type="number" placeholder="Amount">
-<button onclick="saveInward()">Save Inward Cash</button>
-<div id="inwardList"></div>
-</div>
-</div>
-
-<div class="collapsible">
-<h3>Categories</h3>
-<div class="collapsible-content">
-<input id="categoryName" placeholder="Category Name">
-<button onclick="saveCategory()">Save Category</button>
-<div id="categoryList"></div>
-</div>
-</div>
-
-<div class="card">
-<h3>Add Expense</h3>
-<input id="descInput" placeholder="Description">
-<input id="amountInput" type="number" placeholder="Amount">
-<select id="categorySelect"></select>
-<button onclick="addExpense()">Add Expense</button>
-</div>
-
-<div class="card">
-<button class="green" onclick="exportCSV()">⬇ Export CSV</button>
-<button class="danger" onclick="deleteAllExpenses()">🗑 Delete ALL Expenses</button>
-</div>
-
-<h3>Expense List</h3>
-<div id="list"></div>
-
-</div>
 </div>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-authDomain:"striped-acrobat-342207.firebaseapp.com",
-databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-projectId:"striped-acrobat-342207"
+/* 🔥 YOUR FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+  authDomain: "striped-acrobat-342207.firebaseapp.com",
+  databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+  projectId: "striped-acrobat-342207"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const auth=getAuth(app);
-
-/* DELETE PASSWORD ONLY */
-const DELETE_PASSWORD="Confirm";
-const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
-
-/* REFS */
-const salariesRef=ref(db,"spending/salaries");
-const categoriesRef=ref(db,"spending/categories");
-const itemsRef=ref(db,"spending/items");
-const inwardRef=ref(db,"spending/inwardCash");
-
-let editSalaryId=null;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
 /* AUTH */
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-window.logout=()=>signOut(auth);
+window.login = () =>
+  signInWithEmailAndPassword(auth, email.value, password.value);
 
-onAuthStateChanged(auth,u=>{
-authSection.style.display=u?"none":"block";
-appSection.style.display=u?"block":"none";
-if(u){
-loadSalaries();
-loadCategories();
-loadExpenses();
-loadInward();
-}
+onAuthStateChanged(auth, u => {
+  auth.style.display = u ? "none" : "block";
+  app.style.display  = u ? "block" : "none";
 });
 
-/* COLLAPSIBLE */
-document.querySelectorAll(".collapsible h3").forEach(h=>{
-h.onclick=()=>h.nextElementSibling.style.display=
-h.nextElementSibling.style.display=="block"?"none":"block";
-});
+/* ✅ CSV EXPORT (FIXED) */
+window.exportCSV = async () => {
+  if (!auth.currentUser) {
+    alert("Login first");
+    return;
+  }
 
-/* SALARY */
-window.saveSalary=async()=>{
-const name=salaryName.value.trim();
-const amt=+salaryAmount.value;
-if(!name||amt<=0)return;
-if(editSalaryId){
-await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt});
-editSalaryId=null;
-}else{
-await push(salariesRef,{name,amount:amt});
-}
-salaryName.value=salaryAmount.value="";
-};
+  const esc = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
-function loadSalaries(){
-onValue(salariesRef,s=>{
-salaryList.innerHTML="";
-let total=0;
-s.forEach(c=>{
-const v=c.val();total+=v.amount;
-salaryList.innerHTML+=`${v.name}: ₹${v.amount}
-<button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
-<button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
-});
-totalIncome.innerText=total;
-updateRemaining();
-});
-}
+  const salariesSnap = await get(ref(db, "spending/salaries"));
+  const inwardSnap   = await get(ref(db, "spending/inwardCash"));
+  const expensesSnap = await get(ref(db, "spending/items"));
 
-window.editSalary=(id,n,a)=>{
-editSalaryId=id;
-salaryName.value=n;
-salaryAmount.value=a;
-};
+  let csv = "Type,Name/Description,Amount,Category,Date\n";
 
-window.deleteSalary=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/salaries/"+id));
-};
+  if (salariesSnap.exists()) {
+    salariesSnap.forEach(c => {
+      const v = c.val();
+      csv += `Salary,${esc(v.name)},${v.amount},,\n`;
+    });
+  }
 
-/* INWARD */
-window.saveInward=async()=>{
-const name=inwardName.value.trim();
-const amt=+inwardAmount.value;
-if(!name||amt<=0)return;
-await push(inwardRef,{name,amount:amt,date:Date.now()});
-inwardName.value=inwardAmount.value="";
-};
+  if (inwardSnap.exists()) {
+    inwardSnap.forEach(c => {
+      const v = c.val();
+      csv += `Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())}\n`;
+    });
+  }
 
-function loadInward(){
-onValue(inwardRef,s=>{
-inwardList.innerHTML="";
-s.forEach(c=>{
-const v=c.val();
-inwardList.innerHTML+=`${v.name}: ₹${v.amount}
-<button onclick="deleteInward('${c.key}')">Delete</button><br>`;
-});
-});
-}
+  if (expensesSnap.exists()) {
+    expensesSnap.forEach(c => {
+      const v = c.val();
+      csv += `Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())}\n`;
+    });
+  }
 
-window.deleteInward=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/inwardCash/"+id));
-};
-
-/* CATEGORY */
-window.saveCategory=async()=>{
-push(categoriesRef,{name:categoryName.value});
-categoryName.value="";
-};
-
-function loadCategories(){
-onValue(categoriesRef,s=>{
-categorySelect.innerHTML="";
-categoryList.innerHTML="";
-s.forEach(c=>{
-categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;
-categoryList.innerHTML+=`${c.val().name}<br>`;
-});
-});
-}
-
-/* EXPENSE (CONFIRM ON ADD) */
-window.addExpense=async()=>{
-if(!confirm("Confirm add this expense?")) return;
-const cat=await get(ref(db,"spending/categories/"+categorySelect.value));
-await push(itemsRef,{
-desc:descInput.value,
-amount:+amountInput.value,
-category:cat.val().name,
-date:Date.now()
-});
-descInput.value=amountInput.value="";
-};
-
-function loadExpenses(){
-onValue(itemsRef,s=>{
-list.innerHTML="";
-let total=0,summary={};
-s.forEach(c=>{
-const v=c.val();total+=v.amount;
-summary[v.category]=(summary[v.category]||0)+v.amount;
-list.innerHTML=`
-<div class="card">
-<b>${v.desc}</b> ₹${v.amount}<br>
-<small class="muted">${v.category}</small>
-<button onclick="deleteExpense('${c.key}')">Delete</button>
-</div>`+list.innerHTML;
-});
-totalExpenses.innerText=total;
-updateRemaining();
-
-categorySummary.innerHTML="";
-for(const k in summary){
-const p=total?((summary[k]/total)*100).toFixed(1):0;
-categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
-}
-});
-}
-
-window.deleteExpense=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/items/"+id));
-};
-
-window.deleteAllExpenses=async()=>{
-if(!confirmDelete())return;
-await remove(itemsRef);
-};
-
-/* CSV */
-console.log(
-  "Salaries:", (await get(salariesRef)).exists(),
-  "Inward:", (await get(inwardRef)).exists(),
-  "Expenses:", (await get(itemsRef)).exists()
-);
-
-
-  // Salaries
-  salariesSnap.forEach(c => {
-    const v = c.val();
-    csv += `Salary,${v.name},${v.amount},,\n`;
-  });
-
-  // Inward Cash
-  inwardSnap.forEach(c => {
-    const v = c.val();
-    csv += `Inward Cash,${v.name},${v.amount},,${new Date(v.date).toLocaleString()}\n`;
-  });
-
-  // Expenses
-  expensesSnap.forEach(c => {
-    const v = c.val();
-    csv += `Expense,${v.desc},${v.amount},${v.category},${new Date(v.date).toLocaleString()}\n`;
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
+  a.href = url;
   a.download = "full_spending_report.csv";
   a.click();
+  URL.revokeObjectURL(url);
 };
-
-
-function updateRemaining(){
-remaining.innerText=
-(+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
-}
 </script>
 </body>
 </html>
