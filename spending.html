@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spending</title>
+<title>My Spendings.</title>
+
 <style>
 body{font-family:Arial;margin:0;background:#f9fafb}
 .container{max-width:600px;margin:auto;padding:15px}
 h2{text-align:center}
 .card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
 input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
-button{background:#4f46e5;color:#fff;border:none;cursor:pointer}
+button{background:#4f46e5;color:#fff;border:none}
 button.danger{background:#dc2626}
 button.green{background:#16a34a}
 .collapsible{background:#eef2ff;padding:12px;border-radius:12px;margin:10px 0}
@@ -21,19 +22,18 @@ button.green{background:#16a34a}
 .muted{color:#6b7280;font-size:13px}
 </style>
 </head>
+
 <body>
 <div class="container">
 <h2>💰 My Spending</h2>
 
-<!-- LOGIN -->
 <div id="authSection" class="card">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
-<button id="loginBtn">Login</button>
-<button id="logoutBtn">Logout</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
 </div>
 
-<!-- APP -->
 <div id="appSection" style="display:none">
 
 <div class="collapsible">
@@ -55,7 +55,7 @@ Summary
 <div class="collapsible-content">
 <input id="salaryName" placeholder="Income Source">
 <input id="salaryAmount" type="number" placeholder="Amount">
-<button id="saveSalaryBtn">Save / Update</button>
+<button onclick="saveSalary()">Save / Update</button>
 <div id="salaryList"></div>
 </div>
 </div>
@@ -65,7 +65,7 @@ Summary
 <div class="collapsible-content">
 <input id="inwardName" placeholder="Name / Source">
 <input id="inwardAmount" type="number" placeholder="Amount">
-<button id="saveInwardBtn">Save Inward Cash</button>
+<button onclick="saveInward()">Save Inward Cash</button>
 <div id="inwardList"></div>
 </div>
 </div>
@@ -74,7 +74,7 @@ Summary
 <h3>Categories</h3>
 <div class="collapsible-content">
 <input id="categoryName" placeholder="Category Name">
-<button id="saveCategoryBtn">Save Category</button>
+<button onclick="saveCategory()">Save Category</button>
 <div id="categoryList"></div>
 </div>
 </div>
@@ -84,219 +84,218 @@ Summary
 <input id="descInput" placeholder="Description">
 <input id="amountInput" type="number" placeholder="Amount">
 <select id="categorySelect"></select>
-<button id="addExpenseBtn">Add Expense</button>
+<button onclick="addExpense()">Add Expense</button>
 </div>
 
 <div class="card">
-<button class="green" id="exportCSVBtn">⬇ Export CSV</button>
-<button class="danger" id="deleteAllBtn">🗑 Delete ALL Expenses</button>
+<button class="green" onclick="exportCSV()">⬇ Export CSV</button>
+<button class="danger" onclick="deleteAllExpenses()">🗑 Delete ALL Expenses</button>
 </div>
 
 <h3>Expense List</h3>
 <div id="list"></div>
 
 </div>
+</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-  authDomain: "striped-acrobat-342207.firebaseapp.com",
-  databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-  projectId: "striped-acrobat-342207"
+const firebaseConfig={
+apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+authDomain:"striped-acrobat-342207.firebaseapp.com",
+databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+projectId:"striped-acrobat-342207"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const auth=getAuth(app);
 
-const salariesRef = ref(db, "spending/salaries");
-const categoriesRef = ref(db, "spending/categories");
-const itemsRef = ref(db, "spending/items");
-const inwardRef = ref(db, "spending/inwardCash");
+/* DELETE PASSWORD ONLY */
+const DELETE_PASSWORD="Confirm";
+const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
 
-const DELETE_PASSWORD = "Confirm";
-const confirmDelete = () => prompt("Enter delete password") === DELETE_PASSWORD;
+/* REFS */
+const salariesRef=ref(db,"spending/salaries");
+const categoriesRef=ref(db,"spending/categories");
+const itemsRef=ref(db,"spending/items");
+const inwardRef=ref(db,"spending/inwardCash");
 
-let editSalaryId = null;
+let editSalaryId=null;
 
-// Elements
-const authSection = document.getElementById("authSection");
-const appSection = document.getElementById("appSection");
+/* AUTH */
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+window.logout=()=>signOut(auth);
 
-const emailEl = document.getElementById("email");
-const passwordEl = document.getElementById("password");
-
-const totalIncomeEl = document.getElementById("totalIncome");
-const totalExpensesEl = document.getElementById("totalExpenses");
-const remainingEl = document.getElementById("remaining");
-const categorySummaryEl = document.getElementById("categorySummary");
-
-const salaryNameEl = document.getElementById("salaryName");
-const salaryAmountEl = document.getElementById("salaryAmount");
-const salaryListEl = document.getElementById("salaryList");
-
-const inwardNameEl = document.getElementById("inwardName");
-const inwardAmountEl = document.getElementById("inwardAmount");
-const inwardListEl = document.getElementById("inwardList");
-
-const categoryNameEl = document.getElementById("categoryName");
-const categorySelectEl = document.getElementById("categorySelect");
-const categoryListEl = document.getElementById("categoryList");
-
-const descInputEl = document.getElementById("descInput");
-const amountInputEl = document.getElementById("amountInput");
-const listEl = document.getElementById("list");
-
-// LOGIN / LOGOUT
-document.getElementById("loginBtn").onclick = async () => {
-  const email = emailEl.value.trim();
-  const password = passwordEl.value.trim();
-  if (!email || !password) { alert("Enter email & password"); return; }
-  try { await signInWithEmailAndPassword(auth, email, password); }
-  catch(err){ alert("Login failed: " + err.message); }
-};
-
-document.getElementById("logoutBtn").onclick = async () => {
-  try { await signOut(auth); }
-  catch(err){ alert("Logout failed: "+err.message); }
-};
-
-onAuthStateChanged(auth, u => {
-  if(u){
-    authSection.style.display = "none";
-    appSection.style.display = "block";
-    loadSalaries(); loadCategories(); loadExpenses(); loadInward();
-  } else {
-    authSection.style.display = "block";
-    appSection.style.display = "none";
-  }
+onAuthStateChanged(auth,u=>{
+authSection.style.display=u?"none":"block";
+appSection.style.display=u?"block":"none";
+if(u){
+loadSalaries();
+loadCategories();
+loadExpenses();
+loadInward();
+}
 });
 
-// Collapsible sections
+/* COLLAPSIBLE */
 document.querySelectorAll(".collapsible h3").forEach(h=>{
-  h.onclick = ()=>{ const c=h.nextElementSibling; c.style.display=c.style.display=="block"?"none":"block"; }
+h.onclick=()=>h.nextElementSibling.style.display=
+h.nextElementSibling.style.display=="block"?"none":"block";
 });
 
-// --- SALARY ---
-document.getElementById("saveSalaryBtn").onclick = async () => {
-  const name = salaryNameEl.value.trim();
-  const amt = +salaryAmountEl.value;
-  if (!name || amt <=0) return;
-  if(editSalaryId){ await update(ref(db,"spending/salaries/"+editSalaryId), {name, amount:amt}); editSalaryId=null; }
-  else await push(salariesRef, {name, amount:amt});
-  salaryNameEl.value = salaryAmountEl.value = "";
+/* SALARY */
+window.saveSalary=async()=>{
+const name=salaryName.value.trim();
+const amt=+salaryAmount.value;
+if(!name||amt<=0)return;
+if(editSalaryId){
+await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt});
+editSalaryId=null;
+}else{
+await push(salariesRef,{name,amount:amt});
+}
+salaryName.value=salaryAmount.value="";
 };
 
-function loadSalaries(){ onValue(salariesRef, s=>{
-  salaryListEl.innerHTML = "";
-  s.forEach(c=>{
-    const v = c.val();
-    salaryListEl.innerHTML += `${v.name}: ₹${v.amount} <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button> <button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
-  });
-  updateTotals();
-}}
-window.editSalary = (id,n,a)=>{ editSalaryId=id; salaryNameEl.value=n; salaryAmountEl.value=a; }
-window.deleteSalary = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/salaries/"+id)); updateTotals(); }
-
-// --- INWARD ---
-document.getElementById("saveInwardBtn").onclick = async ()=>{
-  const name = inwardNameEl.value.trim(); const amt = +inwardAmountEl.value;
-  if(!name||amt<=0) return;
-  await push(inwardRef, {name, amount:amt, date: Date.now()});
-  inwardNameEl.value = inwardAmountEl.value = "";
-};
-function loadInward(){ onValue(inwardRef, s=>{
-  inwardListEl.innerHTML="";
-  s.forEach(c=>{
-    const v = c.val();
-    inwardListEl.innerHTML += `${v.name}: ₹${v.amount} <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
-  });
-  updateTotals();
-}); }
-window.deleteInward = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/inwardCash/"+id)); updateTotals(); }
-
-// --- CATEGORIES ---
-document.getElementById("saveCategoryBtn").onclick = async ()=>{
-  const name = categoryNameEl.value.trim(); if(!name) return; await push(categoriesRef, {name}); categoryNameEl.value="";
-};
-function loadCategories(){ onValue(categoriesRef, s=>{
-  categorySelectEl.innerHTML=""; categoryListEl.innerHTML="";
-  s.forEach(c=>{
-    categorySelectEl.innerHTML += `<option value="${c.key}">${c.val().name}</option>`;
-    categoryListEl.innerHTML += `${c.val().name}<br>`;
-  });
-}); }
-
-// --- EXPENSE ---
-document.getElementById("addExpenseBtn").onclick = async ()=>{
-  if(!confirm("Confirm add this expense?")) return;
-  const desc = descInputEl.value.trim(); const amt = +amountInputEl.value;
-  const catId = categorySelectEl.value;
-  if(!desc||amt<=0) return;
-  const catSnap = await get(ref(db,"spending/categories/"+catId));
-  const catName = catSnap.exists()?catSnap.val().name:"Uncategorized";
-  await push(itemsRef, {desc, amount:amt, category:catName, date: Date.now()});
-  descInputEl.value = amountInputEl.value = "";
-};
-
-function loadExpenses(){ onValue(itemsRef,s=>{
-  listEl.innerHTML=""; let totalExpenses=0; let catTotals={};
-  s.forEach(c=>{
-    const v=c.val();
-    totalExpenses += v.amount;
-    catTotals[v.category] = (catTotals[v.category]||0)+v.amount;
-    listEl.innerHTML += `<div class="card"><b>${v.desc}</b> ₹${v.amount}<br><small class="muted">${v.category}</small><button onclick="deleteExpense('${c.key}')">Delete</button></div>`;
-  });
-  updateTotals(totalExpenses, catTotals);
-}); }
-window.deleteExpense = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/items/"+id)); }
-
-// --- DELETE ALL ---
-document.getElementById("deleteAllBtn").onclick = async ()=>{
-  if(!confirmDelete()) return;
-  const snap = await get(itemsRef);
-  if(snap.exists()){ const promises=[]; snap.forEach(c=>promises.push(remove(ref(db,"spending/items/"+c.key))); await Promise.all(promises); alert("All expenses deleted!"); updateTotals(); }
-};
-
-// --- TOTALS ---
-async function updateTotals(expOverride=null, catTotalsOverride=null){
-  let totalIncome=0; let totalExpenses=expOverride!==null?expOverride:0; let catTotals = catTotalsOverride||{};
-  const s1 = await get(salariesRef); const s2 = await get(inwardRef);
-  if(s1.exists()) s1.forEach(c=>totalIncome+=c.val().amount);
-  if(s2.exists()) s2.forEach(c=>totalIncome+=c.val().amount);
-  if(expOverride===null){ const s3 = await get(itemsRef); if(s3.exists()) s3.forEach(c=>{ totalExpenses+=c.val().amount; catTotals[c.val().category]=(catTotals[c.val().category]||0)+c.val().amount; }); }
-  totalIncomeEl.innerText = totalIncome;
-  totalExpensesEl.innerText = totalExpenses;
-  remainingEl.innerText = totalIncome-totalExpenses;
-  updateCategorySummary(catTotals);
+function loadSalaries(){
+onValue(salariesRef,s=>{
+salaryList.innerHTML="";
+let total=0;
+s.forEach(c=>{
+const v=c.val();total+=v.amount;
+salaryList.innerHTML+=`${v.name}: ₹${v.amount}
+<button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
+<button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
+});
+totalIncome.innerText=total;
+updateRemaining();
+});
 }
 
-function updateCategorySummary(catTotals){
-  categorySummaryEl.innerHTML="";
-  const totalIncome = +totalIncomeEl.innerText||0;
-  for(const cat in catTotals){ const p = totalIncome?((catTotals[cat]/totalIncome)*100).toFixed(1):0;
-    categorySummaryEl.innerHTML += `${cat}: ₹${catTotals[cat]} (${p}%)<br>`;
-  }
+window.editSalary=(id,n,a)=>{
+editSalaryId=id;
+salaryName.value=n;
+salaryAmount.value=a;
+};
+
+window.deleteSalary=async(id)=>{
+if(!confirmDelete())return;
+await remove(ref(db,"spending/salaries/"+id));
+};
+
+/* INWARD */
+window.saveInward=async()=>{
+const name=inwardName.value.trim();
+const amt=+inwardAmount.value;
+if(!name||amt<=0)return;
+await push(inwardRef,{name,amount:amt,date:Date.now()});
+inwardName.value=inwardAmount.value="";
+};
+
+function loadInward(){
+onValue(inwardRef,s=>{
+inwardList.innerHTML="";
+s.forEach(c=>{
+const v=c.val();
+inwardList.innerHTML+=`${v.name}: ₹${v.amount}
+<button onclick="deleteInward('${c.key}')">Delete</button><br>`;
+});
+});
 }
 
-// --- CSV ---
-document.getElementById("exportCSVBtn").onclick = async ()=>{
-  let csv = "Type,Name/Description,Amount,Category,Date,Category %\n"; 
-  const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const s1 = await get(salariesRef); const s2 = await get(inwardRef); const s3 = await get(itemsRef);
-  let totalIncome=0; if(s1.exists()) s1.forEach(c=>totalIncome+=c.val().amount); if(s2.exists()) s2.forEach(c=>totalIncome+=c.val().amount);
-  let catTotals={}; if(s3.exists()) s3.forEach(c=>catTotals[c.val().category]=(catTotals[c.val().category]||0)+c.val().amount);
-  if(s1.exists()) s1.forEach(c=>csv+=`Salary,${esc(c.val().name)},${c.val().amount},,,\n`);
-  if(s2.exists()) s2.forEach(c=>csv+=`Inward Cash,${esc(c.val().name)},${c.val().amount},,${esc(new Date(c.val().date).toLocaleString())},\n`);
-  if(s3.exists()) s3.forEach(c=>{ const p=totalIncome?((c.val().amount/totalIncome)*100).toFixed(1):0; csv+=`Expense,${esc(c.val().desc)},${c.val().amount},${esc(c.val().category)},${esc(new Date(c.val().date).toLocaleString())},${p}%\n`; });
-  csv+="\nCategory Summary,,,\n"; for(const cat in catTotals){ const p = totalIncome?((catTotals[cat]/totalIncome)*100).toFixed(1):0; csv+=`${esc(cat)},${catTotals[cat]},,,${p}%\n`; }
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="spending_report.csv"; a.click();
+window.deleteInward=async(id)=>{
+if(!confirmDelete())return;
+await remove(ref(db,"spending/inwardCash/"+id));
 };
+
+/* CATEGORY */
+window.saveCategory=async()=>{
+push(categoriesRef,{name:categoryName.value});
+categoryName.value="";
+};
+
+function loadCategories(){
+onValue(categoriesRef,s=>{
+categorySelect.innerHTML="";
+categoryList.innerHTML="";
+s.forEach(c=>{
+categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;
+categoryList.innerHTML+=`${c.val().name}<br>`;
+});
+});
+}
+
+/* EXPENSE (CONFIRM ON ADD) */
+window.addExpense=async()=>{
+if(!confirm("Confirm add this expense?")) return;
+const cat=await get(ref(db,"spending/categories/"+categorySelect.value));
+await push(itemsRef,{
+desc:descInput.value,
+amount:+amountInput.value,
+category:cat.val().name,
+date:Date.now()
+});
+descInput.value=amountInput.value="";
+};
+
+function loadExpenses(){
+onValue(itemsRef,s=>{
+list.innerHTML="";
+let total=0,summary={};
+s.forEach(c=>{
+const v=c.val();total+=v.amount;
+summary[v.category]=(summary[v.category]||0)+v.amount;
+list.innerHTML=`
+<div class="card">
+<b>${v.desc}</b> ₹${v.amount}<br>
+<small class="muted">${v.category}</small>
+<button onclick="deleteExpense('${c.key}')">Delete</button>
+</div>`+list.innerHTML;
+});
+totalExpenses.innerText=total;
+updateRemaining();
+
+categorySummary.innerHTML="";
+for(const k in summary){
+const p=total?((summary[k]/total)*100).toFixed(1):0;
+categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
+}
+});
+}
+
+window.deleteExpense=async(id)=>{
+if(!confirmDelete())return;
+await remove(ref(db,"spending/items/"+id));
+};
+
+window.deleteAllExpenses=async()=>{
+if(!confirmDelete())return;
+await remove(itemsRef);
+};
+
+/* CSV */
+window.exportCSV=async()=>{
+const s=await get(itemsRef);
+let csv="Description,Amount,Category,Date\n";
+s.forEach(c=>{
+const v=c.val();
+csv+=`${v.desc},${v.amount},${v.category},${new Date(v.date).toLocaleString()}\n`;
+});
+const b=new Blob([csv],{type:"text/csv"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(b);
+a.download="expenses.csv";
+a.click();
+};
+
+function updateRemaining(){
+remaining.innerText=
+(+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
+}
 </script>
-
 </body>
 </html>
