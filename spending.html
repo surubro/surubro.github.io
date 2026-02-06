@@ -278,14 +278,12 @@ await remove(itemsRef);
 };
 
 /* CSV */
-window.exportCSV = async () => {
-  let csv = "Type,Name/Description,Amount,Category,Date\n";
+console.log(
+  "Salaries:", (await get(salariesRef)).exists(),
+  "Inward:", (await get(inwardRef)).exists(),
+  "Expenses:", (await get(itemsRef)).exists()
+);
 
-  const [salariesSnap, inwardSnap, expensesSnap] = await Promise.all([
-    get(salariesRef),
-    get(inwardRef),
-    get(itemsRef)
-  ]);
 
   // Salaries
   salariesSnap.forEach(c => {
