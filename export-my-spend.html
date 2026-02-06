@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export? Spendings CSV</title>
+<title>Export Spendings CSV</title>
 <style>
 body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f9fafb}
 .container{max-width:500px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
@@ -44,7 +44,7 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 const salariesRef = ref(db, "spending/salaries");
-const expensesRef = ref(db, "spending/items"); // Assuming items have a category field like 'Food', 'Travel', etc.
+const expensesRef = ref(db, "spending/items"); // assuming items have a category field
 
 const authSection = document.getElementById("authSection");
 const appSection = document.getElementById("appSection");
@@ -75,16 +75,14 @@ window.exportCSV = async () => {
 
     // Expenses grouped by category
     const expenses = {};
-    let totalExpenses = 0;
     expensesSnap.forEach(c => {
         const e = c.val();
-        totalExpenses += e.amount;
         if (!expenses[e.category]) expenses[e.category] = 0;
         expenses[e.category] += e.amount;
     });
 
-    // Prepare CSV
-    let csv = "Category,Name/Desc,Amount,Percentage of Category (%)\n";
+    // CSV header
+    let csv = "Category,Name/Desc,Amount,Percentage of Salaries (%)\n";
 
     // Salaries section
     csv += `Salaries Total, ,${totalSalary},100%\n`;
@@ -92,17 +90,17 @@ window.exportCSV = async () => {
         csv += `Salary,${s.name},${s.amount},${((s.amount/totalSalary)*100).toFixed(1)}%\n`;
     });
 
-    // Expenses section
-    csv += `Expenses Total, ,${totalExpenses},100%\n`;
+    // Expenses section as % of salaries
+    csv += `Expenses Total, ,${Object.values(expenses).reduce((a,b)=>a+b,0)},${(Object.values(expenses).reduce((a,b)=>a+b,0)/totalSalary*100).toFixed(1)}%\n`;
     for (const cat in expenses) {
-        csv += `Expense Category,${cat},${expenses[cat]},${((expenses[cat]/totalExpenses)*100).toFixed(1)}%\n`;
+        csv += `Expense Category,${cat},${expenses[cat]},${((expenses[cat]/totalSalary)*100).toFixed(1)}%\n`;
     }
 
     // Download CSV
     const blob = new Blob([csv], {type:"text/csv"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "spendings_by_category.csv";
+    a.download = "spendings_relative_to_salaries.csv";
     a.click();
 };
 </script>
