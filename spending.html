@@ -22,7 +22,6 @@ button.green{background:#16a34a}
 </style>
 </head>
 <body>
-
 <div class="container">
 <h2>💰 My Spending</h2>
 
@@ -37,7 +36,6 @@ button.green{background:#16a34a}
 <!-- APP -->
 <div id="appSection" style="display:none">
 
-<!-- SUMMARY -->
 <div class="collapsible">
 <h3>
 Summary
@@ -52,7 +50,6 @@ Summary
 </div>
 </div>
 
-<!-- SALARY -->
 <div class="collapsible">
 <h3>Salary</h3>
 <div class="collapsible-content">
@@ -63,7 +60,6 @@ Summary
 </div>
 </div>
 
-<!-- INWARD CASH -->
 <div class="collapsible">
 <h3>Inward Cash</h3>
 <div class="collapsible-content">
@@ -74,7 +70,6 @@ Summary
 </div>
 </div>
 
-<!-- CATEGORIES -->
 <div class="collapsible">
 <h3>Categories</h3>
 <div class="collapsible-content">
@@ -84,7 +79,6 @@ Summary
 </div>
 </div>
 
-<!-- ADD EXPENSE -->
 <div class="card">
 <h3>Add Expense</h3>
 <input id="descInput" placeholder="Description">
@@ -108,7 +102,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, push, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
   authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -120,7 +113,6 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// Firebase references
 const salariesRef = ref(db, "spending/salaries");
 const categoriesRef = ref(db, "spending/categories");
 const itemsRef = ref(db, "spending/items");
@@ -131,7 +123,7 @@ const confirmDelete = () => prompt("Enter delete password") === DELETE_PASSWORD;
 
 let editSalaryId = null;
 
-// ELEMENTS
+// Elements
 const authSection = document.getElementById("authSection");
 const appSection = document.getElementById("appSection");
 
@@ -159,11 +151,11 @@ const descInputEl = document.getElementById("descInput");
 const amountInputEl = document.getElementById("amountInput");
 const listEl = document.getElementById("list");
 
-// ----------------- LOGIN LOGIC -----------------
+// LOGIN / LOGOUT
 document.getElementById("loginBtn").onclick = async () => {
   const email = emailEl.value.trim();
   const password = passwordEl.value.trim();
-  if(!email || !password){ alert("Enter email & password"); return; }
+  if (!email || !password) { alert("Enter email & password"); return; }
   try { await signInWithEmailAndPassword(auth, email, password); }
   catch(err){ alert("Login failed: " + err.message); }
 };
@@ -184,34 +176,33 @@ onAuthStateChanged(auth, u => {
   }
 });
 
-// ----------------- COLLAPSIBLES -----------------
+// Collapsible sections
 document.querySelectorAll(".collapsible h3").forEach(h=>{
   h.onclick = ()=>{ const c=h.nextElementSibling; c.style.display=c.style.display=="block"?"none":"block"; }
 });
 
-// ----------------- SALARY -----------------
+// --- SALARY ---
 document.getElementById("saveSalaryBtn").onclick = async () => {
   const name = salaryNameEl.value.trim();
   const amt = +salaryAmountEl.value;
-  if(!name || amt <= 0) return;
+  if (!name || amt <=0) return;
   if(editSalaryId){ await update(ref(db,"spending/salaries/"+editSalaryId), {name, amount:amt}); editSalaryId=null; }
   else await push(salariesRef, {name, amount:amt});
   salaryNameEl.value = salaryAmountEl.value = "";
 };
 
 function loadSalaries(){ onValue(salariesRef, s=>{
-  salaryListEl.innerHTML=""; let total=0;
+  salaryListEl.innerHTML = "";
   s.forEach(c=>{
-    const v = c.val(); total+=v.amount;
+    const v = c.val();
     salaryListEl.innerHTML += `${v.name}: ₹${v.amount} <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button> <button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
   });
   updateTotals();
-}); }
-
+}}
 window.editSalary = (id,n,a)=>{ editSalaryId=id; salaryNameEl.value=n; salaryAmountEl.value=a; }
 window.deleteSalary = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/salaries/"+id)); updateTotals(); }
 
-// ----------------- INWARD -----------------
+// --- INWARD ---
 document.getElementById("saveInwardBtn").onclick = async ()=>{
   const name = inwardNameEl.value.trim(); const amt = +inwardAmountEl.value;
   if(!name||amt<=0) return;
@@ -219,7 +210,7 @@ document.getElementById("saveInwardBtn").onclick = async ()=>{
   inwardNameEl.value = inwardAmountEl.value = "";
 };
 function loadInward(){ onValue(inwardRef, s=>{
-  inwardListEl.innerHTML=""; 
+  inwardListEl.innerHTML="";
   s.forEach(c=>{
     const v = c.val();
     inwardListEl.innerHTML += `${v.name}: ₹${v.amount} <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
@@ -228,16 +219,19 @@ function loadInward(){ onValue(inwardRef, s=>{
 }); }
 window.deleteInward = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/inwardCash/"+id)); updateTotals(); }
 
-// ----------------- CATEGORY -----------------
+// --- CATEGORIES ---
 document.getElementById("saveCategoryBtn").onclick = async ()=>{
   const name = categoryNameEl.value.trim(); if(!name) return; await push(categoriesRef, {name}); categoryNameEl.value="";
 };
-function loadCategories(){ onValue(categoriesRef,s=>{
+function loadCategories(){ onValue(categoriesRef, s=>{
   categorySelectEl.innerHTML=""; categoryListEl.innerHTML="";
-  s.forEach(c=>{ categorySelectEl.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`; categoryListEl.innerHTML+=`${c.val().name}<br>`; });
+  s.forEach(c=>{
+    categorySelectEl.innerHTML += `<option value="${c.key}">${c.val().name}</option>`;
+    categoryListEl.innerHTML += `${c.val().name}<br>`;
+  });
 }); }
 
-// ----------------- EXPENSE -----------------
+// --- EXPENSE ---
 document.getElementById("addExpenseBtn").onclick = async ()=>{
   if(!confirm("Confirm add this expense?")) return;
   const desc = descInputEl.value.trim(); const amt = +amountInputEl.value;
@@ -250,7 +244,7 @@ document.getElementById("addExpenseBtn").onclick = async ()=>{
 };
 
 function loadExpenses(){ onValue(itemsRef,s=>{
-  listEl.innerHTML=""; let totalExpenses = 0; let catTotals={};
+  listEl.innerHTML=""; let totalExpenses=0; let catTotals={};
   s.forEach(c=>{
     const v=c.val();
     totalExpenses += v.amount;
@@ -259,26 +253,25 @@ function loadExpenses(){ onValue(itemsRef,s=>{
   });
   updateTotals(totalExpenses, catTotals);
 }); }
-
 window.deleteExpense = async(id)=>{ if(!confirmDelete()) return; await remove(ref(db,"spending/items/"+id)); }
 
-// ----------------- DELETE ALL -----------------
+// --- DELETE ALL ---
 document.getElementById("deleteAllBtn").onclick = async ()=>{
   if(!confirmDelete()) return;
   const snap = await get(itemsRef);
   if(snap.exists()){ const promises=[]; snap.forEach(c=>promises.push(remove(ref(db,"spending/items/"+c.key))); await Promise.all(promises); alert("All expenses deleted!"); updateTotals(); }
 };
 
-// ----------------- TOTALS -----------------
+// --- TOTALS ---
 async function updateTotals(expOverride=null, catTotalsOverride=null){
-  let totalIncome = 0; let totalExpenses = expOverride!==null?expOverride:0; let catTotals = catTotalsOverride || {};
+  let totalIncome=0; let totalExpenses=expOverride!==null?expOverride:0; let catTotals = catTotalsOverride||{};
   const s1 = await get(salariesRef); const s2 = await get(inwardRef);
   if(s1.exists()) s1.forEach(c=>totalIncome+=c.val().amount);
-  if(s2.exists()){ s2.forEach(c=>{ totalIncome += c.val().amount; }); }
-  if(expOverride===null){ const s3 = await get(itemsRef); if(s3.exists()) s3.forEach(c=>{ totalExpenses += c.val().amount; catTotals[c.val().category]=(catTotals[c.val().category]||0)+c.val().amount; }); }
+  if(s2.exists()) s2.forEach(c=>totalIncome+=c.val().amount);
+  if(expOverride===null){ const s3 = await get(itemsRef); if(s3.exists()) s3.forEach(c=>{ totalExpenses+=c.val().amount; catTotals[c.val().category]=(catTotals[c.val().category]||0)+c.val().amount; }); }
   totalIncomeEl.innerText = totalIncome;
   totalExpensesEl.innerText = totalExpenses;
-  remainingEl.innerText = totalIncome - totalExpenses;
+  remainingEl.innerText = totalIncome-totalExpenses;
   updateCategorySummary(catTotals);
 }
 
@@ -286,10 +279,11 @@ function updateCategorySummary(catTotals){
   categorySummaryEl.innerHTML="";
   const totalIncome = +totalIncomeEl.innerText||0;
   for(const cat in catTotals){ const p = totalIncome?((catTotals[cat]/totalIncome)*100).toFixed(1):0;
-  categorySummaryEl.innerHTML += `${cat}: ₹${catTotals[cat]} (${p}%)<br>`; }
+    categorySummaryEl.innerHTML += `${cat}: ₹${catTotals[cat]} (${p}%)<br>`;
+  }
 }
 
-// ----------------- CSV EXPORT -----------------
+// --- CSV ---
 document.getElementById("exportCSVBtn").onclick = async ()=>{
   let csv = "Type,Name/Description,Amount,Category,Date,Category %\n"; 
   const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
