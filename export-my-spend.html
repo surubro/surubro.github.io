@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export Spendings CSV</title>
+<title>Export Spendings, CSV</title>
 <style>
 body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f9fafb}
 .container{max-width:500px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
@@ -28,10 +28,10 @@ button{background:#4f46e5;color:#fff;border:none;cursor:pointer}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {getDatabase, ref, get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig={
+const firebaseConfig = {
     apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
     authDomain:"striped-acrobat-342207.firebaseapp.com",
     databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
@@ -46,7 +46,12 @@ const salariesRef = ref(db, "spending/salaries");
 const inwardRef = ref(db, "spending/inwardCash");
 const itemsRef = ref(db, "spending/items");
 
-window.login = () => signInWithEmailAndPassword(auth, email.value, password.value);
+const authSection = document.getElementById("authSection");
+const appSection = document.getElementById("appSection");
+
+window.login = () => signInWithEmailAndPassword(auth, email.value, password.value)
+    .catch(err => alert(err.message));
+
 window.logout = () => signOut(auth);
 
 onAuthStateChanged(auth, user => {
@@ -60,7 +65,6 @@ window.exportCSV = async () => {
     const inwardSnap = await get(inwardRef);
     const expensesSnap = await get(itemsRef);
 
-    // Prepare arrays & totals
     const salaries = []; let totalSalary = 0;
     salariesSnap.forEach(c => { const v = c.val(); salaries.push(v); totalSalary += v.amount; });
 
@@ -70,23 +74,25 @@ window.exportCSV = async () => {
     const expenses = []; let totalExpenses = 0;
     expensesSnap.forEach(c => { const v = c.val(); expenses.push(v); totalExpenses += v.amount; });
 
-    const totalFunds = totalSalary + totalInward;
+    const totalFunds = totalSalary + totalInward + totalExpenses;
 
     // CSV header
-    let csv = "Type,Name/Desc,Amount,Percentage of Total Funds (%)\n";
+    let csv = "Type,Name/Desc,Amount,Percentage of Total Funds (%),Percentage of Category (%)\n";
 
-    // Add category totals first
-    csv += `Salaries Total, ,${totalSalary},${((totalSalary/totalFunds)*100).toFixed(1)}%\n`;
-    salaries.forEach(s => csv += `Salary,${s.name},${s.amount},${((s.amount/totalFunds)*100).toFixed(1)}%\n`);
+    // Salaries
+    csv += `Salaries Total, ,${totalSalary},${((totalSalary/totalFunds)*100).toFixed(1)}%,100%\n`;
+    salaries.forEach(s => csv += `Salary,${s.name},${s.amount},${((s.amount/totalFunds)*100).toFixed(1)}%,${((s.amount/totalSalary)*100).toFixed(1)}%\n`);
 
-    csv += `Inward Cash Total, ,${totalInward},${((totalInward/totalFunds)*100).toFixed(1)}%\n`;
-    inwards.forEach(i => csv += `Inward Cash,${i.name},${i.amount},${((i.amount/totalFunds)*100).toFixed(1)}%\n`);
+    // Inward Cash
+    csv += `Inward Cash Total, ,${totalInward},${((totalInward/totalFunds)*100).toFixed(1)}%,100%\n`;
+    inwards.forEach(i => csv += `Inward Cash,${i.name},${i.amount},${((i.amount/totalFunds)*100).toFixed(1)}%,${((i.amount/totalInward)*100).toFixed(1)}%\n`);
 
-    csv += `Expenses Total, ,${totalExpenses},${((totalExpenses/totalFunds)*100).toFixed(1)}%\n`;
-    expenses.forEach(e => csv += `Expense,${e.desc},${e.amount},${((e.amount/totalFunds)*100).toFixed(1)}%\n`);
+    // Expenses
+    csv += `Expenses Total, ,${totalExpenses},${((totalExpenses/totalFunds)*100).toFixed(1)}%,100%\n`;
+    expenses.forEach(e => csv += `Expense,${e.desc},${e.amount},${((e.amount/totalFunds)*100).toFixed(1)}%,${((e.amount/totalExpenses)*100).toFixed(1)}%\n`);
 
-    // Summary row
-    csv += `TOTAL FUNDS, ,${totalFunds},100%\n`;
+    // Total summary
+    csv += `TOTAL FUNDS, ,${totalFunds},100%,\n`;
 
     // Download CSV
     const blob = new Blob([csv], {type:"text/csv"});
