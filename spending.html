@@ -278,19 +278,40 @@ await remove(itemsRef);
 };
 
 /* CSV */
-window.exportCSV=async()=>{
-const s=await get(itemsRef);
-let csv="Description,Amount,Category,Date\n";
-s.forEach(c=>{
-const v=c.val();
-csv+=`${v.desc},${v.amount},${v.category},${new Date(v.date).toLocaleString()}\n`;
-});
-const b=new Blob([csv],{type:"text/csv"});
-const a=document.createElement("a");
-a.href=URL.createObjectURL(b);
-a.download="expenses.csv";
-a.click();
+window.exportCSV = async () => {
+  let csv = "Type,Name/Description,Amount,Category,Date\n";
+
+  const [salariesSnap, inwardSnap, expensesSnap] = await Promise.all([
+    get(salariesRef),
+    get(inwardRef),
+    get(itemsRef)
+  ]);
+
+  // Salaries
+  salariesSnap.forEach(c => {
+    const v = c.val();
+    csv += `Salary,${v.name},${v.amount},,\n`;
+  });
+
+  // Inward Cash
+  inwardSnap.forEach(c => {
+    const v = c.val();
+    csv += `Inward Cash,${v.name},${v.amount},,${new Date(v.date).toLocaleString()}\n`;
+  });
+
+  // Expenses
+  expensesSnap.forEach(c => {
+    const v = c.val();
+    csv += `Expense,${v.desc},${v.amount},${v.category},${new Date(v.date).toLocaleString()}\n`;
+  });
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "full_spending_report.csv";
+  a.click();
 };
+
 
 function updateRemaining(){
 remaining.innerText=
