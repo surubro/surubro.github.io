@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spendings.</title>
-
+<title>My Spendings</title>
 <style>
 body{font-family:Arial;margin:0;background:#f9fafb}
 .container{max-width:600px;margin:auto;padding:15px}
@@ -22,7 +21,6 @@ button.green{background:#16a34a}
 .muted{color:#6b7280;font-size:13px}
 </style>
 </head>
-
 <body>
 <div class="container">
 <h2>💰 My Spending</h2>
@@ -167,8 +165,7 @@ salaryList.innerHTML+=`${v.name}: ₹${v.amount}
 <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
 <button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
 });
-totalIncome.innerText=total;
-updateRemaining();
+updateTotalIncome();
 });
 }
 
@@ -181,6 +178,7 @@ salaryAmount.value=a;
 window.deleteSalary=async(id)=>{
 if(!confirmDelete())return;
 await remove(ref(db,"spending/salaries/"+id));
+updateTotalIncome();
 };
 
 /* INWARD */
@@ -190,6 +188,7 @@ const amt=+inwardAmount.value;
 if(!name||amt<=0)return;
 await push(inwardRef,{name,amount:amt,date:Date.now()});
 inwardName.value=inwardAmount.value="";
+loadInward();
 };
 
 function loadInward(){
@@ -200,12 +199,14 @@ const v=c.val();
 inwardList.innerHTML+=`${v.name}: ₹${v.amount}
 <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
 });
+updateRemaining(); // inward cash affects remaining
 });
 }
 
 window.deleteInward=async(id)=>{
 if(!confirmDelete())return;
 await remove(ref(db,"spending/inwardCash/"+id));
+updateRemaining();
 };
 
 /* CATEGORY */
@@ -253,14 +254,8 @@ list.innerHTML=
 </div>` + list.innerHTML;
 });
 totalExpenses.innerText=total;
+updateCategorySummary(summary);
 updateRemaining();
-
-categorySummary.innerHTML="";
-const income=+totalIncome.innerText||0;
-for(const k in summary){
-const p=income?((summary[k]/income)*100).toFixed(1):0;
-categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
-}
 });
 }
 
@@ -269,39 +264,70 @@ if(!confirmDelete())return;
 await remove(ref(db,"spending/items/"+id));
 };
 
-window.deleteAllExpenses=async()=>{
-if(!confirmDelete())return;
-await remove(itemsRef);
-};
+/* UPDATE TOTAL INCOME – SALARY ONLY */
+function updateTotalIncome(){
+let total=0;
+onValue(salariesRef,s=>{
+s.forEach(c=>total+=c.val().amount);
+totalIncome.innerText=total;
+updateRemaining();
+loadExpenses();
+});
+}
 
-/* ✅ CSV EXPORT – FIXED */
+/* UPDATE CATEGORY SUMMARY */
+function updateCategorySummary(summary){
+categorySummary.innerHTML="";
+const totalIncomeValue = +totalIncome.innerText || 0;
+for(const k in summary){
+const p = totalIncomeValue ? ((summary[k]/totalIncomeValue)*100).toFixed(1) : 0;
+categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
+}
+}
+
+/* CSV EXPORT */
 window.exportCSV=async()=>{
-let csv="Type,Name/Description,Amount,Category,Date\n";
+let csv="Type,Name/Description,Amount,Category,Date,Category %\n";
 const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
 
 const s1=await get(salariesRef);
 const s2=await get(inwardRef);
 const s3=await get(itemsRef);
 
-if(s1.exists()){
-  s1.forEach(c=>{
-    const v=c.val();
-    csv+=`Salary,${esc(v.name)},${v.amount},,\n`;
-  });
-}
+let totalIncomeValue = 0; // salaries only
+if(s1.exists()){s1.forEach(c=>{totalIncomeValue+=c.val().amount;})}
 
-if(s2.exists()){
-  s2.forEach(c=>{
-    const v=c.val();
-    csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())}\n`;
-  });
-}
+// Salaries
+if(s1.exists()){s1.forEach(c=>{
+const v=c.val();
+csv += `Salary,${esc(v.name)},${v.amount},,,\n`;
+});}
 
+// Inward Cash – included in CSV but not in % calculation
+if(s2.exists()){s2.forEach(c=>{
+const v=c.val();
+csv += `Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`;
+});}
+
+// Expenses
+let categoryTotals = {};
 if(s3.exists()){
-  s3.forEach(c=>{
-    const v=c.val();
-    csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())}\n`;
-  });
+s3.forEach(c=>{
+const v=c.val();
+categoryTotals[v.category] = (categoryTotals[v.category]||0)+v.amount;
+});
+s3.forEach(c=>{
+const v=c.val();
+const p = totalIncomeValue ? ((v.amount/totalIncomeValue)*100).toFixed(1) : 0;
+csv += `Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())},${p}%\n`;
+});
+}
+
+// Category summary
+csv += "\nCategory Summary,,,\n";
+for(const cat in categoryTotals){
+const p = totalIncomeValue ? ((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1) : 0;
+csv += `${esc(cat)},${categoryTotals[cat]},,,${p}%\n`;
 }
 
 const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
@@ -311,8 +337,18 @@ a.download="full_spending_report.csv";
 a.click();
 };
 
+/* UPDATE REMAINING */
 function updateRemaining(){
-remaining.innerText=(+totalIncome.innerText||0)-(+totalExpenses.innerText||0);
+const totalIncomeValue = +totalIncome.innerText || 0;
+const totalExpensesValue = +totalExpenses.innerText || 0;
+
+let inwardTotal = 0;
+inwardList.querySelectorAll("div").forEach(d=>{
+const amt = +d.innerText.match(/₹(\d+)/)?.[1] || 0;
+inwardTotal += amt;
+});
+
+remaining.innerText = (totalIncomeValue + inwardTotal) - totalExpensesValue;
 }
 </script>
 </body>
