@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Export Spendings CSV</title>
+<title>Export? Spendings CSV</title>
 <style>
 body{font-family:Arial,sans-serif;margin:0;padding:20px;background:#f9fafb}
 .container{max-width:500px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
@@ -44,8 +44,7 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 const salariesRef = ref(db, "spending/salaries");
-const inwardRef = ref(db, "spending/inwardCash");
-const itemsRef = ref(db, "spending/items");
+const expensesRef = ref(db, "spending/items"); // Assuming items have a category field like 'Food', 'Travel', etc.
 
 const authSection = document.getElementById("authSection");
 const appSection = document.getElementById("appSection");
@@ -63,36 +62,47 @@ onAuthStateChanged(auth, user => {
 window.exportCSV = async () => {
     // Fetch data
     const salariesSnap = await get(salariesRef);
-    const inwardSnap = await get(inwardRef);
-    const expensesSnap = await get(itemsRef);
+    const expensesSnap = await get(expensesRef);
 
+    // Salaries
+    const salaries = [];
     let totalSalary = 0;
-    salariesSnap.forEach(c => totalSalary += c.val().amount);
+    salariesSnap.forEach(c => {
+        const s = c.val();
+        salaries.push(s);
+        totalSalary += s.amount;
+    });
 
-    let totalInward = 0;
-    inwardSnap.forEach(c => totalInward += c.val().amount);
-
+    // Expenses grouped by category
+    const expenses = {};
     let totalExpenses = 0;
-    expensesSnap.forEach(c => totalExpenses += c.val().amount);
+    expensesSnap.forEach(c => {
+        const e = c.val();
+        totalExpenses += e.amount;
+        if (!expenses[e.category]) expenses[e.category] = 0;
+        expenses[e.category] += e.amount;
+    });
 
-    const totalFunds = totalSalary + totalInward + totalExpenses;
+    // Prepare CSV
+    let csv = "Category,Name/Desc,Amount,Percentage of Category (%)\n";
 
-    // CSV header
-    let csv = "Category,Total Amount,Percentage of Total Funds (%)\n";
+    // Salaries section
+    csv += `Salaries Total, ,${totalSalary},100%\n`;
+    salaries.forEach(s => {
+        csv += `Salary,${s.name},${s.amount},${((s.amount/totalSalary)*100).toFixed(1)}%\n`;
+    });
 
-    // Category-wise totals & %
-    csv += `Salaries,${totalSalary},${((totalSalary/totalFunds)*100).toFixed(1)}%\n`;
-    csv += `Inward Cash,${totalInward},${((totalInward/totalFunds)*100).toFixed(1)}%\n`;
-    csv += `Expenses,${totalExpenses},${((totalExpenses/totalFunds)*100).toFixed(1)}%\n`;
-
-    // Total row
-    csv += `TOTAL FUNDS,${totalFunds},100%\n`;
+    // Expenses section
+    csv += `Expenses Total, ,${totalExpenses},100%\n`;
+    for (const cat in expenses) {
+        csv += `Expense Category,${cat},${expenses[cat]},${((expenses[cat]/totalExpenses)*100).toFixed(1)}%\n`;
+    }
 
     // Download CSV
     const blob = new Blob([csv], {type:"text/csv"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "spendings_export_categories.csv";
+    a.download = "spendings_by_category.csv";
     a.click();
 };
 </script>
