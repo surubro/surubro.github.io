@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spendings...</title>
+<title>My Spendings</title>
 <style>
 body{font-family:Arial;margin:0;background:#f9fafb}
 .container{max-width:600px;margin:auto;padding:15px}
@@ -101,33 +101,34 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-
 import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig={
+const firebaseConfig = {
 apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
 authDomain:"striped-acrobat-342207.firebaseapp.com",
 databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
 projectId:"striped-acrobat-342207"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const auth=getAuth(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
 
-const DELETE_PASSWORD="Confirm";
-const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
+const DELETE_PASSWORD = "Confirm";
+const confirmDelete = () => prompt("Enter delete password")===DELETE_PASSWORD;
 
-const salariesRef=ref(db,"spending/salaries");
-const categoriesRef=ref(db,"spending/categories");
-const itemsRef=ref(db,"spending/items");
-const inwardRef=ref(db,"spending/inwardCash");
+const salariesRef = ref(db,"spending/salaries");
+const categoriesRef = ref(db,"spending/categories");
+const itemsRef = ref(db,"spending/items");
+const inwardRef = ref(db,"spending/inwardCash");
 
-let editSalaryId=null;
+let editSalaryId = null;
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-window.logout=()=>signOut(auth);
+/* AUTH */
+window.login = () => signInWithEmailAndPassword(auth,email.value,password.value);
+window.logout = () => signOut(auth);
 
 onAuthStateChanged(auth,u=>{
-authSection.style.display=u?"none":"block";
-appSection.style.display=u?"block":"none";
+authSection.style.display = u?"none":"block";
+appSection.style.display = u?"block":"none";
 if(u){
 loadSalaries();
 loadCategories();
@@ -136,14 +137,15 @@ loadInward();
 }
 });
 
+/* COLLAPSIBLE */
 document.querySelectorAll(".collapsible h3").forEach(h=>{
-h.onclick=()=>h.nextElementSibling.style.display=h.nextElementSibling.style.display=="block"?"none":"block";
+h.onclick = () => h.nextElementSibling.style.display = h.nextElementSibling.style.display=="block"?"none":"block";
 });
 
-/* ---------- SALARY ---------- */
-window.saveSalary=async()=>{
-const name=salaryName.value.trim();
-const amt=+salaryAmount.value;
+/* SALARY */
+window.saveSalary = async ()=>{
+const name = salaryName.value.trim();
+const amt = +salaryAmount.value;
 if(!name||amt<=0)return;
 if(editSalaryId){
 await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt});
@@ -153,7 +155,6 @@ await push(salariesRef,{name,amount:amt});
 }
 salaryName.value=salaryAmount.value="";
 };
-
 function loadSalaries(){
 onValue(salariesRef,s=>{
 salaryList.innerHTML="";
@@ -166,193 +167,105 @@ salaryList.innerHTML+=`${v.name}: ₹${v.amount}
 updateTotals();
 });
 }
-
 window.editSalary=(id,n,a)=>{
-editSalaryId=id;
-salaryName.value=n;
-salaryAmount.value=a;
+editSalaryId=id;salaryName.value=n;salaryAmount.value=a;
 };
+window.deleteSalary=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/salaries/"+id));updateTotals();};
 
-window.deleteSalary=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/salaries/"+id));
-updateTotals();
-};
-
-/* ---------- INWARD CASH ---------- */
-window.saveInward=async()=>{
-const name=inwardName.value.trim();
-const amt=+inwardAmount.value;
+/* INWARD */
+window.saveInward = async ()=>{
+const name=inwardName.value.trim();const amt=+inwardAmount.value;
 if(!name||amt<=0)return;
 await push(inwardRef,{name,amount:amt,date:Date.now()});
 inwardName.value=inwardAmount.value="";
 };
-
 function loadInward(){
 onValue(inwardRef,s=>{
 inwardList.innerHTML="";
 s.forEach(c=>{
 const v=c.val();
-inwardList.innerHTML+=`${v.name}: ₹${v.amount} 
-<button onclick="deleteInward('${c.key}')">Delete</button><br>`;
+inwardList.innerHTML+=`${v.name}: ₹${v.amount} <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
 });
 updateTotals();
 });
 }
+window.deleteInward=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/inwardCash/"+id));updateTotals();};
 
-window.deleteInward=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/inwardCash/"+id));
-updateTotals();
-};
-
-/* ---------- CATEGORY ---------- */
-window.saveCategory=async()=>{
-const name=categoryName.value.trim();
-if(!name) return;
-await push(categoriesRef,{name});
-categoryName.value="";
-};
-
+/* CATEGORY */
+window.saveCategory=async()=>{const name=categoryName.value.trim();if(!name) return;await push(categoriesRef,{name});categoryName.value="";};
 function loadCategories(){
 onValue(categoriesRef,s=>{
-categorySelect.innerHTML="";
-categoryList.innerHTML="";
-s.forEach(c=>{
-categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;
-categoryList.innerHTML+=`${c.val().name}<br>`;
-});
+categorySelect.innerHTML="";categoryList.innerHTML="";
+s.forEach(c=>{categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;categoryList.innerHTML+=`${c.val().name}<br>`;});
 });
 }
 
-/* ---------- EXPENSE ---------- */
+/* EXPENSE */
 window.addExpense=async()=>{
 if(!confirm("Confirm add this expense?")) return;
-const catSnap=await get(ref(db,"spending/categories/"+categorySelect.value));
-const categoryNameValue=catSnap.exists()?catSnap.val().name:"Uncategorized";
-await push(itemsRef,{
-desc:descInput.value,
-amount:+amountInput.value,
-category:categoryNameValue,
-date:Date.now()
-});
+const catSnap = await get(ref(db,"spending/categories/"+categorySelect.value));
+const categoryNameValue = catSnap.exists()?catSnap.val().name:"Uncategorized";
+await push(itemsRef,{desc:descInput.value,amount:+amountInput.value,category:categoryNameValue,date:Date.now()});
 descInput.value=amountInput.value="";
 };
-
 function loadExpenses(){
 onValue(itemsRef,s=>{
 list.innerHTML="";
-let totalExpensesValue=0;
-let categoryTotals={};
+let totalExpensesValue=0; let categoryTotals={};
 s.forEach(c=>{
-const v=c.val();
-totalExpensesValue+=v.amount;
+const v=c.val();totalExpensesValue+=v.amount;
 categoryTotals[v.category]=(categoryTotals[v.category]||0)+v.amount;
-list.innerHTML+=`<div class="card">
-<b>${v.desc}</b> ₹${v.amount}<br>
-<small class="muted">${v.category}</small>
-<button onclick="deleteExpense('${c.key}')">Delete</button>
-</div>`;
+list.innerHTML+=`<div class="card"><b>${v.desc}</b> ₹${v.amount}<br><small class="muted">${v.category}</small><button onclick="deleteExpense('${c.key}')">Delete</button></div>`;
 });
 totalExpenses.innerText=totalExpensesValue;
 updateCategorySummary(categoryTotals);
 updateTotals();
 });
 }
+window.deleteExpense=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/items/"+id));};
 
-window.deleteExpense=async(id)=>{
-if(!confirmDelete())return;
-await remove(ref(db,"spending/items/"+id));
-};
-
-/* ---------- DELETE ALL EXPENSES ---------- */
+/* DELETE ALL EXPENSES */
 window.deleteAllExpenses=async()=>{
 if(!confirmDelete())return;
 const snapshot=await get(itemsRef);
-if(snapshot.exists()){
-const promises=[];
-snapshot.forEach(child=>promises.push(remove(ref(db,"spending/items/"+child.key))));
-await Promise.all(promises);
-alert("All expenses deleted!");
-updateTotals();
-}
+if(snapshot.exists()){const promises=[];snapshot.forEach(c=>promises.push(remove(ref(db,"spending/items/"+c.key)));await Promise.all(promises);alert("All expenses deleted!");updateTotals();}
 };
 
-/* ---------- UPDATE TOTALS & REMAINING ---------- */
+/* UPDATE TOTALS */
 async function updateTotals(){
-const s1=await get(salariesRef);
-const s2=await get(inwardRef);
-const s3=await get(itemsRef);
-
-let totalIncomeValue=0;
-let totalExpensesValue=0;
-
+const s1=await get(salariesRef);const s2=await get(inwardRef);const s3=await get(itemsRef);
+let totalIncomeValue=0; let totalExpensesValue=0;
 if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
 if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
 if(s3.exists()) s3.forEach(c=>totalExpensesValue+=c.val().amount);
-
 totalIncome.innerText=totalIncomeValue;
 totalExpenses.innerText=totalExpensesValue;
 remaining.innerText=totalIncomeValue-totalExpensesValue;
 }
 
-/* ---------- UPDATE CATEGORY SUMMARY ---------- */
+/* UPDATE CATEGORY SUMMARY */
 function updateCategorySummary(categoryTotals){
-categorySummary.innerHTML="";
-const totalIncomeValue=+totalIncome.innerText||0;
-for(const cat in categoryTotals){
-const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;
-categorySummary.innerHTML+=`${cat}: ₹${categoryTotals[cat]} (${p}%)<br>`;
-}
+categorySummary.innerHTML="";const totalIncomeValue=+totalIncome.innerText||0;
+for(const cat in categoryTotals){const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;
+categorySummary.innerHTML+=`${cat}: ₹${categoryTotals[cat]} (${p}%)<br>`;}
 }
 
-/* ---------- EXPORT CSV ---------- */
+/* EXPORT CSV */
 window.exportCSV=async()=>{
-let csv="Type,Name/Description,Amount,Category,Date,Category %\n";
-const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-
-const s1=await get(salariesRef);
-const s2=await get(inwardRef);
-const s3=await get(itemsRef);
-
-let totalIncomeValue=0;
-if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
+let csv="Type,Name/Description,Amount,Category,Date,Category %\n";const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+const s1=await get(salariesRef);const s2=await get(inwardRef);const s3=await get(itemsRef);
+let totalIncomeValue=0; if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
 if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
-
-let categoryTotals={};
-if(s3.exists()) s3.forEach(c=>categoryTotals[c.val().category]=(categoryTotals[c.val().category]||0)+c.val().amount);
-
+let categoryTotals={}; if(s3.exists()) s3.forEach(c=>categoryTotals[c.val().category]=(categoryTotals[c.val().category]||0)+c.val().amount);
 // Salaries
-if(s1.exists()) s1.forEach(c=>{
-const v=c.val();
-csv+=`Salary,${esc(v.name)},${v.amount},,,\n`;
-});
-
-// Inward Cash
-if(s2.exists()) s2.forEach(c=>{
-const v=c.val();
-csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`;
-});
-
+if(s1.exists()) s1.forEach(c=>{const v=c.val();csv+=`Salary,${esc(v.name)},${v.amount},,,\n`;});
+// Inward
+if(s2.exists()) s2.forEach(c=>{const v=c.val();csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`;});
 // Expenses
-if(s3.exists()) s3.forEach(c=>{
-const v=c.val();
-const p=totalIncomeValue?((v.amount/totalIncomeValue)*100).toFixed(1):0;
-csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())},${p}%\n`;
-});
-
+if(s3.exists()) s3.forEach(c=>{const v=c.val();const p=totalIncomeValue?((v.amount/totalIncomeValue)*100).toFixed(1):0;csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())},${p}%\n`;});
 // Category Summary
-csv+="\nCategory Summary,,,\n";
-for(const cat in categoryTotals){
-const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;
-csv+=`${esc(cat)},${categoryTotals[cat]},,,${p}%\n`;
-}
-
-const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-const a=document.createElement("a");
-a.href=URL.createObjectURL(blob);
-a.download="full_spending_report.csv";
-a.click();
+csv+="\nCategory Summary,,,\n";for(const cat in categoryTotals){const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;csv+=`${esc(cat)},${categoryTotals[cat]},,,${p}%\n`;}
+const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="full_spending_report.csv";a.click();
 };
 </script>
 </body>
