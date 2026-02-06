@@ -25,6 +25,7 @@ button.green{background:#16a34a}
 <div class="container">
 <h2>💰 My Spending</h2>
 
+<!-- AUTH -->
 <div id="authSection" class="card">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
@@ -34,6 +35,7 @@ button.green{background:#16a34a}
 
 <div id="appSection" style="display:none">
 
+<!-- SUMMARY -->
 <div class="collapsible">
 <h3>
 Summary
@@ -48,6 +50,7 @@ Summary
 </div>
 </div>
 
+<!-- SALARY -->
 <div class="collapsible">
 <h3>Salary</h3>
 <div class="collapsible-content">
@@ -58,6 +61,7 @@ Summary
 </div>
 </div>
 
+<!-- INWARD CASH -->
 <div class="collapsible">
 <h3>Inward Cash</h3>
 <div class="collapsible-content">
@@ -68,6 +72,7 @@ Summary
 </div>
 </div>
 
+<!-- CATEGORIES -->
 <div class="collapsible">
 <h3>Categories</h3>
 <div class="collapsible-content">
@@ -77,6 +82,7 @@ Summary
 </div>
 </div>
 
+<!-- ADD EXPENSE -->
 <div class="card">
 <h3>Add Expense</h3>
 <input id="descInput" placeholder="Description">
@@ -123,149 +129,132 @@ const inwardRef = ref(db,"spending/inwardCash");
 let editSalaryId = null;
 
 /* AUTH */
-window.login = () => signInWithEmailAndPassword(auth,email.value,password.value);
-window.logout = () => signOut(auth);
+window.login = async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password){ alert("Enter email & password"); return; }
+  try { await signInWithEmailAndPassword(auth,email,password); } 
+  catch(err){ alert("Login failed: "+err.message); }
+};
+window.logout = async () => {
+  try { await signOut(auth); } 
+  catch(err){ alert("Logout failed: "+err.message); }
+};
 
 onAuthStateChanged(auth,u=>{
-authSection.style.display = u?"none":"block";
-appSection.style.display = u?"block":"none";
-if(u){
-loadSalaries();
-loadCategories();
-loadExpenses();
-loadInward();
-}
+  document.getElementById("authSection").style.display = u?"none":"block";
+  document.getElementById("appSection").style.display = u?"block":"none";
+  if(u){ loadSalaries(); loadCategories(); loadExpenses(); loadInward(); }
 });
 
 /* COLLAPSIBLE */
 document.querySelectorAll(".collapsible h3").forEach(h=>{
-h.onclick = () => h.nextElementSibling.style.display = h.nextElementSibling.style.display=="block"?"none":"block";
+  h.onclick = ()=>{ const c=h.nextElementSibling; c.style.display=c.style.display=="block"?"none":"block"; }
 });
 
 /* SALARY */
 window.saveSalary = async ()=>{
-const name = salaryName.value.trim();
-const amt = +salaryAmount.value;
-if(!name||amt<=0)return;
-if(editSalaryId){
-await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt});
-editSalaryId=null;
-}else{
-await push(salariesRef,{name,amount:amt});
-}
-salaryName.value=salaryAmount.value="";
+  const name=document.getElementById("salaryName").value.trim();
+  const amt=+document.getElementById("salaryAmount").value;
+  if(!name||amt<=0) return;
+  if(editSalaryId){ await update(ref(db,"spending/salaries/"+editSalaryId),{name,amount:amt}); editSalaryId=null; }
+  else await push(salariesRef,{name,amount:amt});
+  document.getElementById("salaryName").value = document.getElementById("salaryAmount").value = "";
 };
-function loadSalaries(){
-onValue(salariesRef,s=>{
-salaryList.innerHTML="";
-s.forEach(c=>{
-const v=c.val();
-salaryList.innerHTML+=`${v.name}: ₹${v.amount} 
-<button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
-<button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
-});
-updateTotals();
+function loadSalaries(){ onValue(salariesRef,s=>{
+  let list = document.getElementById("salaryList"); list.innerHTML="";
+  s.forEach(c=>{ const v=c.val(); list.innerHTML+=`${v.name}: ₹${v.amount} <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button> <button onclick="deleteSalary('${c.key}')">Delete</button><br>`; });
+  updateTotals();
 });
 }
-window.editSalary=(id,n,a)=>{
-editSalaryId=id;salaryName.value=n;salaryAmount.value=a;
-};
-window.deleteSalary=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/salaries/"+id));updateTotals();};
+window.editSalary=(id,n,a)=>{ editSalaryId=id; document.getElementById("salaryName").value=n; document.getElementById("salaryAmount").value=a; }
+window.deleteSalary=async(id)=>{ if(!confirmDelete())return; await remove(ref(db,"spending/salaries/"+id)); updateTotals(); }
 
 /* INWARD */
-window.saveInward = async ()=>{
-const name=inwardName.value.trim();const amt=+inwardAmount.value;
-if(!name||amt<=0)return;
-await push(inwardRef,{name,amount:amt,date:Date.now()});
-inwardName.value=inwardAmount.value="";
+window.saveInward = async ()=>{ 
+  const name=document.getElementById("inwardName").value.trim(); 
+  const amt=+document.getElementById("inwardAmount").value; 
+  if(!name||amt<=0)return; 
+  await push(inwardRef,{name,amount:amt,date:Date.now()}); 
+  document.getElementById("inwardName").value = document.getElementById("inwardAmount").value="";
 };
-function loadInward(){
-onValue(inwardRef,s=>{
-inwardList.innerHTML="";
-s.forEach(c=>{
-const v=c.val();
-inwardList.innerHTML+=`${v.name}: ₹${v.amount} <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
-});
-updateTotals();
-});
-}
-window.deleteInward=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/inwardCash/"+id));updateTotals();};
+function loadInward(){ onValue(inwardRef,s=>{
+  let list=document.getElementById("inwardList"); list.innerHTML="";
+  s.forEach(c=>{ const v=c.val(); list.innerHTML+=`${v.name}: ₹${v.amount} <button onclick="deleteInward('${c.key}')">Delete</button><br>`; });
+  updateTotals();
+}); }
+window.deleteInward=async(id)=>{ if(!confirmDelete())return; await remove(ref(db,"spending/inwardCash/"+id)); updateTotals(); }
 
-/* CATEGORY */
-window.saveCategory=async()=>{const name=categoryName.value.trim();if(!name) return;await push(categoriesRef,{name});categoryName.value="";};
-function loadCategories(){
-onValue(categoriesRef,s=>{
-categorySelect.innerHTML="";categoryList.innerHTML="";
-s.forEach(c=>{categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;categoryList.innerHTML+=`${c.val().name}<br>`;});
-});
-}
+/* CATEGORIES */
+window.saveCategory=async()=>{ const name=document.getElementById("categoryName").value.trim(); if(!name) return; await push(categoriesRef,{name}); document.getElementById("categoryName").value=""; }
+function loadCategories(){ onValue(categoriesRef,s=>{
+  const select=document.getElementById("categorySelect"); const list=document.getElementById("categoryList");
+  select.innerHTML=""; list.innerHTML="";
+  s.forEach(c=>{ select.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`; list.innerHTML+=`${c.val().name}<br>`; });
+}); }
 
 /* EXPENSE */
 window.addExpense=async()=>{
-if(!confirm("Confirm add this expense?")) return;
-const catSnap = await get(ref(db,"spending/categories/"+categorySelect.value));
-const categoryNameValue = catSnap.exists()?catSnap.val().name:"Uncategorized";
-await push(itemsRef,{desc:descInput.value,amount:+amountInput.value,category:categoryNameValue,date:Date.now()});
-descInput.value=amountInput.value="";
+  if(!confirm("Confirm add this expense?")) return;
+  const desc=document.getElementById("descInput").value.trim();
+  const amt=+document.getElementById("amountInput").value;
+  const catId=document.getElementById("categorySelect").value;
+  if(!desc||amt<=0) return;
+  const catSnap = await get(ref(db,"spending/categories/"+catId));
+  const categoryNameValue = catSnap.exists()?catSnap.val().name:"Uncategorized";
+  await push(itemsRef,{desc,amount:amt,category:categoryNameValue,date:Date.now()});
+  document.getElementById("descInput").value = document.getElementById("amountInput").value = "";
 };
-function loadExpenses(){
-onValue(itemsRef,s=>{
-list.innerHTML="";
-let totalExpensesValue=0; let categoryTotals={};
-s.forEach(c=>{
-const v=c.val();totalExpensesValue+=v.amount;
-categoryTotals[v.category]=(categoryTotals[v.category]||0)+v.amount;
-list.innerHTML+=`<div class="card"><b>${v.desc}</b> ₹${v.amount}<br><small class="muted">${v.category}</small><button onclick="deleteExpense('${c.key}')">Delete</button></div>`;
-});
-totalExpenses.innerText=totalExpensesValue;
-updateCategorySummary(categoryTotals);
-updateTotals();
-});
-}
-window.deleteExpense=async(id)=>{if(!confirmDelete())return;await remove(ref(db,"spending/items/"+id));};
+function loadExpenses(){ onValue(itemsRef,s=>{
+  const list=document.getElementById("list"); list.innerHTML="";
+  let totalExpensesValue=0; let categoryTotals={};
+  s.forEach(c=>{ const v=c.val(); totalExpensesValue+=v.amount; categoryTotals[v.category]=(categoryTotals[v.category]||0)+v.amount;
+  list.innerHTML+=`<div class="card"><b>${v.desc}</b> ₹${v.amount}<br><small class="muted">${v.category}</small><button onclick="deleteExpense('${c.key}')">Delete</button></div>`; });
+  updateTotals(totalExpensesValue, categoryTotals);
+}); }
+window.deleteExpense=async(id)=>{ if(!confirmDelete())return; await remove(ref(db,"spending/items/"+id)); }
 
 /* DELETE ALL EXPENSES */
 window.deleteAllExpenses=async()=>{
-if(!confirmDelete())return;
-const snapshot=await get(itemsRef);
-if(snapshot.exists()){const promises=[];snapshot.forEach(c=>promises.push(remove(ref(db,"spending/items/"+c.key)));await Promise.all(promises);alert("All expenses deleted!");updateTotals();}
+  if(!confirmDelete())return;
+  const snapshot=await get(itemsRef);
+  if(snapshot.exists()){ const promises=[]; snapshot.forEach(c=>promises.push(remove(ref(db,"spending/items/"+c.key))); await Promise.all(promises); alert("All expenses deleted!"); updateTotals(); }
 };
 
 /* UPDATE TOTALS */
-async function updateTotals(){
-const s1=await get(salariesRef);const s2=await get(inwardRef);const s3=await get(itemsRef);
-let totalIncomeValue=0; let totalExpensesValue=0;
-if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
-if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
-if(s3.exists()) s3.forEach(c=>totalExpensesValue+=c.val().amount);
-totalIncome.innerText=totalIncomeValue;
-totalExpenses.innerText=totalExpensesValue;
-remaining.innerText=totalIncomeValue-totalExpensesValue;
+async function updateTotals(expenseOverride=null, categoryTotalsOverride=null){
+  const s1=await get(salariesRef); const s2=await get(inwardRef); const s3=await get(itemsRef);
+  let totalIncomeValue=0; if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
+  if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
+  let totalExpensesValue = expenseOverride!==null ? expenseOverride : (s3.exists()? [...s3.val ? Object.values(s3.val()) : []].reduce((a,v)=>a+v.amount,0):0);
+  document.getElementById("totalIncome").innerText=totalIncomeValue;
+  document.getElementById("totalExpenses").innerText=totalExpensesValue;
+  document.getElementById("remaining").innerText=totalIncomeValue-totalExpensesValue;
+  const catTotals = categoryTotalsOverride!==null?categoryTotalsOverride:{};
+  updateCategorySummary(catTotals);
 }
 
 /* UPDATE CATEGORY SUMMARY */
 function updateCategorySummary(categoryTotals){
-categorySummary.innerHTML="";const totalIncomeValue=+totalIncome.innerText||0;
-for(const cat in categoryTotals){const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;
-categorySummary.innerHTML+=`${cat}: ₹${categoryTotals[cat]} (${p}%)<br>`;}
+  const container=document.getElementById("categorySummary"); container.innerHTML=""; 
+  const totalIncomeValue=+document.getElementById("totalIncome").innerText||0;
+  for(const cat in categoryTotals){ const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;
+  container.innerHTML+=`${cat}: ₹${categoryTotals[cat]} (${p}%)<br>`;}
 }
 
 /* EXPORT CSV */
 window.exportCSV=async()=>{
-let csv="Type,Name/Description,Amount,Category,Date,Category %\n";const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-const s1=await get(salariesRef);const s2=await get(inwardRef);const s3=await get(itemsRef);
-let totalIncomeValue=0; if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
-if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
-let categoryTotals={}; if(s3.exists()) s3.forEach(c=>categoryTotals[c.val().category]=(categoryTotals[c.val().category]||0)+c.val().amount);
-// Salaries
-if(s1.exists()) s1.forEach(c=>{const v=c.val();csv+=`Salary,${esc(v.name)},${v.amount},,,\n`;});
-// Inward
-if(s2.exists()) s2.forEach(c=>{const v=c.val();csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`;});
-// Expenses
-if(s3.exists()) s3.forEach(c=>{const v=c.val();const p=totalIncomeValue?((v.amount/totalIncomeValue)*100).toFixed(1):0;csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())},${p}%\n`;});
-// Category Summary
-csv+="\nCategory Summary,,,\n";for(const cat in categoryTotals){const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0;csv+=`${esc(cat)},${categoryTotals[cat]},,,${p}%\n`;}
-const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="full_spending_report.csv";a.click();
+  let csv="Type,Name/Description,Amount,Category,Date,Category %\n"; 
+  const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const s1=await get(salariesRef); const s2=await get(inwardRef); const s3=await get(itemsRef);
+  let totalIncomeValue=0; if(s1.exists()) s1.forEach(c=>totalIncomeValue+=c.val().amount);
+  if(s2.exists()) s2.forEach(c=>totalIncomeValue+=c.val().amount);
+  let categoryTotals={}; if(s3.exists()) s3.forEach(c=>categoryTotals[c.val().category]=(categoryTotals[c.val().category]||0)+c.val().amount);
+  if(s1.exists()) s1.forEach(c=>{ const v=c.val(); csv+=`Salary,${esc(v.name)},${v.amount},,,\n`; });
+  if(s2.exists()) s2.forEach(c=>{ const v=c.val(); csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`; });
+  if(s3.exists()) s3.forEach(c=>{ const v=c.val(); const p=totalIncomeValue?((v.amount/totalIncomeValue)*100).toFixed(1):0; csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())},${p}%\n`; });
+  csv+="\nCategory Summary,,,\n"; for(const cat in categoryTotals){ const p=totalIncomeValue?((categoryTotals[cat]/totalIncomeValue)*100).toFixed(1):0; csv+=`${esc(cat)},${categoryTotals[cat]},,,${p}%\n`; }
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="full_spending_report.csv"; a.click();
 };
 </script>
 </body>
