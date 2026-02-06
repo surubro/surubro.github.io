@@ -245,22 +245,20 @@ let total=0,summary={};
 s.forEach(c=>{
 const v=c.val();total+=v.amount;
 summary[v.category]=(summary[v.category]||0)+v.amount;
-list.innerHTML=`
-<div class="card">
+list.innerHTML=
+`<div class="card">
 <b>${v.desc}</b> ₹${v.amount}<br>
 <small class="muted">${v.category}</small>
 <button onclick="deleteExpense('${c.key}')">Delete</button>
-</div>`+list.innerHTML;
+</div>` + list.innerHTML;
 });
-
 totalExpenses.innerText=total;
 updateRemaining();
 
 categorySummary.innerHTML="";
-const income = +totalIncome.innerText || 0;
-
+const income=+totalIncome.innerText||0;
 for(const k in summary){
-const p = income ? ((summary[k] / income) * 100).toFixed(1) : 0;
+const p=income?((summary[k]/income)*100).toFixed(1):0;
 categorySummary.innerHTML+=`${k}: ₹${summary[k]} (${p}%)<br>`;
 }
 });
@@ -276,8 +274,8 @@ if(!confirmDelete())return;
 await remove(itemsRef);
 };
 
-/* CSV EXPORT */
-window.exportCSV = async () => {
+/* ✅ CSV EXPORT – FIXED */
+window.exportCSV=async()=>{
 let csv="Type,Name/Description,Amount,Category,Date\n";
 const esc=v=>`"${String(v??"").replace(/"/g,'""')}"`;
 
@@ -285,13 +283,30 @@ const s1=await get(salariesRef);
 const s2=await get(inwardRef);
 const s3=await get(itemsRef);
 
-if(s1.exists())s1.forEach(c=>csv+=`Salary,${esc(c.val().name)},${c.val().amount},,\n`);
-if(s2.exists())s2.forEach(c=>csv+=`Inward Cash,${esc(c.val().name)},${c.val().amount},,${esc(new Date(c.val().date).toLocaleString())}\n`);
-if(s3.exists())s3.forEach(c=>csv+=`Expense,${esc(c.val().desc)},${c.val().amount},${esc(c.val().category)},${esc(new Date(c.val().date).toLocaleString())}\n`);
+if(s1.exists()){
+  s1.forEach(c=>{
+    const v=c.val();
+    csv+=`Salary,${esc(v.name)},${v.amount},,\n`;
+  });
+}
 
-const b=new Blob([csv],{type:"text/csv"});
+if(s2.exists()){
+  s2.forEach(c=>{
+    const v=c.val();
+    csv+=`Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())}\n`;
+  });
+}
+
+if(s3.exists()){
+  s3.forEach(c=>{
+    const v=c.val();
+    csv+=`Expense,${esc(v.desc)},${v.amount},${esc(v.category)},${esc(new Date(v.date).toLocaleString())}\n`;
+  });
+}
+
+const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
 const a=document.createElement("a");
-a.href=URL.createObjectURL(b);
+a.href=URL.createObjectURL(blob);
 a.download="full_spending_report.csv";
 a.click();
 };
