@@ -98,7 +98,7 @@ Summary
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getDatabase,ref,push,onValue,remove,update,get,child} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig={
@@ -199,7 +199,7 @@ const v=c.val();
 inwardList.innerHTML+=`${v.name}: ₹${v.amount}
 <button onclick="deleteInward('${c.key}')">Delete</button><br>`;
 });
-updateRemaining(); // inward cash affects remaining
+updateRemaining(); 
 });
 }
 
@@ -264,6 +264,19 @@ if(!confirmDelete())return;
 await remove(ref(db,"spending/items/"+id));
 };
 
+/* DELETE ALL EXPENSES */
+window.deleteAllExpenses=async()=>{
+if(!confirmDelete()) return;
+const snapshot = await get(itemsRef);
+if(snapshot.exists()){
+snapshot.forEach(async(childSnapshot)=>{
+await remove(ref(db,"spending/items/"+childSnapshot.key));
+});
+alert("All expenses deleted!");
+updateRemaining();
+}
+};
+
 /* UPDATE TOTAL INCOME – SALARY ONLY */
 function updateTotalIncome(){
 let total=0;
@@ -294,7 +307,7 @@ const s1=await get(salariesRef);
 const s2=await get(inwardRef);
 const s3=await get(itemsRef);
 
-let totalIncomeValue = 0; // salaries only
+let totalIncomeValue = 0; 
 if(s1.exists()){s1.forEach(c=>{totalIncomeValue+=c.val().amount;})}
 
 // Salaries
@@ -303,7 +316,7 @@ const v=c.val();
 csv += `Salary,${esc(v.name)},${v.amount},,,\n`;
 });}
 
-// Inward Cash – included in CSV but not in % calculation
+// Inward Cash
 if(s2.exists()){s2.forEach(c=>{
 const v=c.val();
 csv += `Inward Cash,${esc(v.name)},${v.amount},,${esc(new Date(v.date).toLocaleString())},\n`;
