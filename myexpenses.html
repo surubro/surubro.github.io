@@ -1,316 +1,259 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Expenses Manager</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
-    .container { max-width: 500px; margin: auto; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .card strong { font-size: 1rem; }
-    .card small { display: block; color: #777; margin-top: 4px; }
-    input, button, select { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
-    button { background: #4f46e5; color: white; border: none; cursor: pointer; transition: 0.3s; }
-    button:hover { background: #4338ca; }
-    .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
-    .delete { background: #dc2626; }
-    .delete:hover { background: #b91c1c; }
-    .edit { background: #2563eb; }
-    .edit:hover { background: #1d4ed8; }
-    .collapsible { background: #eef2ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-    .collapsible h3 { margin: 0; cursor:pointer; }
-    .collapsible-content { display: none; margin-top: 10px; }
-    .income-row, .cat-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
-    .income-info, .cat-info { flex: 1; }
-    .income-actions, .cat-actions { display: flex; gap: 6px; }
-    .inline-btn { background:#2563eb;color:white;border:none;padding:4px 8px;border-radius:6px;cursor:pointer; font-size:0.9rem; }
-    .inline-btn.deleteIncome, .inline-btn.deleteCat { background:#dc2626; }
-    .inline-btn.deleteIncome:hover, .inline-btn.deleteCat:hover { background:#b91c1c; }
-    .inline-btn.editIncome:hover { background:#1d4ed8; }
-    .income-text { color: #16a34a; font-weight: bold; }
-    .expense-text { color: #dc2626; font-weight: bold; }
-    .remaining-text { color: #2563eb; font-weight: bold; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expenses Manager</title>
+
+<style>
+body{font-family:Arial;margin:0;background:#f9fafb}
+.container{max-width:500px;margin:auto;padding:15px}
+.card{background:#fff;padding:12px;margin-bottom:10px;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+input,select,button{width:100%;padding:10px;margin:5px 0;border-radius:8px;border:1px solid #ccc}
+button{background:#4f46e5;color:#fff;border:none}
+button:hover{background:#4338ca}
+.delete{background:#dc2626}
+.delete:hover{background:#b91c1c}
+h2{text-align:center}
+.actions{margin-top:8px}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>💰 #Expenses Manager</h2>
+<div class="container">
+<h2>💰 Expenses Manager</h2>
 
-    <div id="authSection">
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-      <button onclick="logout()">Logout</button>
-    </div>
+<div id="authSection">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+</div>
 
-    <div id="appSection" style="display:none;">
+<div id="appSection" style="display:none">
 
-      <!-- Summary -->
-      <div class="collapsible" id="summaryBox">
-        <h3>
-          Summary — <span class="income-text">Income: ₹<span id="totalIncome">0</span></span> | 
-          <span class="expense-text">Expenses: ₹<span id="totalExpenses">0</span></span>
-        </h3>
-        <div class="collapsible-content" id="summaryContent">
-          <div id="incomeSummary"></div>
-          <div id="categorySummary"></div>
-          <p><strong class="remaining-text">Total Remaining: ₹<span id="totalRemaining">0</span></strong></p>
-        </div>
-      </div>
+<div class="card">
+Income: ₹<span id="totalIncome">0</span><br>
+Expenses: ₹<span id="totalExpenses">0</span><br>
+Remaining: ₹<span id="totalRemaining">0</span>
+</div>
 
-      <!-- Incomes -->
-      <div class="collapsible" id="incomeBox">
-        <h3>Add Income</h3>
-        <div class="collapsible-content" id="incomeContent">
-          <input type="text" id="incomeDesc" placeholder="Income Source (Job, Business)">
-          <input type="number" id="incomeAmount" placeholder="Income Amount">
-          <button id="incomeBtn" onclick="saveIncome()">Save Income</button>
-        </div>
-      </div>
+<div class="card">
+<h3>Add Income</h3>
+<input id="incomeDesc" placeholder="Source">
+<input id="incomeAmount" type="number" placeholder="Amount">
+<button onclick="saveIncome()">Save Income</button>
+<div id="incomeList"></div>
+</div>
 
-      <!-- Categories -->
-      <div class="collapsible" id="categoryBox">
-        <h3>Categories</h3>
-        <div class="collapsible-content" id="categoryContent">
-          <input type="text" id="catInput" placeholder="Category Name">
-          <button onclick="addCategory()">Add Category</button>
-          <div id="catList"></div>
-        </div>
-      </div>
+<div class="card">
+<h3>Add Category</h3>
+<input id="catInput" placeholder="Category">
+<button onclick="addCategory()">Add Category</button>
+</div>
 
-      <!-- Expenses -->
-      <input type="text" id="descInput" placeholder="Expense Description">
-      <input type="number" id="amountInput" placeholder="Expense Amount">
-      <select id="categorySelect"></select>
-      <select id="incomeSelect"></select>
-      <button id="addExpenseBtn" onclick="addExpense()">Add Expense</button>
+<div class="card">
+<h3>Add Expense</h3>
+<input id="descInput" placeholder="Description">
+<input id="amountInput" type="number" placeholder="Amount">
+<select id="categorySelect"></select>
+<select id="incomeSelect"></select>
+<button onclick="addExpense()">Add Expense</button>
+</div>
 
-      <h3>Expenses</h3>
-      <div id="list"></div>
-    </div>
-  </div>
+<button class="delete" id="deleteAllBtn">Delete All Expenses</button>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<h3>Expenses</h3>
+<div id="list"></div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
-      authDomain: "striped-acrobat-342207.firebaseapp.com",
-      databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-      projectId: "striped-acrobat-342207",
-      storageBucket: "striped-acrobat-342207.appspot.com",
-      messagingSenderId: "367114842706",
-      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
-    };
+</div>
+</div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const incomesRef = ref(db, "expenses/incomes");
-    const expensesRef = ref(db, "expenses/items");
-    const categoriesRef = ref(db, "expenses/categories");
+const firebaseConfig={
+apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+authDomain:"striped-acrobat-342207.firebaseapp.com",
+databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+projectId:"striped-acrobat-342207"
+};
 
-    const PASSWORD = "Confirm";
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const auth=getAuth(app);
 
-    function askPassword() {
-      const input = prompt("Enter password:");
-      return input === PASSWORD;
-    }
+const incomesRef=ref(db,"expenses/incomes");
+const expensesRef=ref(db,"expenses/items");
+const categoriesRef=ref(db,"expenses/categories");
 
-    function formatDate(timestamp) {
-      const d = new Date(timestamp);
-      return d.toLocaleDateString("en-GB") + ", " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-    }
+const PASSWORD="Confirm";
 
-    function setupToggle(boxId, contentId) {
-      document.querySelector(`#${boxId} h3`).addEventListener("click", () => {
-        const content = document.getElementById(contentId);
-        content.style.display = content.style.display === "none" ? "block" : "none";
-      });
-    }
-    setupToggle("summaryBox", "summaryContent");
-    setupToggle("incomeBox", "incomeContent");
-    setupToggle("categoryBox", "categoryContent");
+function askDeletePassword(){
+const input=prompt("Enter password to delete:");
+if(input===null) return false;
+if(input!==PASSWORD){
+alert("❌ Incorrect password!");
+return false;
+}
+return true;
+}
 
-    // Auth
-    window.login = function() {
-      signInWithEmailAndPassword(auth, email.value, password.value).catch(err => alert(err.message));
-    };
-    window.logout = function() { signOut(auth); };
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
+window.logout=()=>signOut(auth);
 
-    onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        authSection.style.display = "none";
-        appSection.style.display = "block";
-        loadIncomes();
-        loadCategories();
-        loadExpenses();
-      } else {
-        authSection.style.display = "block";
-        appSection.style.display = "none";
-      }
-    });
+onAuthStateChanged(auth,user=>{
+if(user){
+authSection.style.display="none";
+appSection.style.display="block";
+loadIncomes();
+loadCategories();
+loadExpenses();
+}else{
+authSection.style.display="block";
+appSection.style.display="none";
+}
+});
 
-    // Income
-    let editingIncomeId = null;
-    window.saveIncome = async function() {
-      if (!askPassword()) return alert("❌ Incorrect password!");
-      const desc = incomeDesc.value.trim();
-      const amount = parseFloat(incomeAmount.value);
-      if (!desc || isNaN(amount)) return;
-      if (editingIncomeId) {
-        await update(ref(db, "expenses/incomes/" + editingIncomeId), { desc, amount, remaining: amount });
-        editingIncomeId = null; incomeBtn.innerText = "Save Income";
-      } else {
-        await push(incomesRef, { desc, amount, remaining: amount, date: Date.now() });
-      }
-      incomeDesc.value = ""; incomeAmount.value = "";
-    };
+/* INCOME */
+window.saveIncome=async()=>{
+const desc=incomeDesc.value.trim();
+const amt=parseFloat(incomeAmount.value);
+if(!desc||isNaN(amt)) return;
+await push(incomesRef,{desc,amount:amt,remaining:amt});
+incomeDesc.value=""; incomeAmount.value="";
+};
 
-    function loadIncomes() {
-      onValue(incomesRef, (snap) => {
-        incomeSummary.innerHTML = ""; incomeSelect.innerHTML = "";
-        let totalIncome = 0, totalRemaining = 0;
-        snap.forEach((c) => {
-          const i = c.val();
-          totalIncome += +i.amount; 
-          totalRemaining += +i.remaining;
+function loadIncomes(){
+onValue(incomesRef,snap=>{
+incomeSelect.innerHTML="";
+let total=0,remain=0;
 
-          const row = document.createElement("div");
-          row.className = "income-row";
-          row.innerHTML = `
-            <div class="income-info"><strong>${i.desc}</strong>: ₹${i.remaining} (Total ₹${i.amount})</div>
-            <div class="income-actions">
-              <button class="inline-btn deleteIncome" data-id="${c.key}" data-name="${i.desc}">Delete</button>
-              <button class="inline-btn editIncome" data-id="${c.key}" data-desc="${i.desc}" data-amount="${i.amount}">Edit</button>
-            </div>`;
-          incomeSummary.appendChild(row);
+snap.forEach(c=>{
+const i=c.val();
+total+=+i.amount;
+remain+=+i.remaining;
 
-          const opt = document.createElement("option");
-          opt.value = c.key; opt.textContent = i.desc; incomeSelect.appendChild(opt);
-        });
+const opt=document.createElement("option");
+opt.value=c.key;
+opt.textContent=i.desc;
+incomeSelect.appendChild(opt);
+});
 
-        // ✅ Fixed: Update summary correctly
-        document.getElementById("totalIncome").innerText = totalIncome;
-        document.getElementById("totalRemaining").innerText = totalRemaining;
+totalIncome.innerText=total;
+totalRemaining.innerText=remain;
+});
+}
 
-        // delete & edit actions
-        document.querySelectorAll(".deleteIncome").forEach(btn=>{
-          btn.onclick=async()=>{
-            if(!askPassword()) return;
-            if(!confirm("Delete income?")) return;
-            await remove(ref(db,"expenses/incomes/"+btn.dataset.id));
-          }
-        });
-        document.querySelectorAll(".editIncome").forEach(btn=>{
-          btn.onclick=()=>{
-            if(!askPassword()) return;
-            editingIncomeId = btn.dataset.id;
-            incomeDesc.value = btn.dataset.desc;
-            incomeAmount.value = btn.dataset.amount;
-            incomeBtn.innerText = "Update Income";
-            incomeContent.style.display="block";
-          }
-        });
-      });
-    }
+/* CATEGORY */
+window.addCategory=async()=>{
+const name=catInput.value.trim();
+if(!name) return;
+await push(categoriesRef,{name});
+catInput.value="";
+};
 
-    // Categories
-    window.addCategory = async function() {
-      if (!askPassword()) return alert("❌ Incorrect password!");
-      const name = catInput.value.trim();
-      if(!name) return alert("Enter category name!");
-      await push(categoriesRef,{name});
-      catInput.value="";
-    };
+function loadCategories(){
+onValue(categoriesRef,snap=>{
+categorySelect.innerHTML="";
+snap.forEach(c=>{
+const opt=document.createElement("option");
+opt.value=c.val().name;
+opt.textContent=c.val().name;
+categorySelect.appendChild(opt);
+});
+});
+}
 
-    function loadCategories(){
-      onValue(categoriesRef,(snap)=>{
-        catList.innerHTML=""; categorySelect.innerHTML="";
-        snap.forEach(c=>{
-          const cat=c.val();
-          const row=document.createElement("div");
-          row.className="cat-row";
-          row.innerHTML=`
-            <div class="cat-info"><strong>${cat.name}</strong></div>
-            <div class="cat-actions">
-              <button class="inline-btn deleteCat" data-id="${c.key}">Delete</button>
-            </div>`;
-          catList.appendChild(row);
-          const opt=document.createElement("option");
-          opt.value=cat.name; opt.textContent=cat.name; categorySelect.appendChild(opt);
-        });
-        document.querySelectorAll(".deleteCat").forEach(btn=>{
-          btn.onclick=async()=>{
-            if(!askPassword()) return;
-            if(!confirm("Delete category?")) return;
-            await remove(ref(db,"expenses/categories/"+btn.dataset.id));
-          };
-        });
-      });
-    }
+/* EXPENSE */
+window.addExpense=async()=>{
+const desc=descInput.value.trim();
+const amt=parseFloat(amountInput.value);
+const cat=categorySelect.value;
+const incomeId=incomeSelect.value;
+if(!desc||!cat||isNaN(amt)) return;
 
-    // Expenses
-    window.addExpense=async function(){
-      if(!askPassword()) return alert("❌ Incorrect password!");
-      const desc=descInput.value.trim();
-      const amount=parseFloat(amountInput.value);
-      const cat=categorySelect.value;
-      const incomeId=incomeSelect.value;
-      if(!desc||!cat||isNaN(amount)) return alert("Fill all fields!");
-      const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
-      if(!incSnap.exists()) return;
-      const income=incSnap.val();
-      if(income.remaining<amount) return alert("Not enough balance!");
-      const newRef=push(expensesRef);
-      const updates={};
-      updates[`expenses/incomes/${incomeId}/remaining`]=income.remaining-amount;
-      updates[`expenses/items/${newRef.key}`]={desc,amount,category:cat,incomeName:income.desc,incomeId,date:Date.now()};
-      await update(ref(db),updates);
-      descInput.value=""; amountInput.value=""; categorySelect.value="";
-    };
+const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
+const inc=incSnap.val();
+if(inc.remaining<amt) return alert("Not enough balance");
 
-    function loadExpenses(){
-      onValue(expensesRef,(snap)=>{
-        list.innerHTML=""; let total=0; let catTotals={};
-        snap.forEach(c=>{
-          const e=c.val(); total+=+e.amount;
-          catTotals[e.category]=(catTotals[e.category]||0)+ +e.amount;
-          const div=document.createElement("div");
-          div.className="card";
-          div.innerHTML=`
-            <div><strong>${e.desc}</strong> - ₹${e.amount} (${e.category})<br><small>From: ${e.incomeName}</small></div>
-            <small>${formatDate(e.date)}</small>
-            <div class="actions"><button class="delete" data-id="${c.key}" data-incomeid="${e.incomeId}" data-amount="${e.amount}">Delete</button></div>`;
-          list.prepend(div);
-        });
-        document.getElementById("totalExpenses").innerText=total;
-        categorySummary.innerHTML="<h4>By Category:</h4>";
-        Object.keys(catTotals).forEach(cat=>{
-          categorySummary.innerHTML+=`<p>${cat}: ₹${catTotals[cat]}</p>`;
-        });
-        document.querySelectorAll(".delete").forEach(btn=>{
-          btn.onclick=async()=>{
-            if(!askPassword()) return;
-            if(!confirm("Delete expense?")) return;
-            const id=btn.dataset.id; const incomeId=btn.dataset.incomeid; const amt=+btn.dataset.amount;
-            const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
-            if(!incSnap.exists()) return;
-            const rem=incSnap.val().remaining||0;
-            const updates={};
-            updates[`expenses/incomes/${incomeId}/remaining`]=rem+amt;
-            updates[`expenses/items/${id}`]=null;
-            await update(ref(db),updates);
-          };
-        });
-      });
-    }
-  </script>
+const newRef=push(expensesRef);
+const updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=inc.remaining-amt;
+updates[`expenses/items/${newRef.key}`]={
+desc,amount:amt,category:cat,incomeId,date:Date.now()
+};
+await update(ref(db),updates);
+
+descInput.value=""; amountInput.value="";
+};
+
+function loadExpenses(){
+onValue(expensesRef,snap=>{
+list.innerHTML="";
+let total=0;
+
+snap.forEach(c=>{
+const e=c.val();
+total+=+e.amount;
+
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+${e.desc} - ₹${e.amount} (${e.category})
+<div class="actions">
+<button class="delete" data-id="${c.key}" data-incomeid="${e.incomeId}" data-amount="${e.amount}">Delete</button>
+</div>`;
+
+list.prepend(div);
+});
+
+totalExpenses.innerText=total;
+
+/* SINGLE DELETE */
+document.querySelectorAll(".delete").forEach(btn=>{
+btn.onclick=async()=>{
+if(!askDeletePassword()) return;
+if(!confirm("Delete expense?")) return;
+
+const id=btn.dataset.id;
+const incomeId=btn.dataset.incomeid;
+const amt=+btn.dataset.amount;
+
+const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
+const rem=incSnap.val().remaining||0;
+
+const updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=rem+amt;
+updates[`expenses/items/${id}`]=null;
+
+await update(ref(db),updates);
+};
+});
+});
+}
+
+/* DELETE ALL */
+document.getElementById("deleteAllBtn").onclick=async()=>{
+if(!askDeletePassword()) return;
+if(!confirm("Delete ALL expenses?")) return;
+
+const incSnap=await get(incomesRef);
+const updates={};
+
+incSnap.forEach(c=>{
+const i=c.val();
+updates[`expenses/incomes/${c.key}/remaining`]=i.amount;
+});
+
+updates["expenses/items"]=null;
+
+await update(ref(db),updates);
+
+alert("All expenses deleted & balances restored!");
+};
+</script>
 </body>
 </html>
