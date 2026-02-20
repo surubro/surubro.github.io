@@ -1,157 +1,216 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Money Manager</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Expenses Manager</title>
 <style>
-body{font-family:Arial;margin:0;background:#f2f2f2;padding:10px}
-.box{max-width:600px;margin:auto;background:#fff;padding:15px;border-radius:6px}
-h2{margin-top:20px}
-input,select,button{width:100%;padding:8px;margin:5px 0}
-.entry{border-bottom:1px solid #ddd;padding:6px 0}
-.income{color:green}
-.expense{color:red}
-.small{font-size:12px;color:#666}
-a{font-size:12px;cursor:pointer;color:blue}
+body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; color: #333; }
+.container { max-width: 500px; margin: auto; padding: 20px; }
+h2 { text-align: center; margin-bottom: 20px; }
+.card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.card small { display: block; color: #777; margin-top: 4px; }
+input, button, select { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 1rem; }
+button { background: #4f46e5; color: white; border: none; cursor: pointer; }
+button:hover { background: #4338ca; }
+.delete { background:#dc2626; }
+.delete:hover { background:#b91c1c; }
+.actions { display:flex; justify-content:flex-end; }
 </style>
 </head>
 <body>
+<div class="container">
+<h2>💰 Expenses Manager</h2>
 
-<div class="box">
-<h1>Money Manager</h1>
-
-<h2>Add Income</h2>
-<input id="incomeCat" placeholder="Category (Bank/Cash)">
-<input id="incomeAmt" type="number" placeholder="Amount">
-<input id="incomeNote" placeholder="Note">
-<button onclick="addIncome()">Add Income</button>
-
-<h2>Add Expense</h2>
-<select id="expenseCat"></select>
-<input id="expenseAmt" type="number" placeholder="Amount">
-<input id="expenseNote" placeholder="Note">
-<button onclick="addExpense()">Add Expense</button>
-
-<h2>Delete All Expenses</h2>
-<input type="password" id="deletePass" placeholder="Password">
-<button onclick="deleteAllExpenses()">Delete All Expenses</button>
-
-<h2>Accounts</h2>
-<div id="accounts"></div>
-
+<div id="authSection">
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
 </div>
 
-<script>
-const PASSWORD="1234";
-let data = JSON.parse(localStorage.getItem("moneyData")) || {};
+<div id="appSection" style="display:none;">
 
-function save(){
-  localStorage.setItem("moneyData",JSON.stringify(data));
-  render();
+<input type="text" id="descInput" placeholder="Expense Description">
+<input type="number" id="amountInput" placeholder="Expense Amount">
+<select id="categorySelect"></select>
+<select id="incomeSelect"></select>
+<button onclick="addExpense()">Add Expense</button>
+
+<!-- NEW BUTTON -->
+
+<button class="delete" onclick="deleteAllExpenses()">Delete All Expenses</button>
+
+<h3>Expenses</h3>
+<div id="list"></div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+authDomain: "striped-acrobat-342207.firebaseapp.com",
+databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+projectId: "striped-acrobat-342207"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const incomesRef = ref(db, "expenses/incomes");
+const expensesRef = ref(db, "expenses/items");
+const categoriesRef = ref(db, "expenses/categories");
+
+const PASSWORD = "Confirm";
+
+function askPassword(){
+const input = prompt("Enter password:");
+return input === PASSWORD;
 }
 
-function addIncome(){
-  const cat=incomeCat.value.trim();
-  const amt=parseFloat(incomeAmt.value);
-  const note=incomeNote.value.trim();
-  if(!cat||!amt)return;
-
-  if(!data[cat]) data[cat]={balance:0,entries:[]};
-
-  data[cat].balance+=amt;
-  data[cat].entries.push({type:"income",amount:amt,note,date:new Date().toLocaleString()});
-  save();
+window.login = function(){
+signInWithEmailAndPassword(auth, email.value, password.value)
+.catch(err=>alert(err.message));
 }
 
-function addExpense(){
-  const cat=expenseCat.value;
-  const amt=parseFloat(expenseAmt.value);
-  const note=expenseNote.value.trim();
-  if(!cat||!amt)return;
+window.logout = function(){ signOut(auth); }
 
-  data[cat].balance-=amt;
-  data[cat].entries.push({type:"expense",amount:amt,note,date:new Date().toLocaleString()});
-  save();
+onAuthStateChanged(auth,(user)=>{
+if(user){
+authSection.style.display="none";
+appSection.style.display="block";
+loadIncomes();
+loadCategories();
+loadExpenses();
+}else{
+authSection.style.display="block";
+appSection.style.display="none";
+}
+});
+
+// Load incomes for dropdown
+function loadIncomes(){
+onValue(incomesRef,(snap)=>{
+incomeSelect.innerHTML="";
+snap.forEach(c=>{
+const opt=document.createElement("option");
+opt.value=c.key;
+opt.textContent=c.val().desc;
+incomeSelect.appendChild(opt);
+});
+});
 }
 
-function deleteEntry(cat,i){
-  const e=data[cat].entries[i];
-  if(e.type==="income") data[cat].balance-=e.amount;
-  else data[cat].balance+=e.amount;
-
-  data[cat].entries.splice(i,1);
-  save();
+// Load categories
+function loadCategories(){
+onValue(categoriesRef,(snap)=>{
+categorySelect.innerHTML="";
+snap.forEach(c=>{
+const opt=document.createElement("option");
+opt.value=c.val().name;
+opt.textContent=c.val().name;
+categorySelect.appendChild(opt);
+});
+});
 }
 
-function deleteCategory(cat){
-  if(confirm("Delete category?")){
-    delete data[cat];
-    save();
-  }
+// Add expense
+window.addExpense=async function(){
+if(!askPassword()) return;
+
+const desc=descInput.value.trim();
+const amount=parseFloat(amountInput.value);
+const cat=categorySelect.value;
+const incomeId=incomeSelect.value;
+
+if(!desc||!cat||isNaN(amount)) return alert("Fill all fields!");
+
+const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
+if(!incSnap.exists()) return;
+
+const income=incSnap.val();
+if(income.remaining<amount) return alert("Not enough balance!");
+
+const newRef=push(expensesRef);
+
+const updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=income.remaining-amount;
+updates[`expenses/items/${newRef.key}`]={
+desc,amount,category:cat,incomeName:income.desc,incomeId,date:Date.now()
+};
+
+await update(ref(db),updates);
+
+descInput.value="";
+amountInput.value="";
 }
 
-function editEntry(cat,i){
-  const e=data[cat].entries[i];
-  const newAmt=parseFloat(prompt("New amount:",e.amount));
-  const newNote=prompt("New note:",e.note);
-  if(!newAmt)return;
-
-  if(e.type==="income") data[cat].balance-=e.amount;
-  else data[cat].balance+=e.amount;
-
-  if(e.type==="income") data[cat].balance+=newAmt;
-  else data[cat].balance-=newAmt;
-
-  e.amount=newAmt;
-  e.note=newNote;
-  save();
+// Load expenses
+function loadExpenses(){
+onValue(expensesRef,(snap)=>{
+list.innerHTML="";
+snap.forEach(c=>{
+const e=c.val();
+const div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+<strong>${e.desc}</strong> - ₹${e.amount} (${e.category})
+<small>From: ${e.incomeName}</small>
+<div class="actions">
+<button class="delete" onclick="deleteExpense('${c.key}','${e.incomeId}',${e.amount})">Delete</button>
+</div>`;
+list.prepend(div);
+});
+});
 }
 
-function deleteAllExpenses(){
-  const pass=document.getElementById("deletePass").value;
-  if(pass!==PASSWORD){
-    alert("Wrong password");
-    return;
-  }
+// Delete single expense
+window.deleteExpense=async function(id,incomeId,amt){
+if(!askPassword()) return;
+if(!confirm("Delete expense?")) return;
 
-  for(const cat in data){
-    data[cat].entries=data[cat].entries.filter(e=>e.type==="income");
-    data[cat].balance=data[cat].entries.reduce((sum,e)=>sum+e.amount,0);
-  }
+const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
+if(!incSnap.exists()) return;
 
-  save();
-  alert("All expenses deleted");
+const rem=incSnap.val().remaining||0;
+
+const updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=rem+amt;
+updates[`expenses/items/${id}`]=null;
+
+await update(ref(db),updates);
 }
 
-function render(){
-  const acc=document.getElementById("accounts");
-  const select=document.getElementById("expenseCat");
-  acc.innerHTML="";
-  select.innerHTML='<option value="">Select Category</option>';
+// ===== DELETE ALL EXPENSES (NEW) =====
+window.deleteAllExpenses = async function(){
+if(!askPassword()) return;
+if(!confirm("Delete ALL expenses?")) return;
 
-  for(const cat in data){
-    select.innerHTML+=`<option>${cat}</option>`;
+// Get all incomes
+const incSnap = await get(incomesRef);
+if(!incSnap.exists()) return;
 
-    let html=`<h3>${cat} (Balance: ${data[cat].balance})
-    <a onclick="deleteCategory('${cat}')">Delete Category</a></h3>`;
+// Reset remaining = amount
+const updates = {};
+incSnap.forEach(c=>{
+const inc = c.val();
+updates[`expenses/incomes/${c.key}/remaining`] = inc.amount;
+});
 
-    data[cat].entries.forEach((e,i)=>{
-      html+=`
-      <div class="entry">
-      <span class="${e.type}">${e.type}: ${e.amount}</span>
-      - ${e.note}
-      <div class="small">${e.date}
-      <a onclick="editEntry('${cat}',${i})">Edit</a>
-      <a onclick="deleteEntry('${cat}',${i})">Delete</a>
-      </div></div>`;
-    });
+// Remove all expense items
+updates[`expenses/items`] = null;
 
-    acc.innerHTML+=html;
-  }
+await update(ref(db), updates);
+
+alert("All expenses deleted");
 }
-
-render();
 </script>
 
 </body>
