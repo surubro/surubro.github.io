@@ -7,16 +7,16 @@
 <title>Expenses Manager</title>
 
 <style>
-body { font-family: Arial; margin:0; padding:0; background:#f9fafb; }
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafb; }
 .container { max-width:500px; margin:auto; padding:20px; }
-h2,h3 { text-align:center; }
+h2 { text-align:center; }
 .card { background:white; padding:12px; margin-bottom:10px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
 input,select,button { width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ccc; }
-button { background:#4f46e5; color:white; border:none; }
+button { background:#4f46e5; color:white; border:none; cursor:pointer; }
 button:hover { background:#4338ca; }
 .delete { background:#dc2626; }
 .delete:hover { background:#b91c1c; }
-.summary { background:#e0f2fe; padding:10px; border-radius:8px; margin-bottom:10px; }
+.summary { background:#eef2ff; padding:10px; border-radius:10px; margin-bottom:15px; }
 </style>
 
 </head>
@@ -34,31 +34,23 @@ button:hover { background:#4338ca; }
 
 <div id="appSection" style="display:none;">
 
-<!-- SUMMARY -->
-
 <div class="summary">
-<strong>Total Spending:</strong> ₹<span id="totalSpend">0</span><br>
-<strong>Total Remaining:</strong> ₹<span id="totalRemain">0</span>
+<strong>Total Spending:</strong> ₹<span id="totalExpenses">0</span><br>
+<strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span>
 </div>
 
-<!-- ADD INCOME -->
-
 <h3>Add Income</h3>
-<input type="text" id="incomeDesc" placeholder="Income Name (Bank/Cash)">
-<input type="number" id="incomeAmount" placeholder="Income Amount">
+<input type="text" id="incomeDesc" placeholder="Income Name">
+<input type="number" id="incomeAmount" placeholder="Amount">
 <button onclick="addIncome()">Add Income</button>
-
-<!-- ADD CATEGORY -->
 
 <h3>Add Category</h3>
 <input type="text" id="categoryInput" placeholder="Category Name">
 <button onclick="addCategory()">Add Category</button>
 
-<!-- ADD EXPENSE -->
-
 <h3>Add Expense</h3>
-<input type="text" id="descInput" placeholder="Expense Description">
-<input type="number" id="amountInput" placeholder="Expense Amount">
+<input type="text" id="descInput" placeholder="Description">
+<input type="number" id="amountInput" placeholder="Amount">
 <select id="categorySelect"></select>
 <select id="incomeSelect"></select>
 <button onclick="addExpense()">Add Expense</button>
@@ -69,7 +61,7 @@ button:hover { background:#4338ca; }
 <div id="incomeList"></div>
 
 <h3>Expenses</h3>
-<div id="list"></div>
+<div id="expenseList"></div>
 
 </div>
 </div>
@@ -79,11 +71,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* YOUR REAL FIREBASE CONFIG */
 const firebaseConfig = {
-apiKey: "YOUR_API_KEY",
-authDomain: "YOUR_AUTH_DOMAIN",
-databaseURL: "YOUR_DATABASE_URL",
-projectId: "YOUR_PROJECT_ID"
+apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+authDomain: "striped-acrobat-342207.firebaseapp.com",
+databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+projectId: "striped-acrobat-342207"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -94,155 +87,166 @@ const incomesRef = ref(db,"expenses/incomes");
 const expensesRef = ref(db,"expenses/items");
 const categoriesRef = ref(db,"expenses/categories");
 
-const PASSWORD="Confirm";
+const PASSWORD = "Confirm";
 
 function askPassword(){
-return prompt("Enter password:")===PASSWORD;
+return prompt("Enter password:") === PASSWORD;
 }
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
-window.logout=()=>signOut(auth);
+/* LOGIN */
+window.login = function(){
+signInWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>alert("Login successful"))
+.catch(err=>alert(err.message));
+};
+
+window.logout = function(){
+signOut(auth);
+};
 
 onAuthStateChanged(auth,user=>{
 if(user){
 authSection.style.display="none";
 appSection.style.display="block";
-loadAll();
+loadData();
 }else{
 authSection.style.display="block";
 appSection.style.display="none";
 }
 });
 
-// ADD INCOME
-window.addIncome=async()=>{
-const desc=incomeDesc.value.trim();
-const amt=parseFloat(incomeAmount.value);
-if(!desc||!amt)return;
+/* ADD INCOME */
+window.addIncome = async ()=>{
+const desc = incomeDesc.value.trim();
+const amount = parseFloat(incomeAmount.value);
+if(!desc || isNaN(amount)) return;
 
-const newRef=push(incomesRef);
+const newRef = push(incomesRef);
 await update(ref(db),{
 [`expenses/incomes/${newRef.key}`]:{
-desc,amount:amt,remaining:amt
+desc,amount,remaining:amount
 }
 });
-incomeDesc.value=""; incomeAmount.value="";
+
+incomeDesc.value="";
+incomeAmount.value="";
 };
 
-// ADD CATEGORY
-window.addCategory=()=>{
-const name=categoryInput.value.trim();
-if(!name)return;
+/* ADD CATEGORY */
+window.addCategory = ()=>{
+const name = categoryInput.value.trim();
+if(!name) return;
 push(categoriesRef,{name});
 categoryInput.value="";
 };
 
-// ADD EXPENSE
-window.addExpense=async()=>{
-const desc=descInput.value.trim();
-const amt=parseFloat(amountInput.value);
-const cat=categorySelect.value;
-const incomeId=incomeSelect.value;
-if(!desc||!amt)return;
+/* ADD EXPENSE */
+window.addExpense = async ()=>{
+const desc = descInput.value.trim();
+const amount = parseFloat(amountInput.value);
+const category = categorySelect.value;
+const incomeId = incomeSelect.value;
+if(!desc || isNaN(amount)) return;
 
-const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
-const inc=incSnap.val();
-if(inc.remaining<amt) return alert("Not enough balance");
+const incSnap = await get(ref(db,"expenses/incomes/"+incomeId));
+const income = incSnap.val();
+if(income.remaining < amount) return alert("Not enough balance");
 
-const newRef=push(expensesRef);
+const newRef = push(expensesRef);
 
 const updates={};
-updates[`expenses/incomes/${incomeId}/remaining`]=inc.remaining-amt;
-updates[`expenses/items/${newRef.key}`]={
-desc,amount:amt,category:cat,incomeName:inc.desc,incomeId,date:Date.now()
+updates[`expenses/incomes/${incomeId}/remaining`] = income.remaining - amount;
+updates[`expenses/items/${newRef.key}`] = {
+desc,amount,category,incomeName:income.desc,incomeId,date:Date.now()
 };
+
+await update(ref(db),updates);
+
+descInput.value="";
+amountInput.value="";
+};
+
+/* DELETE SINGLE */
+window.deleteExpense = async (id,incomeId,amount)=>{
+if(!askPassword()) return;
+
+const incSnap = await get(ref(db,"expenses/incomes/"+incomeId));
+const rem = incSnap.val().remaining;
+
+const updates={};
+updates[`expenses/incomes/${incomeId}/remaining`] = rem + amount;
+updates[`expenses/items/${id}`] = null;
 
 await update(ref(db),updates);
 };
 
-// DELETE SINGLE
-window.deleteExpense=async(id,incomeId,amt)=>{
+/* DELETE ALL */
+window.deleteAllExpenses = async ()=>{
 if(!askPassword()) return;
+if(!confirm("Delete ALL expenses?")) return;
 
-const incSnap=await get(ref(db,"expenses/incomes/"+incomeId));
-const rem=incSnap.val().remaining;
-
-const updates={};
-updates[`expenses/incomes/${incomeId}/remaining`]=rem+amt;
-updates[`expenses/items/${id}`]=null;
-
-await update(ref(db),updates);
-};
-
-// DELETE ALL
-window.deleteAllExpenses=async()=>{
-if(!askPassword()) return;
-
-const incSnap=await get(incomesRef);
+const incSnap = await get(incomesRef);
 const updates={};
 
 incSnap.forEach(c=>{
-updates[`expenses/incomes/${c.key}/remaining`]=c.val().amount;
+updates[`expenses/incomes/${c.key}/remaining`] = c.val().amount;
 });
 
-updates["expenses/items"]=null;
+updates["expenses/items"] = null;
+
 await update(ref(db),updates);
+alert("All expenses deleted");
 };
 
-// LOAD EVERYTHING
-function loadAll(){
+/* LOAD DATA */
+function loadData(){
 
-// Incomes
 onValue(incomesRef,snap=>{
 incomeList.innerHTML="";
 incomeSelect.innerHTML="";
-let totalRemain=0;
+let totalRemaining=0;
 
 snap.forEach(c=>{
 const i=c.val();
-totalRemain+=i.remaining;
+totalRemaining += i.remaining;
 
-incomeSelect.innerHTML+=`<option value="${c.key}">${i.desc}</option>`;
-incomeList.innerHTML+=`
+incomeSelect.innerHTML += `<option value="${c.key}">${i.desc}</option>`;
+incomeList.innerHTML += `
 <div class="card">
 <strong>${i.desc}</strong><br>
-Amount: ₹${i.amount}<br>
+Total: ₹${i.amount}<br>
 Remaining: ₹${i.remaining}
 </div>`;
 });
 
-totalRemainSpan= document.getElementById("totalRemain");
-totalRemainSpan.textContent=totalRemain;
+document.getElementById("totalRemaining").innerText = totalRemaining;
 });
 
-// Categories
 onValue(categoriesRef,snap=>{
 categorySelect.innerHTML="";
 snap.forEach(c=>{
-categorySelect.innerHTML+=`<option>${c.val().name}</option>`;
+categorySelect.innerHTML += `<option>${c.val().name}</option>`;
 });
 });
 
-// Expenses
 onValue(expensesRef,snap=>{
-list.innerHTML="";
+expenseList.innerHTML="";
 let total=0;
 
 snap.forEach(c=>{
 const e=c.val();
-total+=e.amount;
+total += e.amount;
 
-list.innerHTML+=`
+expenseList.innerHTML += `
 <div class="card">
 <strong>${e.desc}</strong> - ₹${e.amount} (${e.category})
 <button class="delete" onclick="deleteExpense('${c.key}','${e.incomeId}',${e.amount})">Delete</button>
 </div>`;
 });
 
-document.getElementById("totalSpend").textContent=total;
+document.getElementById("totalExpenses").innerText = total;
 });
 }
-
 </script>
 
 </body>
