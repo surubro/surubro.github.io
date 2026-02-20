@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Money Manager</title>
+<style>
+body{font-family:Arial;margin:0;background:#f2f2f2;padding:10px}
+.box{max-width:600px;margin:auto;background:#fff;padding:15px;border-radius:6px}
+h2{margin-top:20px}
+input,select,button{width:100%;padding:8px;margin:5px 0}
+.entry{border-bottom:1px solid #ddd;padding:6px 0}
+.income{color:green}
+.expense{color:red}
+.small{font-size:12px;color:#666}
+a{font-size:12px;cursor:pointer;color:blue}
+</style>
+</head>
+<body>
+
+<div class="box">
+<h1>Money Manager</h1>
+
+<h2>Add Income</h2>
+<input id="incomeCat" placeholder="Category (Bank/Cash)">
+<input id="incomeAmt" type="number" placeholder="Amount">
+<input id="incomeNote" placeholder="Note">
+<button onclick="addIncome()">Add Income</button>
+
+<h2>Add Expense</h2>
+<select id="expenseCat"></select>
+<input id="expenseAmt" type="number" placeholder="Amount">
+<input id="expenseNote" placeholder="Note">
+<button onclick="addExpense()">Add Expense</button>
+
+<h2>Delete All Expenses</h2>
+<input type="password" id="deletePass" placeholder="Password">
+<button onclick="deleteAllExpenses()">Delete All Expenses</button>
+
+<h2>Accounts</h2>
+<div id="accounts"></div>
+
+</div>
+
+<script>
+const PASSWORD="1234";
+let data = JSON.parse(localStorage.getItem("moneyData")) || {};
+
+function save(){
+  localStorage.setItem("moneyData",JSON.stringify(data));
+  render();
+}
+
+function addIncome(){
+  const cat=incomeCat.value.trim();
+  const amt=parseFloat(incomeAmt.value);
+  const note=incomeNote.value.trim();
+  if(!cat||!amt)return;
+
+  if(!data[cat]) data[cat]={balance:0,entries:[]};
+
+  data[cat].balance+=amt;
+  data[cat].entries.push({type:"income",amount:amt,note,date:new Date().toLocaleString()});
+  save();
+}
+
+function addExpense(){
+  const cat=expenseCat.value;
+  const amt=parseFloat(expenseAmt.value);
+  const note=expenseNote.value.trim();
+  if(!cat||!amt)return;
+
+  data[cat].balance-=amt;
+  data[cat].entries.push({type:"expense",amount:amt,note,date:new Date().toLocaleString()});
+  save();
+}
+
+function deleteEntry(cat,i){
+  const e=data[cat].entries[i];
+  if(e.type==="income") data[cat].balance-=e.amount;
+  else data[cat].balance+=e.amount;
+
+  data[cat].entries.splice(i,1);
+  save();
+}
+
+function deleteCategory(cat){
+  if(confirm("Delete category?")){
+    delete data[cat];
+    save();
+  }
+}
+
+function editEntry(cat,i){
+  const e=data[cat].entries[i];
+  const newAmt=parseFloat(prompt("New amount:",e.amount));
+  const newNote=prompt("New note:",e.note);
+  if(!newAmt)return;
+
+  if(e.type==="income") data[cat].balance-=e.amount;
+  else data[cat].balance+=e.amount;
+
+  if(e.type==="income") data[cat].balance+=newAmt;
+  else data[cat].balance-=newAmt;
+
+  e.amount=newAmt;
+  e.note=newNote;
+  save();
+}
+
+function deleteAllExpenses(){
+  const pass=document.getElementById("deletePass").value;
+  if(pass!==PASSWORD){
+    alert("Wrong password");
+    return;
+  }
+
+  for(const cat in data){
+    data[cat].entries=data[cat].entries.filter(e=>e.type==="income");
+    data[cat].balance=data[cat].entries.reduce((sum,e)=>sum+e.amount,0);
+  }
+
+  save();
+  alert("All expenses deleted");
+}
+
+function render(){
+  const acc=document.getElementById("accounts");
+  const select=document.getElementById("expenseCat");
+  acc.innerHTML="";
+  select.innerHTML='<option value="">Select Category</option>';
+
+  for(const cat in data){
+    select.innerHTML+=`<option>${cat}</option>`;
+
+    let html=`<h3>${cat} (Balance: ${data[cat].balance})
+    <a onclick="deleteCategory('${cat}')">Delete Category</a></h3>`;
+
+    data[cat].entries.forEach((e,i)=>{
+      html+=`
+      <div class="entry">
+      <span class="${e.type}">${e.type}: ${e.amount}</span>
+      - ${e.note}
+      <div class="small">${e.date}
+      <a onclick="editEntry('${cat}',${i})">Edit</a>
+      <a onclick="deleteEntry('${cat}',${i})">Delete</a>
+      </div></div>`;
+    });
+
+    acc.innerHTML+=html;
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>
