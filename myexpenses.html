@@ -7,7 +7,7 @@
 <title>Expenses Manager</title>
 
 <style>
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9fafb; }
+body { font-family: Arial; margin:0; padding:0; background:#f9fafb; }
 .container { max-width:500px; margin:auto; padding:20px; }
 h2 { text-align:center; }
 .card { background:white; padding:12px; margin-bottom:10px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
@@ -16,9 +16,9 @@ button { background:#4f46e5; color:white; border:none; cursor:pointer; }
 button:hover { background:#4338ca; }
 .delete { background:#dc2626; }
 .delete:hover { background:#b91c1c; }
+summary { font-weight:bold; cursor:pointer; }
 .summary { background:#eef2ff; padding:10px; border-radius:10px; margin-bottom:15px; }
-.smallBtn { font-size:12px; padding:6px; margin-top:5px; }
-.toggle { cursor:pointer; color:#4f46e5; font-weight:bold; margin-bottom:10px; display:block; }
+.smallbtn { padding:4px 8px; width:auto; margin-top:5px; }
 </style>
 
 </head>
@@ -41,39 +41,51 @@ button:hover { background:#4338ca; }
 <strong>Total Remaining:</strong> ₹<span id="totalRemaining">0</span>
 </div>
 
-<h3>Add Income</h3>
+<!-- INCOME COLLAPSED DEFAULT -->
+
+<div class="card">
+<details>
+<summary>Income</summary>
+
 <input type="text" id="incomeDesc" placeholder="Income Name">
 <input type="number" id="incomeAmount" placeholder="Amount">
 <button onclick="addIncome()">Add Income</button>
 
+<div id="incomeList"></div>
+</details>
+</div>
+
+<div class="card">
 <h3>Add Category</h3>
 <input type="text" id="categoryInput" placeholder="Category Name">
 <button onclick="addCategory()">Add Category</button>
+<div id="categoryList"></div>
+</div>
 
+<div class="card">
 <h3>Add Expense</h3>
 <input type="text" id="descInput" placeholder="Description">
 <input type="number" id="amountInput" placeholder="Amount">
 <select id="categorySelect"></select>
 <select id="incomeSelect"></select>
 <button onclick="addExpense()">Add Expense</button>
+</div>
 
-<button class="delete" onclick="deleteAllExpenses()">Delete All Expenses</button>
-
-<span class="toggle" onclick="toggleIncome()">▶ Incomes (Click to Expand)</span>
-
-<div id="incomeSection" style="display:none;"></div>
-
+<div class="card">
 <h3>Expenses</h3>
 <div id="expenseList"></div>
+<button class="delete" onclick="deleteAllExpenses()">Delete All Expenses</button>
+</div>
 
 </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* YOUR FIREBASE CONFIG */
 const firebaseConfig = {
 apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
 authDomain: "striped-acrobat-342207.firebaseapp.com",
@@ -89,11 +101,14 @@ const incomesRef = ref(db,"expenses/incomes");
 const expensesRef = ref(db,"expenses/items");
 const categoriesRef = ref(db,"expenses/categories");
 
-const PASSWORD="Confirm";
+const PASSWORD = "Confirm";
 function askPassword(){ return prompt("Enter password:")===PASSWORD; }
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value)
+/* LOGIN */
+window.login=()=> {
+signInWithEmailAndPassword(auth,email.value,password.value)
 .catch(e=>alert(e.message));
+};
 window.logout=()=>signOut(auth);
 
 onAuthStateChanged(auth,user=>{
@@ -107,114 +122,97 @@ appSection.style.display="none";
 }
 });
 
-/* TOGGLE INCOME */
-window.toggleIncome=function(){
-const sec=document.getElementById("incomeSection");
-sec.style.display=sec.style.display==="none"?"block":"none";
-};
-
 /* ADD INCOME */
-window.addIncome=async()=>{
-const desc=incomeDesc.value.trim();
-const amount=parseFloat(incomeAmount.value);
-if(!desc||isNaN(amount))return;
+window.addIncome=()=>{
+let desc=incomeDesc.value.trim();
+let amount=parseFloat(incomeAmount.value);
+if(!desc||!amount)return;
 
-const newRef=push(incomesRef);
-await update(ref(db),{
-[`expenses/incomes/${newRef.key}`]:{
-desc,amount,remaining:amount
-}
-});
-incomeDesc.value=""; incomeAmount.value="";
+push(incomesRef,{desc,amount,remaining:amount});
+incomeDesc.value="";incomeAmount.value="";
 };
 
 /* EDIT INCOME */
-window.editIncome=async(id,currentAmount)=>{
-const newAmount=parseFloat(prompt("New Amount:",currentAmount));
-if(isNaN(newAmount))return;
-
-const snap=await get(ref(db,"expenses/incomes/"+id));
-const income=snap.val();
-const spent=income.amount-income.remaining;
-
-if(newAmount<spent) return alert("Amount less than spent!");
-
-await update(ref(db),{
-[`expenses/incomes/${id}/amount`]:newAmount,
-[`expenses/incomes/${id}/remaining`]:newAmount-spent
-});
+window.editIncome=async(id)=>{
+let val=prompt("New amount:");
+if(!val)return;
+await update(ref(db,"expenses/incomes/"+id),{amount:parseFloat(val),remaining:parseFloat(val)});
 };
 
 /* DELETE INCOME */
 window.deleteIncome=async(id)=>{
-if(!askPassword())return;
-await update(ref(db),{
-[`expenses/incomes/${id}`]:null
-});
-};
-
-/* DELETE CATEGORY */
-window.deleteCategory=async(id)=>{
-if(!askPassword())return;
-await update(ref(db),{
-[`expenses/categories/${id}`]:null
-});
+if(!confirm("Delete income?"))return;
+await remove(ref(db,"expenses/incomes/"+id));
 };
 
 /* ADD CATEGORY */
 window.addCategory=()=>{
-const name=categoryInput.value.trim();
+let name=categoryInput.value.trim();
 if(!name)return;
 push(categoriesRef,{name});
 categoryInput.value="";
 };
 
-/* ADD EXPENSE */
-window.addExpense=async()=>{
-const desc=descInput.value.trim();
-const amount=parseFloat(amountInput.value);
-const category=categorySelect.value;
-const incomeId=incomeSelect.value;
-if(!desc||isNaN(amount))return;
-
-const snap=await get(ref(db,"expenses/incomes/"+incomeId));
-const income=snap.val();
-if(income.remaining<amount)return alert("Not enough balance");
-
-const newRef=push(expensesRef);
-
-await update(ref(db),{
-[`expenses/incomes/${incomeId}/remaining`]:income.remaining-amount,
-[`expenses/items/${newRef.key}`]:{
-desc,amount,category,incomeName:income.desc,incomeId,date:Date.now()
-}
-});
+/* EDIT CATEGORY */
+window.editCategory=async(id,name)=>{
+let val=prompt("Edit category:",name);
+if(!val)return;
+await update(ref(db,"expenses/categories/"+id),{name:val});
 };
 
-/* DELETE EXPENSE */
+/* DELETE CATEGORY */
+window.deleteCategory=async(id)=>{
+if(!confirm("Delete category?"))return;
+await remove(ref(db,"expenses/categories/"+id));
+};
+
+/* ADD EXPENSE */
+window.addExpense=async()=>{
+let desc=descInput.value.trim();
+let amount=parseFloat(amountInput.value);
+let category=categorySelect.value;
+let incomeId=incomeSelect.value;
+if(!desc||!amount)return;
+
+let snap=await get(ref(db,"expenses/incomes/"+incomeId));
+let income=snap.val();
+if(income.remaining<amount)return alert("Not enough balance");
+
+let newRef=push(expensesRef);
+let updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=income.remaining-amount;
+updates[`expenses/items/${newRef.key}`]={
+desc,amount,category,incomeId,incomeName:income.desc,date:Date.now()
+};
+await update(ref(db),updates);
+
+descInput.value="";amountInput.value="";
+};
+
+/* DELETE SINGLE EXPENSE */
 window.deleteExpense=async(id,incomeId,amount)=>{
 if(!askPassword())return;
+if(!confirm("Delete this expense?"))return;
 
-const snap=await get(ref(db,"expenses/incomes/"+incomeId));
-const rem=snap.val().remaining;
+let snap=await get(ref(db,"expenses/incomes/"+incomeId));
+let rem=snap.val().remaining;
 
-await update(ref(db),{
-[`expenses/incomes/${incomeId}/remaining`]:rem+amount,
-[`expenses/items/${id}`]:null
-});
+let updates={};
+updates[`expenses/incomes/${incomeId}/remaining`]=rem+amount;
+updates[`expenses/items/${id}`]=null;
+await update(ref(db),updates);
 };
 
 /* DELETE ALL */
 window.deleteAllExpenses=async()=>{
 if(!askPassword())return;
+if(!confirm("Delete ALL expenses?"))return;
 
-const incSnap=await get(incomesRef);
-const updates={};
-
-incSnap.forEach(c=>{
+let snap=await get(incomesRef);
+let updates={};
+snap.forEach(c=>{
 updates[`expenses/incomes/${c.key}/remaining`]=c.val().amount;
 });
-
 updates["expenses/items"]=null;
 await update(ref(db),updates);
 };
@@ -223,56 +221,57 @@ await update(ref(db),updates);
 function loadData(){
 
 onValue(incomesRef,snap=>{
-incomeSection.innerHTML="";
+incomeList.innerHTML="";
 incomeSelect.innerHTML="";
-let totalRemain=0;
+let totalRem=0;
 
 snap.forEach(c=>{
-const i=c.val();
-totalRemain+=i.remaining;
+let i=c.val();
+totalRem+=i.remaining;
 
 incomeSelect.innerHTML+=`<option value="${c.key}">${i.desc}</option>`;
-
-incomeSection.innerHTML+=`
+incomeList.innerHTML+=`
 <div class="card">
 <strong>${i.desc}</strong><br>
 Total: ₹${i.amount}<br>
-Remaining: ₹${i.remaining}
-<button class="smallBtn" onclick="editIncome('${c.key}',${i.amount})">Edit</button>
-<button class="delete smallBtn" onclick="deleteIncome('${c.key}')">Delete</button>
+Remaining: ₹${i.remaining}<br>
+<button class="smallbtn" onclick="editIncome('${c.key}')">Edit</button>
+<button class="delete smallbtn" onclick="deleteIncome('${c.key}')">Delete</button>
 </div>`;
 });
 
-document.getElementById("totalRemaining").innerText=totalRemain;
+totalRemaining.innerText=totalRem;
 });
 
 onValue(categoriesRef,snap=>{
 categorySelect.innerHTML="";
+categoryList.innerHTML="";
 snap.forEach(c=>{
-categorySelect.innerHTML+=`
-<option value="${c.key}">${c.val().name}</option>`;
+categorySelect.innerHTML+=`<option>${c.val().name}</option>`;
+categoryList.innerHTML+=`
+<div>
+${c.val().name}
+<button class="smallbtn" onclick="editCategory('${c.key}','${c.val().name}')">Edit</button>
+<button class="delete smallbtn" onclick="deleteCategory('${c.key}')">Delete</button>
+</div>`;
 });
 });
 
 onValue(expensesRef,snap=>{
 expenseList.innerHTML="";
 let total=0;
-
 snap.forEach(c=>{
-const e=c.val();
+let e=c.val();
 total+=e.amount;
-
 expenseList.innerHTML+=`
 <div class="card">
-<strong>${e.desc}</strong> - ₹${e.amount} (${e.category})
-<button class="delete" onclick="deleteExpense('${c.key}','${e.incomeId}',${e.amount})">Delete</button>
+<strong>${e.desc}</strong> - ₹${e.amount} (${e.category})<br>
+<button class="delete smallbtn" onclick="deleteExpense('${c.key}','${e.incomeId}',${e.amount})">Delete</button>
 </div>`;
 });
-
-document.getElementById("totalExpenses").innerText=total;
+totalExpenses.innerText=total;
 });
 }
-
 </script>
 
 </body>
