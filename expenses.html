@@ -6,141 +6,115 @@
 <title>Bill Tracker</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Segoe UI, Arial, sans-serif;
-    background:#f4f4f4;
-}
+    body{ margin:0; font-family:Segoe UI, Arial, sans-serif; background:#f4f4f4; padding:15px; }
+    .container{ max-width:1000px; margin:auto; }
+    
+    .header{ 
+        display:flex; justify-content:space-between; align-items:center; 
+        background:#fff; padding:15px; border-radius:8px; margin-bottom:15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    h1{ font-size:22px; margin:0; }
+    #total{ font-size:24px; font-weight:bold; color:#007bff; }
 
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:10px;
-}
+    h2{ font-size:16px; margin:20px 0 10px; border-bottom:2px solid #007bff; padding-bottom:4px; }
 
-.header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:10px;
-}
+    /* GRID SYSTEM */
+    .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:10px; }
 
-h1{
-    font-size:22px;
-    margin:0;
-}
+    .bill-item{
+        background:#fff; padding:10px; border-radius:6px;
+        display:flex; align-items:center; justify-content:space-between;
+        box-shadow:0 1px 3px rgba(0,0,0,0.1);
+    }
 
-#total{
-    font-size:20px;
-    font-weight:bold;
-    color:#007bff;
-}
+    .bill-label { flex: 1; font-weight: 500; font-size: 14px; }
 
-h2{
-    font-size:16px;
-    margin:10px 0 6px;
-    border-bottom:1px solid #007bff;
-}
+    /* INPUT STYLING */
+    .bill-input {
+        width: 70px; padding: 5px; margin: 0 10px;
+        border: 1px solid #ccc; border-radius: 4px; text-align: center;
+    }
 
-/* 3 COLUMN GRID FOR PC */
-.grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:8px;
-}
+    button{
+        font-size:13px; padding:6px 12px; border:none; border-radius:4px;
+        background:#007bff; color:#fff; cursor:pointer; min-width: 55px;
+    }
 
-.bill-item{
-    background:#fff;
-    padding:6px 8px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    border-radius:5px;
-    font-size:13px;
-    box-shadow:0 1px 2px rgba(0,0,0,.1);
-}
+    button:disabled{ background:#28a745; opacity: 0.7; cursor: default; }
 
-button{
-    font-size:12px;
-    padding:3px 8px;
-    border:none;
-    border-radius:4px;
-    background:#007bff;
-    color:#fff;
-    cursor:pointer;
-}
-
-button:disabled{
-    background:#aaa;
-}
-
-/* CUSTOM */
-.custom-add{
-    display:flex;
-    gap:6px;
-    margin-top:8px;
-}
-
-input{
-    flex:1;
-    padding:4px;
-    font-size:12px;
-    border-radius:4px;
-    border:1px solid #ccc;
-}
+    /* CUSTOM BOTTOM BOX */
+    .custom-section {
+        margin-top: 25px; background: #e9ecef; padding: 15px; border-radius: 8px;
+        display: flex; gap: 10px; align-items: center;
+    }
+    .custom-section input { flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #bbb; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
 
-<div class="header">
-    <h1>Bill Tracker</h1>
-    <div id="total">₹0</div>
-</div>
+    <div class="header">
+        <h1>Bill Tracker</h1>
+        <div id="total">₹0</div>
+    </div>
 
-<h2>Monthly Payments</h2>
-<div class="grid">
-    <div class="bill-item"><span>Electricity</span><button onclick="add(this,1000)">Add</button></div>
-    <div class="bill-item"><span>Gas</span><button onclick="add(this,1000)">Add</button></div>
-    <div class="bill-item"><span>Water</span><button onclick="add(this,150)">Add</button></div>
-    <div class="bill-item"><span>SIM My+Mom</span><button onclick="add(this,600)">Add</button></div>
-    <div class="bill-item"><span>DTH</span><button onclick="add(this,400)">Add</button></div>
-    <div class="bill-item"><span>SIM Sumit</span><button onclick="add(this,350)">Add</button></div>
-    <div class="bill-item"><span>Property Tax</span><button onclick="add(this,500)">Add</button></div>
-</div>
+    <h2>Monthly Payments</h2>
+    <div class="grid">
+        <div class="bill-item"><span>Electricity</span> <input type="number" value="1000" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>Gas</span> <input type="number" value="1000" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>Water</span> <input type="number" value="150" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>SIM My+Mom</span> <input type="number" value="600" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>DTH</span> <input type="number" value="400" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>SIM Sumit</span> <input type="number" value="350" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>Property Tax</span> <input type="number" value="500" class="bill-input"> <button onclick="add(this)">Add</button></div>
+    </div>
 
-<h2>Wants</h2>
-<div class="grid">
-    <div class="bill-item"><span>SIM Dad</span><button onclick="add(this,150)">Add</button></div>
-    <div class="bill-item"><span>WiFi</span><button onclick="add(this,600)">Add</button></div>
-    <div class="bill-item"><span>Subscription</span><button onclick="add(this,200)">Add</button></div>
-</div>
+    <h2>Wants</h2>
+    <div class="grid">
+        <div class="bill-item"><span>SIM Dad</span> <input type="number" value="150" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>WiFi</span> <input type="number" value="600" class="bill-input"> <button onclick="add(this)">Add</button></div>
+        <div class="bill-item"><span>Subscription</span> <input type="number" value="200" class="bill-input"> <button onclick="add(this)">Add</button></div>
+    </div>
 
-<div class="custom-add">
-    <input type="number" id="custom" placeholder="Custom">
-    <button onclick="addCustom()">Add</button>
-</div>
+    <div class="custom-section">
+        <strong>Other:</strong>
+        <input type="number" id="custom-val" placeholder="Enter amount">
+        <button onclick="addCustom()">Add Extra</button>
+        <button onclick="window.location.reload()" style="background:#6c757d">Clear All</button>
+    </div>
 
 </div>
 
 <script>
-let total=0;
+let total = 0;
 
-function add(btn,amt){
-    total+=amt;
-    document.getElementById("total").innerText="₹"+total;
-    btn.disabled=true;
-    btn.innerText="✓";
+function add(btn) {
+    // Look for the input box right next to the button clicked
+    const input = btn.parentElement.querySelector('.bill-input');
+    const amt = parseInt(input.value) || 0;
+    
+    if(amt > 0) {
+        total += amt;
+        document.getElementById("total").innerText = "₹" + total;
+        
+        // Lock the row so you don't add it twice
+        btn.disabled = true;
+        btn.innerText = "✓";
+        input.disabled = true;
+        btn.parentElement.style.background = "#f9f9f9";
+    }
 }
 
-function addCustom(){
-    let v=parseInt(document.getElementById("custom").value);
-    if(v>0){
-        total+=v;
-        document.getElementById("total").innerText="₹"+total;
-        document.getElementById("custom").value="";
+function addCustom() {
+    let input = document.getElementById("custom-val");
+    let v = parseInt(input.value);
+    if(v > 0) {
+        total += v;
+        document.getElementById("total").innerText = "₹" + total;
+        input.value = "";
     }
 }
 </script>
