@@ -4,69 +4,70 @@
   <meta charset="UTF-8" />
   <title>Send Txt..</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #eaeff1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eaeff1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     .hidden { display: none !important; }
 
-    /* Login */
-    #loginScreen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: white; transition: opacity 0.3s ease; }
-    #loginScreen input { padding: 10px; font-size: 16px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; width: 240px; }
-    #loginScreen button { padding: 10px 20px; font-size: 15px; background: #007bff; border: none; color: white; border-radius: 5px; cursor: pointer; }
+    /* Login Screen */
+    #loginScreen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #ffffff; }
+    #loginScreen h2 { color: #333; margin-bottom: 20px; }
+    #loginScreen input { padding: 12px; font-size: 16px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; width: 260px; outline: none; }
+    #loginScreen button { padding: 12px 24px; font-size: 16px; background: #007bff; border: none; color: white; border-radius: 8px; cursor: pointer; transition: 0.2s; }
     #loginScreen button:hover { background: #0056b3; }
 
-    /* Chat */
+    /* Chat Interface */
     #chatUI { display: flex; flex-direction: column; height: 100%; }
-    .chat-box { flex: 1; overflow-y: auto; padding: 15px; background: #f8f9fa; scroll-behavior: smooth; display: flex; flex-direction: column; }
-    .message { position: relative; padding: 10px 14px; margin: 10px 0; border-radius: 10px; max-width: 75%; word-wrap: break-word; }
-    .sent { align-self: flex-end; background: #cce5ff; border-bottom-right-radius: 2px; }
-    .received { align-self: flex-start; background: #dee2e6; border-bottom-left-radius: 2px; }
+    .chat-box { flex: 1; overflow-y: auto; padding: 20px; background: #fdfdfd; display: flex; flex-direction: column; gap: 10px; }
+    
+    .message { max-width: 75%; padding: 12px 16px; border-radius: 15px; font-size: 15px; line-height: 1.4; word-wrap: break-word; position: relative; }
+    .sent { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+    .received { align-self: flex-start; background: #e9ecef; color: #333; border-bottom-left-radius: 2px; }
 
-    .input-container { display: flex; align-items: center; padding: 12px 15px; background: #fff; border-top: 1px solid #ccc; }
-    .input-container textarea { flex: 1; resize: none; padding: 12px 16px; font-size: 15px; border: 1px solid #ccc; border-radius: 25px; outline: none; height: 44px; }
-    .send-btn { background: #007bff; border: none; color: white; margin-left: 10px; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+    /* Input Area */
+    .input-container { display: flex; align-items: center; padding: 15px; background: #fff; border-top: 1px solid #eee; gap: 10px; }
+    .input-container textarea { flex: 1; resize: none; padding: 12px; font-size: 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; height: 45px; }
+    .send-btn { background: #007bff; border: none; color: white; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; flex-shrink: 0; }
     .send-btn:hover { background: #0056b3; }
-    .clear-all { background: #dc3545; color: #fff; border: none; padding: 10px 16px; margin-left: 10px; font-size: 14px; border-radius: 5px; cursor: pointer; }
-    .clear-all:hover { background: #a71d2a; }
-    #logoutBtn { background:#555; }
+    
+    .action-btn { background: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .clear-btn { background: #dc3545; }
   </style>
 </head>
 <body>
 
   <div id="loginScreen">
-    <h2>Login to Continue</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
+    <h2>Welcome Back</h2>
+    <input type="email" id="loginEmail" placeholder="Email Address">
     <input type="password" id="loginPassword" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <br>
-    <small>Only verified accounts can access.</small>
+    <button id="loginBtn">Sign In</button>
+    <p style="margin-top: 15px; font-size: 12px; color: #777;">Authorized access only.</p>
   </div>
 
   <div id="chatUI" class="hidden">
     <div class="chat-box" id="chatBox"></div>
     <div class="input-container">
-      <textarea id="messageInput" placeholder="Type a message..."></textarea>
+      <textarea id="messageInput" placeholder="Write a message..."></textarea>
       <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-      <button class="clear-all" id="clearBtn">Clear</button>
-      <button id="logoutBtn" class="clear-all">Logout</button>
+      <button class="action-btn clear-btn" id="clearBtn">Clear</button>
+      <button class="action-btn" id="logoutBtn">Logout</button>
     </div>
   </div>
 
 <script type="module">
-  // Updated Firebase SDK Links (v11.x)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // --- REPLACE THE STRINGS BELOW WITH YOUR NEW FIREBASE PROJECT DATA ---
+  // Your original API strings restored
   const firebaseConfig = {
-    apiKey: "YOUR_NEW_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -74,61 +75,57 @@
   const db = getDatabase(app);
   const chatBox = document.getElementById("chatBox");
 
-  // Cache Logic
-  const saveCache = (messages) => localStorage.setItem("chatCache", JSON.stringify(messages));
-  const loadCache = () => JSON.parse(localStorage.getItem("chatCache") || "[]");
+  // Local Storage Cache
+  const saveToCache = (msgs) => localStorage.setItem("chat_backup", JSON.stringify(msgs));
+  const getFromCache = () => JSON.parse(localStorage.getItem("chat_backup") || "[]");
 
-  function renderMessages(messages, currentUserUid) {
+  function renderMessages(messages, currentUid) {
     chatBox.innerHTML = "";
     messages.forEach(msg => {
-      const div = document.createElement("div");
-      div.classList.add("message", msg.uid === currentUserUid ? "sent" : "received");
-      div.textContent = msg.text;
-      chatBox.appendChild(div);
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", msg.uid === currentUid ? "sent" : "received");
+      msgDiv.textContent = msg.text;
+      chatBox.appendChild(msgDiv);
     });
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  // Pre-load from Cache
-  const cached = loadCache();
-  if (cached.length > 0) {
-    renderMessages(cached, null); 
-  }
+  // Load cache immediately for UX
+  renderMessages(getFromCache(), null);
 
-  // Auth & UI Toggle
+  // Auth Handling
   onAuthStateChanged(auth, (user) => {
-    const loginScreen = document.getElementById("loginScreen");
+    const loginUI = document.getElementById("loginScreen");
     const chatUI = document.getElementById("chatUI");
 
     if (user && user.emailVerified) {
-      loginScreen.classList.add("hidden");
+      loginUI.classList.add("hidden");
       chatUI.classList.remove("hidden");
-      loadMessages();
+      startSync();
     } else {
-      loginScreen.classList.remove("hidden");
+      loginUI.classList.remove("hidden");
       chatUI.classList.add("hidden");
     }
   });
 
-  // Database listener
-  function loadMessages() {
+  function startSync() {
     onValue(ref(db, "messages"), (snapshot) => {
       const data = snapshot.val() || {};
       const messages = Object.values(data);
-      saveCache(messages);
+      saveToCache(messages);
       renderMessages(messages, auth.currentUser?.uid);
     });
   }
 
-  // Actions
-  const sendMessage = () => {
+  // User Actions
+  const handleSend = () => {
     const input = document.getElementById("messageInput");
-    const text = input.value.trim();
-    if (text && auth.currentUser) {
-      push(ref(db, "messages"), { 
-        text, 
-        uid: auth.currentUser.uid, 
-        timestamp: Date.now() 
+    const val = input.value.trim();
+    if (val && auth.currentUser) {
+      push(ref(db, "messages"), {
+        text: val,
+        uid: auth.currentUser.uid,
+        timestamp: Date.now()
       });
       input.value = "";
     }
@@ -137,19 +134,26 @@
   document.getElementById("loginBtn").onclick = () => {
     const email = document.getElementById("loginEmail").value;
     const pass = document.getElementById("loginPassword").value;
-    signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
+    signInWithEmailAndPassword(auth, email, pass).catch(e => alert(e.message));
   };
 
   document.getElementById("logoutBtn").onclick = () => {
     signOut(auth);
-    localStorage.removeItem("chatCache");
+    localStorage.removeItem("chat_backup");
   };
 
-  document.getElementById("sendBtn").onclick = sendMessage;
+  document.getElementById("sendBtn").onclick = handleSend;
+  
+  document.getElementById("messageInput").onkeydown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
   document.getElementById("clearBtn").onclick = () => {
-    if (confirm("Clear all messages?")) {
+    if (confirm("Delete all chat history?")) {
       remove(ref(db, "messages"));
-      saveCache([]);
     }
   };
 </script>
