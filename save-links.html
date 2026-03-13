@@ -20,13 +20,17 @@
     #chatUI { display: flex; flex-direction: column; height: 100%; }
     .chat-box { flex: 1; overflow-y: auto; padding: 20px; background: #ffffff; display: flex; flex-direction: column; gap: 12px; }
     
+    .message-wrapper { display: flex; flex-direction: column; position: relative; width: 100%; }
     .message { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; word-wrap: break-word; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-    .sent { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 4px; }
-    .received { align-self: flex-start; background: #e4e6eb; color: #050505; border-bottom-left-radius: 4px; }
+    .sent { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 4px; padding-right: 40px; }
+    .received { align-self: flex-start; background: #e4e6eb; color: #050505; border-bottom-left-radius: 4px; padding-right: 40px; }
     
-    /* Link appearance */
-    .message a { color: inherit; text-decoration: underline; font-weight: 500; transition: opacity 0.2s; }
-    .message a:hover { opacity: 0.8; }
+    /* Delete Icon Styling */
+    .delete-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.7); cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .received .delete-btn { color: #65676b; }
+    .delete-btn:hover { color: #fa3e3e; }
+
+    .message a { color: inherit; text-decoration: underline; font-weight: 500; }
 
     /* Input Area */
     .input-container { display: flex; align-items: center; padding: 15px; background: #fff; border-top: 1px solid #ddd; gap: 10px; }
@@ -34,7 +38,6 @@
     .send-btn { background: #007bff; border: none; color: white; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; flex-shrink: 0; }
     
     .action-btn { background: #606770; color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
-    .clear-btn { background: #fa3e3e; }
   </style>
 </head>
 <body>
@@ -51,7 +54,6 @@
     <div class="input-container">
       <textarea id="messageInput" placeholder="Paste link here..."></textarea>
       <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
-      <button class="action-btn clear-btn" id="clearBtn">Clear</button>
       <button class="action-btn" id="logoutBtn">Logout</button>
     </div>
   </div>
@@ -74,40 +76,49 @@
   const firebaseApp = initializeApp(firebaseConfig);
   const firebaseAuth = getAuth(firebaseApp);
   const database = getDatabase(firebaseApp);
-
-  // STORAGE DATA STRING: Using "user_links" instead of "messages"
   const STORAGE_PATH = "user_links";
 
-  // Logic to find links and wrap them in clickable <a> tags
   function linkify(text) {
     const urlPattern = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     const pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-
     return text
       .replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')
       .replace(pseudoUrlPattern, '$1<a href="http://$2" target="_blank" rel="noopener noreferrer">$2</a>');
   }
 
-  function renderMessages(messages, currentUid) {
+  // Deletion logic
+  window.deleteMessage = (key) => {
+    if (confirm("Remove this link?")) {
+      remove(ref(database, `${STORAGE_PATH}/${key}`));
+    }
+  };
+
+  function renderMessages(messagesData, currentUid) {
     const chatBox = document.getElementById("chatBox");
     if (!chatBox) return;
 
     chatBox.innerHTML = "";
-    messages.forEach(msg => {
+    
+    // entries gives us [key, data] so we can delete by ID
+    Object.entries(messagesData).forEach(([key, msg]) => {
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("message-wrapper");
+
       const msgDiv = document.createElement("div");
       msgDiv.classList.add("message", msg.uid === currentUid ? "sent" : "received");
-      msgDiv.innerHTML = linkify(msg.text);
-      chatBox.appendChild(msgDiv);
+      
+      msgDiv.innerHTML = `
+        ${linkify(msg.text)}
+        <i class="fas fa-trash delete-btn" onclick="deleteMessage('${key}')"></i>
+      `;
+      
+      wrapper.appendChild(msgDiv);
+      chatBox.appendChild(wrapper);
     });
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    const saveToCache = (msgs) => localStorage.setItem("link_backup", JSON.stringify(msgs));
-    const getFromCache = () => JSON.parse(localStorage.getItem("link_backup") || "[]");
-
-    renderMessages(getFromCache(), null);
-
     onAuthStateChanged(firebaseAuth, (user) => {
       const loginUI = document.getElementById("loginScreen");
       const chatUI = document.getElementById("chatUI");
@@ -116,12 +127,9 @@
         loginUI.classList.add("hidden");
         chatUI.classList.remove("hidden");
         
-        // Listen to the new STORAGE_PATH
         onValue(ref(database, STORAGE_PATH), (snapshot) => {
           const data = snapshot.val() || {};
-          const messages = Object.values(data);
-          saveToCache(messages);
-          renderMessages(messages, firebaseAuth.currentUser?.uid);
+          renderMessages(data, firebaseAuth.currentUser?.uid);
         });
       } else {
         loginUI.classList.remove("hidden");
@@ -133,7 +141,6 @@
       const input = document.getElementById("messageInput");
       const val = input.value.trim();
       if (val && firebaseAuth.currentUser) {
-        // Push to new STORAGE_PATH
         push(ref(database, STORAGE_PATH), {
           text: val,
           uid: firebaseAuth.currentUser.uid,
@@ -158,16 +165,7 @@
     };
 
     document.getElementById("logoutBtn").onclick = () => {
-      signOut(firebaseAuth).then(() => {
-        localStorage.removeItem("link_backup");
-        location.reload();
-      });
-    };
-
-    document.getElementById("clearBtn").onclick = () => {
-      if (confirm("Clear all data in " + STORAGE_PATH + "?")) {
-        remove(ref(database, STORAGE_PATH));
-      }
+      signOut(firebaseAuth).then(() => location.reload());
     };
   });
 </script>
