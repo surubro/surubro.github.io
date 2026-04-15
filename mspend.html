@@ -3,26 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>M Total Spend</title>
+  <title>M.. Total Spend</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f3f4f6; color: #1f2937; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
     h2 { text-align: center; color: #111827; }
     .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid #4f46e5; }
-    .card strong { font-size: 1rem; color: #111827; }
-    .card small { display: block; color: #6b7280; margin-top: 4px; }
     input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 1rem; box-sizing: border-box; }
     button { background: #4f46e5; color: white; border: none; cursor: pointer; font-weight: 600; }
-    button:hover { background: #4338ca; }
-    .actions { display: flex; justify-content: flex-end; margin-top: 8px; }
     .delete { background: #ef4444; width: auto; padding: 6px 12px; font-size: 0.8rem; }
     .collapsible { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
-    .collapsible h3 { margin: 0; cursor:pointer; font-size: 1.1rem; display: flex; justify-content: space-between; }
-    .collapsible-content { display: none; margin-top: 15px; border-top: 1px solid #eee; pt: 10px; }
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
     .expense-text { color: #dc2626; font-weight: bold; }
     .remaining-text { color: #059669; font-weight: bold; }
-    .correction-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
+    
+    /* New Correction Box Styling */
+    .correction-display { 
+      background: #1e293b; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .diff-box { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; }
+    .diff-match { background: #059669; }
+    .diff-mismatch { background: #b91c1c; }
     .delete-all { background: #991b1b; margin-top: 20px; }
   </style>
 </head>
@@ -37,45 +39,47 @@
     </div>
 
     <div id="appSection" style="display:none;">
-      <div class="collapsible" id="summaryBox">
-        <h3 onclick="toggle('summaryContent')">📊 Dashboard <span>▼</span></h3>
-        <div class="collapsible-content" id="summaryContent" style="display: block;">
-          <div class="summary-grid">
-            <div><small>Total Spent</small><div class="expense-text">₹<span id="totalExpenses">0</span></div></div>
-            <div><small>Current Balance</small><div class="remaining-text">₹<span id="totalRemaining">0</span></div></div>
-          </div>
-          <div id="categorySummary" style="margin-top:15px; font-size: 0.9rem;"></div>
-        </div>
-      </div>
-
-      <div class="correction-box">
-        <strong>Manual Balance Correction</strong>
-        <input type="number" id="actualBalance" placeholder="Enter Actual Current Balance">
-        <button style="background:#d97706" onclick="correctBalance()">Update & Recalculate</button>
-      </div>
-
+      
       <div class="collapsible">
-        <h3 onclick="toggle('addContent')">➕ Add Income/Category <span>▼</span></h3>
-        <div class="collapsible-content" id="addContent">
-          <h4>New Income Source</h4>
-          <input type="text" id="incomeDesc" placeholder="e.g. Salary, Freelance">
-          <input type="number" id="incomeAmount" placeholder="Amount">
-          <button onclick="saveIncome()">Add Income</button>
-          
-          <hr>
-          <h4>New Category</h4>
-          <input type="text" id="catInput" placeholder="e.g. Food, Rent">
-          <button onclick="addCategory()">Add Category</button>
+        <div class="summary-grid">
+          <div><small>App Balance</small><div class="remaining-text">₹<span id="totalRemaining">0</span></div></div>
+          <div><small>Total Spent</small><div class="expense-text">₹<span id="totalExpenses">0</span></div></div>
         </div>
       </div>
 
-      <div class="card" style="border-left-color: #4f46e5;">
+      <div class="correction-display">
+        <div>
+          <small style="opacity: 0.8;">Actual Cash/Bank</small>
+          <div style="font-size: 1.4rem; font-weight: bold;">₹<span id="displayActual">0</span></div>
+        </div>
+        <div id="diffIndicator" class="diff-box">Difference: ₹0</div>
+      </div>
+
+      <div class="card" style="border-left-color: #d97706;">
+        <strong>Update Physical Balance</strong>
+        <input type="number" id="actualInput" placeholder="Enter amount in hand">
+        <button style="background:#d97706" onclick="updateActualBalance()">Update Only</button>
+      </div>
+
+      <div class="card">
         <strong>New Expense</strong>
-        <input type="text" id="descInput" placeholder="What did you buy?">
+        <input type="text" id="descInput" placeholder="Description">
         <input type="number" id="amountInput" placeholder="Amount">
         <select id="incomeSelect"></select>
         <select id="categorySelect"></select>
         <button onclick="addExpense()">Record Expense</button>
+      </div>
+
+      <div class="collapsible">
+        <h3 onclick="toggle('addContent')" style="cursor:pointer">➕ Settings/Setup</h3>
+        <div id="addContent" style="display:none">
+          <input type="text" id="incomeDesc" placeholder="Income Source">
+          <input type="number" id="incomeAmount" placeholder="Amount">
+          <button onclick="saveIncome()">Add Income</button>
+          <hr>
+          <input type="text" id="catInput" placeholder="Category Name">
+          <button onclick="addCategory()">Add Category</button>
+        </div>
       </div>
 
       <h3>History</h3>
@@ -88,7 +92,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
@@ -106,13 +110,11 @@
     const auth = getAuth(app);
     const DELETE_ALL_PASSWORD = "deleteall";
 
-    // Helpers
     window.toggle = (id) => {
       const el = document.getElementById(id);
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
     };
 
-    // Auth
     window.login = () => signInWithEmailAndPassword(auth, email.value, password.value).catch(e => alert(e.message));
     window.logout = () => signOut(auth);
 
@@ -127,21 +129,38 @@
       }
     });
 
+    function calculateDiff() {
+      const appBal = parseFloat(document.getElementById("totalRemaining").innerText) || 0;
+      const actualBal = parseFloat(document.getElementById("displayActual").innerText) || 0;
+      const diff = actualBal - appBal;
+      const indicator = document.getElementById("diffIndicator");
+      
+      indicator.innerText = `Diff: ₹${diff.toFixed(2)}`;
+      indicator.className = diff === 0 ? "diff-box diff-match" : "diff-box diff-mismatch";
+    }
+
     function initDataListeners() {
-      // Load Incomes
+      // Physical Balance Listener
+      onValue(ref(db, "mspend/physical_balance"), (snap) => {
+        document.getElementById("displayActual").innerText = (snap.val() || 0).toFixed(2);
+        calculateDiff();
+      });
+
+      // Income/App Balance Listener
       onValue(ref(db, "mspend/incomes"), (snap) => {
         incomeSelect.innerHTML = "";
         let bal = 0;
         snap.forEach(c => {
           bal += c.val().remaining;
           let opt = document.createElement("option");
-          opt.value = c.key; opt.textContent = `${c.val().desc} (₹${c.val().remaining})`;
+          opt.value = c.key; opt.textContent = `${c.val().desc}`;
           incomeSelect.appendChild(opt);
         });
         document.getElementById("totalRemaining").innerText = bal.toFixed(2);
+        calculateDiff();
       });
 
-      // Load Categories
+      // Categories
       onValue(ref(db, "mspend/categories"), (snap) => {
         categorySelect.innerHTML = "";
         snap.forEach(c => {
@@ -151,43 +170,62 @@
         });
       });
 
-      // Load Expenses
+      // Expenses
       onValue(ref(db, "mspend/items"), (snap) => {
         list.innerHTML = "";
         let total = 0;
-        let cats = {};
         snap.forEach(c => {
           const e = c.val();
           total += e.amount;
-          cats[e.category] = (cats[e.category] || 0) + e.amount;
-
           const div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
             <strong>${e.desc}</strong> - ₹${e.amount}
-            <small>${e.category} | ${e.incomeName} | ${new Date(e.date).toLocaleDateString()}</small>
+            <small>${e.category} | ${new Date(e.date).toLocaleDateString()}</small>
             <div class="actions"><button class="delete" onclick="deleteExpense('${c.key}', '${e.incomeId}', ${e.amount})">Delete</button></div>
           `;
           list.prepend(div);
         });
         document.getElementById("totalExpenses").innerText = total.toFixed(2);
-        renderCatSummary(cats);
       });
     }
 
-    function renderCatSummary(cats) {
-      categorySummary.innerHTML = "<strong>Spending by Category:</strong>";
-      for (let k in cats) {
-        categorySummary.innerHTML += `<div style="display:flex; justify-content:space-between"><span>${k}</span><span>₹${cats[k]}</span></div>`;
+    window.updateActualBalance = async () => {
+      const val = parseFloat(actualInput.value);
+      if (!isNaN(val)) {
+        await set(ref(db, "mspend/physical_balance"), val);
+        actualInput.value = "";
       }
-    }
+    };
 
-    // Operations
+    window.addExpense = async () => {
+      const desc = descInput.value;
+      const amt = parseFloat(amountInput.value);
+      const incId = incomeSelect.value;
+      const cat = categorySelect.value;
+      if (!desc || !amt || !incId) return;
+
+      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
+      const updates = {};
+      updates[`mspend/items/${push(ref(db, "mspend/items")).key}`] = { desc, amount: amt, category: cat, incomeId: incId, incomeName: incSnap.val().desc, date: Date.now() };
+      updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining - amt;
+      
+      await update(ref(db), updates);
+      descInput.value = ""; amountInput.value = "";
+    };
+
+    window.deleteExpense = async (id, incId, amt) => {
+      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
+      const updates = {};
+      updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
+      updates[`mspend/items/${id}`] = null;
+      await update(ref(db), updates);
+    };
+
     window.saveIncome = async () => {
-      const desc = incomeDesc.value;
       const amt = parseFloat(incomeAmount.value);
-      if (desc && amt) {
-        await push(ref(db, "mspend/incomes"), { desc, amount: amt, remaining: amt, date: Date.now() });
+      if (incomeDesc.value && amt) {
+        await push(ref(db, "mspend/incomes"), { desc: incomeDesc.value, amount: amt, remaining: amt, date: Date.now() });
         incomeDesc.value = ""; incomeAmount.value = "";
       }
     };
@@ -199,87 +237,13 @@
       }
     };
 
-    window.addExpense = async () => {
-      const desc = descInput.value;
-      const amt = parseFloat(amountInput.value);
-      const incId = incomeSelect.value;
-      const cat = categorySelect.value;
-
-      if (!desc || !amt || !incId) return alert("Missing Info");
-
-      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
-      const currentRem = incSnap.val().remaining;
-
-      if (currentRem < amt) return alert("Insufficient funds in this source!");
-
-      const updates = {};
-      const newKey = push(ref(db, "mspend/items")).key;
-      updates[`mspend/items/${newKey}`] = { desc, amount: amt, category: cat, incomeId: incId, incomeName: incSnap.val().desc, date: Date.now() };
-      updates[`mspend/incomes/${incId}/remaining`] = currentRem - amt;
-      
-      await update(ref(db), updates);
-      descInput.value = ""; amountInput.value = "";
-    };
-
-    window.deleteExpense = async (id, incId, amt) => {
-      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
-      if (incSnap.exists()) {
-        const updates = {};
-        updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
-        updates[`mspend/items/${id}`] = null;
-        await update(ref(db), updates);
-      } else {
-        await remove(ref(db, `mspend/items/${id}`));
-      }
-    };
-
-    window.correctBalance = async () => {
-      const actual = parseFloat(actualBalance.value);
-      const current = parseFloat(document.getElementById("totalRemaining").innerText);
-      const incId = incomeSelect.value;
-
-      if (isNaN(actual) || !incId) return alert("Enter actual amount and select an income source to adjust.");
-
-      const diff = current - actual;
-      if (diff === 0) return alert("Balance is already correct!");
-
-      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
-      const newRem = incSnap.val().remaining - diff;
-
-      const updates = {};
-      const newKey = push(ref(db, "mspend/items")).key;
-      updates[`mspend/items/${newKey}`] = { 
-        desc: "Balance Correction", 
-        amount: Math.abs(diff), 
-        category: "Adjustment", 
-        incomeId: incId, 
-        incomeName: incSnap.val().desc, 
-        date: Date.now() 
-      };
-      updates[`mspend/incomes/${incId}/remaining`] = newRem;
-
-      await update(ref(db), updates);
-      actualBalance.value = "";
-      alert("Balance adjusted!");
-    };
-
     window.deleteAllExpenses = async () => {
-      const pw = prompt("Enter Master Password to wipe all expenses:");
-      if (pw !== DELETE_ALL_PASSWORD) return alert("Wrong password!");
-      
-      if (confirm("Reset everything? Incomes will return to full original amounts.")) {
-        const itemsSnap = await get(ref(db, "mspend/items"));
-        const updates = {};
-        
-        // Remove all items
-        updates["mspend/items"] = null;
-        
-        // Reset income remainders to their original amounts
+      const pw = prompt("Password:");
+      if (pw !== DELETE_ALL_PASSWORD) return;
+      if (confirm("Reset all data?")) {
+        const updates = { "mspend/items": null, "mspend/physical_balance": 0 };
         const incSnap = await get(ref(db, "mspend/incomes"));
-        incSnap.forEach(c => {
-          updates[`mspend/incomes/${c.key}/remaining`] = c.val().amount;
-        });
-
+        incSnap.forEach(c => { updates[`mspend/incomes/${c.key}/remaining`] = c.val().amount; });
         await update(ref(db), updates);
       }
     };
