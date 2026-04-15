@@ -3,35 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>M.. Total Spend</title>
+  <title>M Total Spend - Audit Mode</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f3f4f6; color: #1f2937; }
     .container { max-width: 500px; margin: auto; padding: 20px; }
     h2 { text-align: center; color: #111827; }
-    .card { background: white; padding: 15px; margin-bottom: 12px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border-left: 5px solid #4f46e5; }
-    input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 1rem; box-sizing: border-box; }
-    button { background: #4f46e5; color: white; border: none; cursor: pointer; font-weight: 600; }
-    .delete { background: #ef4444; width: auto; padding: 6px 12px; font-size: 0.8rem; }
-    .collapsible { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
-    .expense-text { color: #dc2626; font-weight: bold; }
-    .remaining-text { color: #059669; font-weight: bold; }
     
-    /* New Correction Box Styling */
-    .correction-display { 
-      background: #1e293b; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; 
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .diff-box { font-size: 0.8rem; padding: 4px 8px; border-radius: 4px; }
-    .diff-match { background: #059669; }
-    .diff-mismatch { background: #b91c1c; }
-    .delete-all { background: #991b1b; margin-top: 20px; }
+    /* Summary Section */
+    .summary-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
+    .label { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+    .val { font-size: 1.2rem; font-weight: bold; margin-top: 5px; }
+    .expense-text { color: #dc2626; }
+    .remaining-text { color: #059669; }
+
+    /* Audit/Physical Balance Box */
+    .audit-box { background: #1e293b; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .diff-badge { font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
+    .match { background: #059669; }
+    .mismatch { background: #b91c1c; }
+
+    /* Input Styling */
+    .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
+    input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 1rem; box-sizing: border-box; }
+    button { background: #4f46e5; color: white; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    button:hover { opacity: 0.9; }
+    .secondary-btn { background: #d97706; }
+    .danger-btn { background: #ef4444; margin-top: 20px; }
+
+    /* List Styling */
+    .history-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #4f46e5; }
+    .history-info { flex: 1; }
+    .history-info strong { display: block; }
+    .history-info small { color: #6b7280; font-size: 0.75rem; }
+    .delete-btn { background: none; color: #ef4444; width: auto; padding: 5px; font-size: 0.8rem; border: none; }
   </style>
 </head>
 <body>
+
   <div class="container">
     <h2>💰 M Total Spend</h2>
-    
+
     <div id="authSection">
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
@@ -39,54 +51,58 @@
     </div>
 
     <div id="appSection" style="display:none;">
-      
-      <div class="collapsible">
+      <div class="summary-card">
         <div class="summary-grid">
-          <div><small>App Balance</small><div class="remaining-text">₹<span id="totalRemaining">0</span></div></div>
-          <div><small>Total Spent</small><div class="expense-text">₹<span id="totalExpenses">0</span></div></div>
+          <div><div class="label">App Balance</div><div class="val remaining-text">₹<span id="appBal">0</span></div></div>
+          <div><div class="label">Total Spent</div><div class="val expense-text">₹<span id="totalExp">0</span></div></div>
         </div>
       </div>
 
-      <div class="correction-display">
+      <div class="audit-box">
         <div>
-          <small style="opacity: 0.8;">Actual Cash/Bank</small>
-          <div style="font-size: 1.4rem; font-weight: bold;">₹<span id="displayActual">0</span></div>
+          <div class="label" style="color:#94a3b8">Physical Cash</div>
+          <div class="val">₹<span id="physBal">0</span></div>
         </div>
-        <div id="diffIndicator" class="diff-box">Difference: ₹0</div>
-      </div>
-
-      <div class="card" style="border-left-color: #d97706;">
-        <strong>Update Physical Balance</strong>
-        <input type="number" id="actualInput" placeholder="Enter amount in hand">
-        <button style="background:#d97706" onclick="updateActualBalance()">Update Only</button>
+        <div id="diffTag" class="diff-badge">Diff: ₹0</div>
       </div>
 
       <div class="card">
-        <strong>New Expense</strong>
+        <strong class="label">Update Actual Cash</strong>
+        <input type="number" id="actualInput" placeholder="Enter cash in hand">
+        <button class="secondary-btn" onclick="updatePhysical()">Update Only</button>
+      </div>
+
+      <div class="card">
+        <strong class="label">Record New Expense</strong>
         <input type="text" id="descInput" placeholder="Description">
         <input type="number" id="amountInput" placeholder="Amount">
         <select id="incomeSelect"></select>
-        <select id="categorySelect"></select>
-        <button onclick="addExpense()">Record Expense</button>
+        <select id="categorySelect">
+          <option value="Food">Food</option>
+          <option value="Travel">Travel</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Misc">Misc</option>
+        </select>
+        <button onclick="addExpense()">Add Expense</button>
       </div>
 
-      <div class="collapsible">
-        <h3 onclick="toggle('addContent')" style="cursor:pointer">➕ Settings/Setup</h3>
-        <div id="addContent" style="display:none">
-          <input type="text" id="incomeDesc" placeholder="Income Source">
-          <input type="number" id="incomeAmount" placeholder="Amount">
-          <button onclick="saveIncome()">Add Income</button>
+      <div class="card">
+        <div style="cursor:pointer; font-weight:bold" onclick="toggle('setup')">⚙️ Income/Category Setup</div>
+        <div id="setup" style="display:none; margin-top:10px;">
+          <input type="text" id="incName" placeholder="Income Name (e.g. Salary)">
+          <input type="number" id="incAmt" placeholder="Original Amount">
+          <button onclick="addIncome()">Add Income Source</button>
           <hr>
-          <input type="text" id="catInput" placeholder="Category Name">
+          <input type="text" id="newCat" placeholder="New Category Name">
           <button onclick="addCategory()">Add Category</button>
         </div>
       </div>
 
-      <h3>History</h3>
-      <div id="list"></div>
-      
-      <button class="delete-all" onclick="deleteAllExpenses()">⚠️ Clear All Data</button>
-      <button onclick="logout()" style="background:#6b7280">Logout</button>
+      <h3>Recent History</h3>
+      <div id="expenseList"></div>
+
+      <button class="danger-btn" onclick="wipeSystem()">⚠️ Full Data Wipe (Reset to ₹0)</button>
+      <button style="background:#6b7280" onclick="logout()">Logout</button>
     </div>
   </div>
 
@@ -100,21 +116,19 @@
       authDomain: "striped-acrobat-342207.firebaseapp.com",
       databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
       projectId: "striped-acrobat-342207",
-      storageBucket: "striped-acrobat-342207.appspot.com",
-      messagingSenderId: "367114842706",
-      appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    const DELETE_ALL_PASSWORD = "deleteall";
+    const MASTER_PW = "deleteall";
 
     window.toggle = (id) => {
       const el = document.getElementById(id);
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
     };
 
+    // Authentication
     window.login = () => signInWithEmailAndPassword(auth, email.value, password.value).catch(e => alert(e.message));
     window.logout = () => signOut(auth);
 
@@ -122,75 +136,83 @@
       if (user) {
         authSection.style.display = "none";
         appSection.style.display = "block";
-        initDataListeners();
+        startListeners();
       } else {
         authSection.style.display = "block";
         appSection.style.display = "none";
       }
     });
 
-    function calculateDiff() {
-      const appBal = parseFloat(document.getElementById("totalRemaining").innerText) || 0;
-      const actualBal = parseFloat(document.getElementById("displayActual").innerText) || 0;
-      const diff = actualBal - appBal;
-      const indicator = document.getElementById("diffIndicator");
-      
-      indicator.innerText = `Diff: ₹${diff.toFixed(2)}`;
-      indicator.className = diff === 0 ? "diff-box diff-match" : "diff-box diff-mismatch";
-    }
-
-    function initDataListeners() {
-      // Physical Balance Listener
-      onValue(ref(db, "mspend/physical_balance"), (snap) => {
-        document.getElementById("displayActual").innerText = (snap.val() || 0).toFixed(2);
-        calculateDiff();
-      });
-
-      // Income/App Balance Listener
+    // Real-time Listeners
+    function startListeners() {
+      // 1. App Balance (From Income Sources)
       onValue(ref(db, "mspend/incomes"), (snap) => {
+        let balance = 0;
         incomeSelect.innerHTML = "";
-        let bal = 0;
         snap.forEach(c => {
-          bal += c.val().remaining;
+          balance += c.val().remaining;
           let opt = document.createElement("option");
-          opt.value = c.key; opt.textContent = `${c.val().desc}`;
+          opt.value = c.key; opt.textContent = c.val().desc;
           incomeSelect.appendChild(opt);
         });
-        document.getElementById("totalRemaining").innerText = bal.toFixed(2);
-        calculateDiff();
+        document.getElementById("appBal").innerText = balance.toFixed(2);
+        calcDiff();
       });
 
-      // Categories
+      // 2. Physical Balance
+      onValue(ref(db, "mspend/physical_balance"), (snap) => {
+        document.getElementById("physBal").innerText = (snap.val() || 0).toFixed(2);
+        calcDiff();
+      });
+
+      // 3. Categories
       onValue(ref(db, "mspend/categories"), (snap) => {
-        categorySelect.innerHTML = "";
-        snap.forEach(c => {
-          let opt = document.createElement("option");
-          opt.value = c.val().name; opt.textContent = c.val().name;
-          categorySelect.appendChild(opt);
-        });
+        if(snap.exists()) {
+          categorySelect.innerHTML = "";
+          snap.forEach(c => {
+            let opt = document.createElement("option");
+            opt.value = c.val().name; opt.textContent = c.val().name;
+            categorySelect.appendChild(opt);
+          });
+        }
       });
 
-      // Expenses
+      // 4. Expenses List
       onValue(ref(db, "mspend/items"), (snap) => {
-        list.innerHTML = "";
+        expenseList.innerHTML = "";
         let total = 0;
         snap.forEach(c => {
           const e = c.val();
           total += e.amount;
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <strong>${e.desc}</strong> - ₹${e.amount}
-            <small>${e.category} | ${new Date(e.date).toLocaleDateString()}</small>
-            <div class="actions"><button class="delete" onclick="deleteExpense('${c.key}', '${e.incomeId}', ${e.amount})">Delete</button></div>
+          const item = document.createElement("div");
+          item.className = "history-item";
+          item.innerHTML = `
+            <div class="history-info">
+              <strong>${e.desc}</strong>
+              <small>${e.category} • ${e.incomeName} • ${new Date(e.date).toLocaleDateString()}</small>
+            </div>
+            <div style="text-align:right">
+              <b>₹${e.amount}</b><br>
+              <button class="delete-btn" onclick="deleteItem('${c.key}', '${e.incomeId}', ${e.amount})">Delete</button>
+            </div>
           `;
-          list.prepend(div);
+          expenseList.prepend(item);
         });
-        document.getElementById("totalExpenses").innerText = total.toFixed(2);
+        document.getElementById("totalExp").innerText = total.toFixed(2);
       });
     }
 
-    window.updateActualBalance = async () => {
+    function calcDiff() {
+      const app = parseFloat(document.getElementById("appBal").innerText) || 0;
+      const phys = parseFloat(document.getElementById("physBal").innerText) || 0;
+      const diff = phys - app;
+      const tag = document.getElementById("diffTag");
+      tag.innerText = `Diff: ₹${diff.toFixed(2)}`;
+      tag.className = "diff-badge " + (diff === 0 ? "match" : "mismatch");
+    }
+
+    // Actions
+    window.updatePhysical = async () => {
       const val = parseFloat(actualInput.value);
       if (!isNaN(val)) {
         await set(ref(db, "mspend/physical_balance"), val);
@@ -202,49 +224,51 @@
       const desc = descInput.value;
       const amt = parseFloat(amountInput.value);
       const incId = incomeSelect.value;
-      const cat = categorySelect.value;
-      if (!desc || !amt || !incId) return;
+      if (!desc || isNaN(amt) || !incId) return alert("Fill all fields");
 
       const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
       const updates = {};
-      updates[`mspend/items/${push(ref(db, "mspend/items")).key}`] = { desc, amount: amt, category: cat, incomeId: incId, incomeName: incSnap.val().desc, date: Date.now() };
+      const key = push(ref(db, "mspend/items")).key;
+      updates[`mspend/items/${key}`] = { desc, amount: amt, category: categorySelect.value, incomeId: incId, incomeName: incSnap.val().desc, date: Date.now() };
       updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining - amt;
       
       await update(ref(db), updates);
       descInput.value = ""; amountInput.value = "";
     };
 
-    window.deleteExpense = async (id, incId, amt) => {
+    window.deleteItem = async (id, incId, amt) => {
       const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
       const updates = {};
-      updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
+      if(incSnap.exists()) updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
       updates[`mspend/items/${id}`] = null;
       await update(ref(db), updates);
     };
 
-    window.saveIncome = async () => {
-      const amt = parseFloat(incomeAmount.value);
-      if (incomeDesc.value && amt) {
-        await push(ref(db, "mspend/incomes"), { desc: incomeDesc.value, amount: amt, remaining: amt, date: Date.now() });
-        incomeDesc.value = ""; incomeAmount.value = "";
+    window.addIncome = async () => {
+      const amt = parseFloat(incAmt.value);
+      if (incName.value && !isNaN(amt)) {
+        await push(ref(db, "mspend/incomes"), { desc: incName.value, amount: amt, remaining: amt, date: Date.now() });
+        incName.value = ""; incAmt.value = "";
       }
     };
 
     window.addCategory = async () => {
-      if (catInput.value) {
-        await push(ref(db, "mspend/categories"), { name: catInput.value });
-        catInput.value = "";
+      if (newCat.value) {
+        await push(ref(db, "mspend/categories"), { name: newCat.value });
+        newCat.value = "";
       }
     };
 
-    window.deleteAllExpenses = async () => {
-      const pw = prompt("Password:");
-      if (pw !== DELETE_ALL_PASSWORD) return;
-      if (confirm("Reset all data?")) {
-        const updates = { "mspend/items": null, "mspend/physical_balance": 0 };
-        const incSnap = await get(ref(db, "mspend/incomes"));
-        incSnap.forEach(c => { updates[`mspend/incomes/${c.key}/remaining`] = c.val().amount; });
-        await update(ref(db), updates);
+    window.wipeSystem = async () => {
+      const pw = prompt("Master Password:");
+      if (pw !== MASTER_PW) return alert("Wrong password");
+      if (confirm("THIS WILL WIPE EVERYTHING. System will reset to ₹0. Proceed?")) {
+        await set(ref(db, "mspend"), { 
+          physical_balance: 0,
+          items: null,
+          incomes: null
+        });
+        alert("System Reset Successfully");
       }
     };
   </script>
