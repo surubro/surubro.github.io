@@ -22,7 +22,8 @@ button.outline{background:transparent;color:#4f46e5;border:1px solid #4f46e5;pad
 .expense{color:#dc2626;font-weight:bold}
 .income{color:#059669;font-weight:bold}
 .muted{color:#6b7280;font-size:13px}
-.life-cost{color:#d97706;font-weight:bold;font-size:13px;display:block;margin-top:4px}
+.life-cost-box{background:#fff8eb; border:1px solid #fde68a; padding:8px; border-radius:8px; margin-top:8px}
+.life-cost{color:#d97706;font-weight:bold;font-size:13px;display:block}
 .flex-between{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
@@ -53,26 +54,27 @@ button.outline{background:transparent;color:#4f46e5;border:1px solid #4f46e5;pad
             <div class="muted">Salary: <span class="income">₹<span id="totalIncome">0</span></span></div>
         </div>
     </div>
-    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee">
-        <span class="muted">Hourly Rate: </span><b color="#4f46e5">₹<span id="hourlyRateDisplay">0</span></b>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee" class="flex-between">
+        <span class="muted">Rate: <b>₹<span id="hourlyRateDisplay">0</span>/hr</b></span>
+        <span class="muted">Shift: <b><span id="dayHoursDisplay">0</span>h/day</b></span>
     </div>
 </div>
 
 <div class="collapsible">
-<h3>Hourly Rate Settings <span>⚙️</span></h3>
+<h3>Life Cost Settings <span>⚙️</span></h3>
 <div class="collapsible-content">
-    <label class="muted">How many hours do you work in a day?</label>
-    <input id="dailyHours" type="number" placeholder="Hours per day (e.g. 8)">
-    <button onclick="calculateRateFromDaily()">Auto-Calculate from Salary</button>
+    <label class="muted">Define your work day (hours/day):</label>
+    <input id="dailyHoursInput" type="number" placeholder="Default: 8">
+    <button onclick="calculateRateFromDaily()">Update Daily Basis</button>
     <hr style="border:0; border-top:1px solid #c7d2fe; margin:10px 0">
-    <label class="muted">Or set rate manually:</label>
+    <label class="muted">Set Hourly Rate directly:</label>
     <input id="manualRate" type="number" placeholder="₹ per hour">
-    <button class="green" onclick="saveManualRate()">Set Manual Rate</button>
+    <button class="green" onclick="saveManualRate()">Set Rate</button>
 </div>
 </div>
 
 <div class="collapsible">
-<h3>Salary / Income Sources <span>💵</span></h3>
+<h3>Salary / Income <span>💵</span></h3>
 <div class="collapsible-content">
     <input id="salaryName" placeholder="Source Name">
     <input id="salaryAmount" type="number" placeholder="Amount">
@@ -97,7 +99,7 @@ button.outline{background:transparent;color:#4f46e5;border:1px solid #4f46e5;pad
     <button class="danger" onclick="deleteAllExpenses()" style="margin:0">🗑 Clear All</button>
 </div>
 
-<h3 style="margin-bottom:5px">Recent Activity</h3>
+<h3 style="margin-bottom:5px">Activity Log</h3>
 <div id="list"></div>
 
 </div>
@@ -123,10 +125,11 @@ const auth=getAuth(app);
 const salariesRef=ref(db,"spending/salaries");
 const categoriesRef=ref(db,"spending/categories");
 const itemsRef=ref(db,"spending/items");
-const rateRef=ref(db,"spending/global_rate");
+const configRef=ref(db,"spending/config"); // Store rate and work day hours
 
 let editSalaryId=null;
 let currentHourlyRate = 0;
+let hoursPerDay = 8; // Default
 
 window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
 window.logout=()=>signOut(auth);
@@ -138,12 +141,11 @@ onAuthStateChanged(auth,u=>{
         userDisplay.innerText = u.email;
         loadSalaries();
         loadCategories();
-        loadHourlyRate();
-        loadExpenses();
+        loadConfig();
     }
 });
 
-// UI Collapsible Logic
+// UI Collapsible
 document.querySelectorAll(".collapsible h3").forEach(h=>{
     h.onclick = () => {
         const content = h.nextElementSibling;
@@ -151,26 +153,37 @@ document.querySelectorAll(".collapsible h3").forEach(h=>{
     }
 });
 
-/* HOURLY RATE */
-function loadHourlyRate(){
-    onValue(rateRef, s => {
-        currentHourlyRate = s.val() || 0;
+/* CONFIGURATION */
+function loadConfig(){
+    onValue(configRef, s => {
+        const data = s.val() || {};
+        currentHourlyRate = data.rate || 0;
+        hoursPerDay = data.workDay || 8;
+        
         hourlyRateDisplay.innerText = currentHourlyRate.toFixed(2);
+        dayHoursDisplay.innerText = hoursPerDay;
         loadExpenses(); 
     });
 }
 
 window.calculateRateFromDaily = () => {
     const totalSalary = parseFloat(totalIncome.innerText) || 0;
-    const hoursInDay = parseFloat(dailyHours.value) || 0;
-    if(totalSalary <= 0 || hoursInDay <= 0) return alert("Enter salary and daily hours first");
-    set(rateRef, (totalSalary / (hoursInDay * 30)));
-    dailyHours.value = "";
+    const hInDay = parseFloat(dailyHoursInput.value) || 8;
+    if(totalSalary <= 0) return alert("Add salary first");
+    
+    update(configRef, {
+        rate: (totalSalary / (hInDay * 30)),
+        workDay: hInDay
+    });
+    dailyHoursInput.value = "";
 };
 
 window.saveManualRate = () => {
     const rate = parseFloat(manualRate.value);
-    if(rate > 0) { set(rateRef, rate); manualRate.value = ""; }
+    if(rate > 0) { 
+        update(configRef, { rate: rate });
+        manualRate.value = ""; 
+    }
 };
 
 /* SALARY */
@@ -208,11 +221,11 @@ function loadSalaries(){
 }
 
 window.editSalary=(id,n,a)=>{ editSalaryId=id; salaryName.value=n; salaryAmount.value=a; };
-window.deleteSalary=async(id)=>{ if(confirm("Remove this income source?")) await remove(ref(db,"spending/salaries/"+id)); };
+window.deleteSalary=async(id)=>{ if(confirm("Remove this income?")) await remove(ref(db,"spending/salaries/"+id)); };
 
 /* CATEGORY */
 window.saveCategory=async()=>{ 
-    const name = prompt("Enter new category name:");
+    const name = prompt("New category name:");
     if(name) push(categoriesRef,{name}); 
 };
 
@@ -241,22 +254,26 @@ window.addExpense=async()=>{
 function loadExpenses(){
     onValue(itemsRef, s => {
         list.innerHTML="";
-        let totalExp = 0, summary = {};
+        let totalExp = 0;
         s.forEach(c=>{
             const v=c.val();
             totalExp += v.amount;
-            summary[v.category] = (summary[v.category] || 0) + v.amount;
-            const lc = currentHourlyRate > 0 ? (v.amount / currentHourlyRate).toFixed(2) : "0.00";
             
+            const totalHours = currentHourlyRate > 0 ? (v.amount / currentHourlyRate) : 0;
+            const totalDays = totalHours / hoursPerDay;
+
             const div = document.createElement('div');
             div.className = "card";
             div.innerHTML = `
                 <div class="flex-between">
                     <b>${v.desc}</b> <span class="expense">₹${v.amount}</span>
                 </div>
-                <span class="life-cost">⏳ Costs ${lc} hours of work</span>
+                <div class="life-cost-box">
+                    <span class="life-cost">⏳ Time Cost: ${totalHours.toFixed(2)} hours</span>
+                    <span class="life-cost">📅 Work Days: ${totalDays.toFixed(2)} days</span>
+                </div>
                 <div class="flex-between" style="margin-top:8px">
-                    <small class="muted">${v.category}</small>
+                    <small class="muted">${v.category} | ${new Date(v.date).toLocaleDateString()}</small>
                     <button onclick="deleteExpense('${c.key}')" class="outline" style="color:red; border-color:red; padding:2px 8px">Delete</button>
                 </div>`;
             list.prepend(div);
@@ -267,19 +284,20 @@ function loadExpenses(){
 }
 
 window.deleteExpense=async(id)=>{ if(confirm("Delete this entry?")) await remove(ref(db,"spending/items/"+id)); };
-window.deleteAllExpenses=async()=>{ if(confirm("Are you sure you want to clear ALL expenses? This cannot be undone.")) await remove(itemsRef); };
+window.deleteAllExpenses=async()=>{ if(confirm("Clear everything?")) await remove(itemsRef); };
 
 window.exportCSV=async()=>{
     const s=await get(itemsRef);
-    let csv="Description,Amount,Life Cost(Hrs),Category,Date\n";
+    let csv="Description,Amount,Hours,Days,Category,Date\n";
     s.forEach(c=>{
         const v=c.val();
-        const lc = currentHourlyRate > 0 ? (v.amount / currentHourlyRate).toFixed(2) : 0;
-        csv+=`"${v.desc}",${v.amount},${lc},"${v.category}",${new Date(v.date).toLocaleString()}\n`;
+        const th = currentHourlyRate > 0 ? (v.amount / currentHourlyRate) : 0;
+        const td = th / hoursPerDay;
+        csv+=`"${v.desc}",${v.amount},${th.toFixed(2)},${td.toFixed(2)},"${v.category}",${new Date(v.date).toLocaleString()}\n`;
     });
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-    a.download="spending_report.csv";
+    a.download="finance_log.csv";
     a.click();
 };
 
