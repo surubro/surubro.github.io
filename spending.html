@@ -3,22 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Spendings</title>
+<title>My Spendings & Life Cost</title>
 <style>
-body{font-family:Arial;margin:0;background:#f9fafb}
+body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;margin:0;background:#f3f4f6;color:#1f2937}
 .container{max-width:600px;margin:auto;padding:15px}
-h2{text-align:center}
-.card{background:#fff;padding:15px;margin:10px 0;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1)}
-input,select,button{width:100%;padding:10px;margin:6px 0;border-radius:8px;border:1px solid #ccc}
-button{background:#4f46e5;color:#fff;border:none}
-button.danger{background:#dc2626}
-button.green{background:#16a34a}
+h2{text-align:center;color:#4f46e5;margin-bottom:20px}
+.card{background:#fff;padding:15px;margin:10px 0;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+input,select,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #d1d5db;box-sizing:border-box;font-size:14px}
+button{background:#4f46e5;color:#fff;border:none;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+button:hover{opacity:0.9}
+button:active{transform:scale(0.98)}
+button.danger{background:#ef4444}
+button.green{background:#10b981}
+button.outline{background:transparent;color:#4f46e5;border:1px solid #4f46e5;padding:5px 10px;width:auto}
 .collapsible{background:#eef2ff;padding:12px;border-radius:12px;margin:10px 0}
-.collapsible h3{margin:0;cursor:pointer;display:flex;justify-content:space-between}
-.collapsible-content{display:none;margin-top:8px}
+.collapsible h3{margin:0;cursor:pointer;display:flex;justify-content:space-between;font-size:16px;color:#3730a3}
+.collapsible-content{display:none;margin-top:10px;border-top:1px solid #c7d2fe;padding-top:10px}
 .expense{color:#dc2626;font-weight:bold}
-.income{color:#16a34a;font-weight:bold}
+.income{color:#059669;font-weight:bold}
 .muted{color:#6b7280;font-size:13px}
+.life-cost{color:#d97706;font-weight:bold;font-size:13px;display:block;margin-top:4px}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 <body>
@@ -29,58 +34,70 @@ button.green{background:#16a34a}
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<button onclick="logout()">Logout</button>
 </div>
 
 <div id="appSection" style="display:none">
-
-<div class="collapsible">
-<h3>
-Summary
-<span>
-<span class="expense">Spent ₹<span id="totalExpenses">0</span></span> |
-<b>Remaining ₹<span id="remaining">0</span></b>
-</span>
-</h3>
-<div class="collapsible-content">
-<div class="income">Total Salary ₹<span id="totalIncome">0</span></div>
-<div id="categorySummary"></div>
-</div>
+<div class="flex-between">
+    <span class="muted" id="userDisplay"></span>
+    <button onclick="logout()" class="outline" style="color:#ef4444; border-color:#ef4444">Logout</button>
 </div>
 
-<div class="collapsible">
-<h3>Salary</h3>
-<div class="collapsible-content">
-<input id="salaryName" placeholder="Income Source">
-<input id="salaryAmount" type="number" placeholder="Amount">
-<button onclick="saveSalary()">Save / Update</button>
-<div id="salaryList"></div>
-</div>
+<div class="card" style="border-top: 4px solid #4f46e5;">
+    <div class="flex-between">
+        <div>
+            <div class="muted">Remaining Balance</div>
+            <div style="font-size:24px; font-weight:bold">₹<span id="remaining">0</span></div>
+        </div>
+        <div style="text-align:right">
+            <div class="muted">Spent: <span class="expense">₹<span id="totalExpenses">0</span></span></div>
+            <div class="muted">Salary: <span class="income">₹<span id="totalIncome">0</span></span></div>
+        </div>
+    </div>
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #eee">
+        <span class="muted">Hourly Rate: </span><b color="#4f46e5">₹<span id="hourlyRateDisplay">0</span></b>
+    </div>
 </div>
 
 <div class="collapsible">
-<h3>Categories</h3>
+<h3>Hourly Rate Settings <span>⚙️</span></h3>
 <div class="collapsible-content">
-<input id="categoryName" placeholder="Category Name">
-<button onclick="saveCategory()">Save Category</button>
-<div id="categoryList"></div>
+    <label class="muted">How many hours do you work in a day?</label>
+    <input id="dailyHours" type="number" placeholder="Hours per day (e.g. 8)">
+    <button onclick="calculateRateFromDaily()">Auto-Calculate from Salary</button>
+    <hr style="border:0; border-top:1px solid #c7d2fe; margin:10px 0">
+    <label class="muted">Or set rate manually:</label>
+    <input id="manualRate" type="number" placeholder="₹ per hour">
+    <button class="green" onclick="saveManualRate()">Set Manual Rate</button>
+</div>
+</div>
+
+<div class="collapsible">
+<h3>Salary / Income Sources <span>💵</span></h3>
+<div class="collapsible-content">
+    <input id="salaryName" placeholder="Source Name">
+    <input id="salaryAmount" type="number" placeholder="Amount">
+    <button onclick="saveSalary()">Save Income</button>
+    <div id="salaryList" style="margin-top:10px"></div>
 </div>
 </div>
 
 <div class="card">
-<h3>Add Expense</h3>
-<input id="descInput" placeholder="Description">
-<input id="amountInput" type="number" placeholder="Amount">
-<select id="categorySelect"></select>
-<button onclick="addExpense()">Add Expense</button>
+    <h3 style="margin-top:0">Add New Expense</h3>
+    <input id="descInput" placeholder="What did you buy?">
+    <input id="amountInput" type="number" placeholder="Amount">
+    <div class="flex-between" style="gap:10px">
+        <select id="categorySelect" style="flex-grow:1"></select>
+        <button onclick="saveCategory()" style="width:auto" class="outline">+ Cat</button>
+    </div>
+    <button onclick="addExpense()">Log Expense</button>
 </div>
 
-<div class="card">
-<button class="green" onclick="exportCSV()">⬇ Export CSV</button>
-<button class="danger" onclick="deleteAllExpenses()">🗑 Delete ALL Expenses</button>
+<div class="flex-between" style="gap:10px">
+    <button class="green" onclick="exportCSV()" style="margin:0">⬇ Export CSV</button>
+    <button class="danger" onclick="deleteAllExpenses()" style="margin:0">🗑 Clear All</button>
 </div>
 
-<h3>Expense List</h3>
+<h3 style="margin-bottom:5px">Recent Activity</h3>
 <div id="list"></div>
 
 </div>
@@ -88,7 +105,7 @@ Summary
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {getDatabase,ref,push,onValue,remove,update,get} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getDatabase,ref,push,onValue,remove,update,get,set} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig={
@@ -102,31 +119,59 @@ const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 const auth=getAuth(app);
 
-const DELETE_PASSWORD="Confirm";
-const confirmDelete=()=>prompt("Enter delete password")==DELETE_PASSWORD;
-
+// Shared Paths
 const salariesRef=ref(db,"spending/salaries");
 const categoriesRef=ref(db,"spending/categories");
 const itemsRef=ref(db,"spending/items");
+const rateRef=ref(db,"spending/global_rate");
 
 let editSalaryId=null;
+let currentHourlyRate = 0;
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
 window.logout=()=>signOut(auth);
 
 onAuthStateChanged(auth,u=>{
     authSection.style.display = u ? "none" : "block";
     appSection.style.display = u ? "block" : "none";
     if(u){
+        userDisplay.innerText = u.email;
         loadSalaries();
         loadCategories();
+        loadHourlyRate();
         loadExpenses();
     }
 });
 
+// UI Collapsible Logic
 document.querySelectorAll(".collapsible h3").forEach(h=>{
-    h.onclick = () => h.nextElementSibling.style.display = h.nextElementSibling.style.display=="block"?"none":"block";
+    h.onclick = () => {
+        const content = h.nextElementSibling;
+        content.style.display = content.style.display === "block" ? "none" : "block";
+    }
 });
+
+/* HOURLY RATE */
+function loadHourlyRate(){
+    onValue(rateRef, s => {
+        currentHourlyRate = s.val() || 0;
+        hourlyRateDisplay.innerText = currentHourlyRate.toFixed(2);
+        loadExpenses(); 
+    });
+}
+
+window.calculateRateFromDaily = () => {
+    const totalSalary = parseFloat(totalIncome.innerText) || 0;
+    const hoursInDay = parseFloat(dailyHours.value) || 0;
+    if(totalSalary <= 0 || hoursInDay <= 0) return alert("Enter salary and daily hours first");
+    set(rateRef, (totalSalary / (hoursInDay * 30)));
+    dailyHours.value = "";
+};
+
+window.saveManualRate = () => {
+    const rate = parseFloat(manualRate.value);
+    if(rate > 0) { set(rateRef, rate); manualRate.value = ""; }
+};
 
 /* SALARY */
 window.saveSalary=async()=>{
@@ -148,47 +193,46 @@ function loadSalaries(){
         let total=0;
         s.forEach(c=>{
             const v=c.val(); total+=v.amount;
-            salaryList.innerHTML+=`${v.name}: ₹${v.amount}
-            <button onclick="editSalary('${c.key}','${v.name}',${v.amount})">Edit</button>
-            <button onclick="deleteSalary('${c.key}')">Delete</button><br>`;
+            salaryList.innerHTML+=`
+            <div class="flex-between muted" style="margin-bottom:5px">
+                <span>${v.name}: ₹${v.amount}</span>
+                <div>
+                    <button onclick="editSalary('${c.key}','${v.name}',${v.amount})" class="outline" style="padding:2px 8px">Edit</button>
+                    <button onclick="deleteSalary('${c.key}')" class="outline" style="color:red; border-color:red; padding:2px 8px">X</button>
+                </div>
+            </div>`;
         });
         totalIncome.innerText = total;
         updateRemaining();
     });
 }
 
-window.editSalary=(id,n,a)=>{
-    editSalaryId=id;
-    salaryName.value=n;
-    salaryAmount.value=a;
-};
-
-window.deleteSalary=async(id)=>{
-    if(!confirmDelete()) return;
-    await remove(ref(db,"spending/salaries/"+id));
-};
+window.editSalary=(id,n,a)=>{ editSalaryId=id; salaryName.value=n; salaryAmount.value=a; };
+window.deleteSalary=async(id)=>{ if(confirm("Remove this income source?")) await remove(ref(db,"spending/salaries/"+id)); };
 
 /* CATEGORY */
-window.saveCategory=async()=>{ push(categoriesRef,{name:categoryName.value}); categoryName.value=""; };
+window.saveCategory=async()=>{ 
+    const name = prompt("Enter new category name:");
+    if(name) push(categoriesRef,{name}); 
+};
+
 function loadCategories(){
     onValue(categoriesRef,s=>{
         categorySelect.innerHTML="";
-        categoryList.innerHTML="";
         s.forEach(c=>{
             categorySelect.innerHTML+=`<option value="${c.key}">${c.val().name}</option>`;
-            categoryList.innerHTML+=`${c.val().name}<br>`;
         });
     });
 }
 
 /* EXPENSE */
 window.addExpense=async()=>{
-    if(!confirm("Confirm add this expense?")) return;
-    const cat=await get(ref(db,"spending/categories/"+categorySelect.value));
+    if(!descInput.value || !amountInput.value) return alert("Fill details");
+    const catSnap = await get(ref(db,"spending/categories/"+categorySelect.value));
     await push(itemsRef,{
         desc:descInput.value,
         amount:+amountInput.value,
-        category:cat.val().name,
+        category: catSnap.exists() ? catSnap.val().name : "General",
         date:Date.now()
     });
     descInput.value=amountInput.value="";
@@ -197,54 +241,45 @@ window.addExpense=async()=>{
 function loadExpenses(){
     onValue(itemsRef, s => {
         list.innerHTML="";
-        let totalExpensesAmount = 0, summary = {};
-
+        let totalExp = 0, summary = {};
         s.forEach(c=>{
             const v=c.val();
-            totalExpensesAmount += v.amount;
+            totalExp += v.amount;
             summary[v.category] = (summary[v.category] || 0) + v.amount;
-            list.innerHTML = `
-            <div class="card">
-                <b>${v.desc}</b> ₹${v.amount}<br>
-                <small class="muted">${v.category}</small>
-                <button onclick="deleteExpense('${c.key}')">Delete</button>
-            </div>` + list.innerHTML;
+            const lc = currentHourlyRate > 0 ? (v.amount / currentHourlyRate).toFixed(2) : "0.00";
+            
+            const div = document.createElement('div');
+            div.className = "card";
+            div.innerHTML = `
+                <div class="flex-between">
+                    <b>${v.desc}</b> <span class="expense">₹${v.amount}</span>
+                </div>
+                <span class="life-cost">⏳ Costs ${lc} hours of work</span>
+                <div class="flex-between" style="margin-top:8px">
+                    <small class="muted">${v.category}</small>
+                    <button onclick="deleteExpense('${c.key}')" class="outline" style="color:red; border-color:red; padding:2px 8px">Delete</button>
+                </div>`;
+            list.prepend(div);
         });
-
-        totalExpenses.innerText = totalExpensesAmount;
+        totalExpenses.innerText = totalExp;
         updateRemaining();
-
-        // percentage relative to salary only
-        const totalSalary = +totalIncome.innerText || 0;
-        categorySummary.innerHTML = "";
-        for(const category in summary){
-            const percent = totalSalary ? ((summary[category]/totalSalary)*100).toFixed(1) : 0;
-            categorySummary.innerHTML += `${category}: ₹${summary[category]} (${percent}%)<br>`;
-        }
     });
 }
 
-window.deleteExpense=async(id)=>{
-    if(!confirmDelete()) return;
-    await remove(ref(db,"spending/items/"+id));
-};
-
-window.deleteAllExpenses=async()=>{
-    if(!confirmDelete()) return;
-    await remove(itemsRef);
-};
+window.deleteExpense=async(id)=>{ if(confirm("Delete this entry?")) await remove(ref(db,"spending/items/"+id)); };
+window.deleteAllExpenses=async()=>{ if(confirm("Are you sure you want to clear ALL expenses? This cannot be undone.")) await remove(itemsRef); };
 
 window.exportCSV=async()=>{
     const s=await get(itemsRef);
-    let csv="Description,Amount,Category,Date\n";
+    let csv="Description,Amount,Life Cost(Hrs),Category,Date\n";
     s.forEach(c=>{
         const v=c.val();
-        csv+=`${v.desc},${v.amount},${v.category},${new Date(v.date).toLocaleString()}\n`;
+        const lc = currentHourlyRate > 0 ? (v.amount / currentHourlyRate).toFixed(2) : 0;
+        csv+=`"${v.desc}",${v.amount},${lc},"${v.category}",${new Date(v.date).toLocaleString()}\n`;
     });
-    const b=new Blob([csv],{type:"text/csv"});
     const a=document.createElement("a");
-    a.href=URL.createObjectURL(b);
-    a.download="expenses.csv";
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download="spending_report.csv";
     a.click();
 };
 
