@@ -3,302 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker,, V2</title>
+    <title>Spendings & Life Cost Pro - V2</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        :root { --primary: #6366f1; --bg: #f9fafb; --text: #111827; }
-        body{font-family:'Inter', sans-serif; margin:0; background:var(--bg); color:var(--text)}
-        .container{max-width:500px; margin:auto; padding:20px}
-        .card{background:#fff; padding:20px; margin:12px 0; border-radius:16px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1)}
-        h2{text-align:center; color:var(--primary)}
-        input,select,button{width:100%; padding:12px; margin:8px 0; border-radius:10px; border:1px solid #e5e7eb; box-sizing:border-box}
-        button{background:var(--primary); color:#fff; border:none; font-weight:600; cursor:pointer}
+        body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;margin:0;background:#f3f4f6;color:#1f2937}
+        .container{max-width:600px;margin:auto;padding:15px}
+        h2{text-align:center;color:#4f46e5;margin-bottom:20px}
+        .card{background:#fff;padding:15px;margin:10px 0;border-radius:12px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+        input,select,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #d1d5db;box-sizing:border-box;font-size:14px}
+        button{background:#4f46e5;color:#fff;border:none;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+        button:hover{opacity:0.9}
         button.danger{background:#ef4444}
-        button.secondary{background:#10b981}
-        .flex-row{display:flex; justify-content:space-between; align-items:center}
-        .stat-label{font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px}
-        .stat-val{font-size:22px; font-weight:800}
-        .expense-text{color:#e11d48}
-        .income-text{color:#059669}
-        .chart-box{height:350px; position:relative}
-        .tab-group{display:flex; gap:8px; margin-bottom:15px}
-        .tab-group button{padding:8px; font-size:12px; background:#f3f4f6; color:#4b5563}
-        .tab-group button.active{background:var(--primary); color:white}
-        .collapse-btn{cursor:pointer; background:#f3f4f6; padding:10px; border-radius:8px; font-size:14px; font-weight:600}
-        .collapse-content{display:none; padding:10px 0}
-        .log-item{border-bottom:1px solid #f3f4f6; padding:10px 0}
+        button.green{background:#10b981}
+        button.outline{background:transparent;color:#4f46e5;border:1px solid #4f46e5;padding:5px 10px;width:auto}
+        .collapsible{background:#eef2ff;padding:12px;border-radius:12px;margin:10px 0}
+        .collapsible h3{margin:0;cursor:pointer;display:flex;justify-content:space-between;font-size:16px;color:#3730a3}
+        .collapsible-content{display:none;margin-top:10px;border-top:1px solid #c7d2fe;padding-top:10px}
+        .expense{color:#dc2626;font-weight:bold}
+        .income{color:#059669;font-weight:bold}
+        .muted{color:#6b7280;font-size:13px}
+        .life-cost-box{background:#fff8eb; border:1px solid #fde68a; padding:8px; border-radius:8px; margin-top:8px}
+        .life-cost{color:#d97706;font-weight:bold;font-size:13px;display:block}
+        .flex-between{display:flex;justify-content:space-between;align-items:center}
+        #chartContainer{margin-top: 10px; height: 380px; position: relative;}
+        .view-btn-group {display: flex; gap: 5px; margin-bottom: 10px;}
+        .view-btn-group button {padding: 6px; font-size: 11px; background: #e5e7eb; color: #374151;}
+        .view-btn-group button.active {background: #4f46e5; color: white;}
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h2>📊 Ledger Pro V2</h2>
+    <h2>💰 My Spending V2</h2>
 
-    <div id="authBox" class="card">
-        <input id="email" type="email" placeholder="New Account Email">
+    <div id="authSection" class="card">
+        <input id="email" placeholder="Email">
         <input id="password" type="password" placeholder="Password">
-        <button onclick="handleLogin()">Sign In</button>
+        <button onclick="login()">Login</button>
     </div>
 
-    <div id="mainApp" style="display:none">
-        <div class="flex-row">
-            <small id="userMail" style="color:#6b7280"></small>
-            <button onclick="handleLogout()" style="width:auto; padding:5px 10px; font-size:12px" class="danger">Exit</button>
+    <div id="appSection" style="display:none">
+        <div class="flex-between">
+            <span class="muted" id="userDisplay"></span>
+            <button onclick="logout()" class="outline" style="color:#ef4444; border-color:#ef4444">Logout</button>
         </div>
 
-        <div class="card">
-            <select id="monthSelect"></select>
-            <div class="flex-row" style="margin-top:15px">
+        <div class="card" style="border-top: 4px solid #4f46e5;">
+            <div class="flex-between">
+                <select id="monthFilter" style="width: 60%; margin: 0;"></select>
+                <div style="text-align:right">
+                    <div class="muted">Balance: <b>₹<span id="remaining">0</span></b></div>
+                </div>
+            </div>
+            <div class="flex-between" style="margin-top: 15px;">
                 <div>
-                    <div class="stat-label">Spent Total</div>
-                    <div class="stat-val expense-text">₹<span id="dispSpent">0</span></div>
+                    <div class="muted">Monthly Spent</div>
+                    <div style="font-size:24px; font-weight:bold" class="expense">₹<span id="totalExpenses">0</span></div>
                 </div>
                 <div style="text-align:right">
-                    <div class="stat-label">Savings</div>
-                    <div class="stat-val income-text">₹<span id="dispBal">0</span></div>
+                    <div class="muted">Rate: <b id="hourlyRateDisplay">0</b>/hr</div>
+                    <div class="muted">Salary: <span class="income">₹<span id="totalIncome">0</span></span></div>
                 </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="tab-group">
-                <button id="t-amt" class="active" onclick="changeMode('amt')">Value</button>
-                <button id="t-pct" onclick="changeMode('pct')">Ratio %</button>
-                <button id="t-life" onclick="changeMode('life')">Life Days</button>
+            <div class="view-btn-group">
+                <button id="view-amt" class="active" onclick="setView('amt')">₹ Amount</button>
+                <button id="view-pct" onclick="setView('pct')">% of Salary</button>
+                <button id="view-life" onclick="setView('life')">📅 Life Days</button>
             </div>
-            <div class="chart-box">
-                <canvas id="mainChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Settings Section -->
-        <div class="collapse-btn" onclick="toggle('sets')">Config & Rates ⚙️</div>
-        <div id="sets" class="collapse-content">
-            <div class="card">
-                <label class="stat-label">Work Day (Hours)</label>
-                <input id="workHours" type="number" value="8">
-                <button onclick="syncRate()">Calc Rate from Salary</button>
-                <p class="stat-label">Current: ₹<span id="rateLabel">0</span>/hr</p>
+            <div id="chartContainer">
+                <canvas id="expenseChart"></canvas>
             </div>
         </div>
 
-        <!-- Income Section -->
-        <div class="collapse-btn" onclick="toggle('inc')">Income Sources 💰</div>
-        <div id="inc" class="collapse-content">
-            <div class="card">
-                <input id="incName" placeholder="Employer/Project">
-                <input id="incAmt" type="number" placeholder="Amount">
-                <button class="secondary" onclick="addIncome()">Add Revenue</button>
-                <div id="incList"></div>
+        <div class="collapsible">
+            <h3>Life Cost Settings ⚙️</h3>
+            <div class="collapsible-content">
+                <label class="muted">Work Hours/Day:</label>
+                <input id="dailyHoursInput" type="number" placeholder="Default: 8">
+                <button onclick="calculateRateFromDaily()">Update Rate</button>
+                <hr style="border:0; border-top:1px solid #c7d2fe; margin:10px 0">
+                <label class="muted">Manual Hourly Rate:</label>
+                <input id="manualRate" type="number" placeholder="₹ per hour">
+                <button class="green" onclick="saveManualRate()">Set Rate</button>
             </div>
         </div>
 
-        <!-- Entry Form -->
+        <div class="collapsible">
+            <h3>Manage Categories 🏷️</h3>
+            <div class="collapsible-content">
+                <input id="newCatInput" placeholder="Category Name">
+                <button class="green" onclick="saveCategory()">Add Category</button>
+                <div id="catList" style="margin-top:10px"></div>
+            </div>
+        </div>
+
+        <div class="collapsible">
+            <h3>Salary / Income 💵</h3>
+            <div class="collapsible-content">
+                <input id="salaryName" placeholder="Source">
+                <input id="salaryAmount" type="number" placeholder="Amount">
+                <button onclick="saveSalary()">Add Salary</button>
+                <div id="salaryList"></div>
+            </div>
+        </div>
+
         <div class="card">
-            <h4 style="margin:0 0 10px 0">New Transaction</h4>
-            <input id="expDesc" placeholder="Description">
-            <input id="expAmt" type="number" placeholder="Amount (₹)">
-            <select id="expCat"></select>
-            <button onclick="addEntry()">Record Expense</button>
+            <h3 style="margin-top:0">Add New Expense</h3>
+            <input id="descInput" placeholder="Item Name">
+            <input id="amountInput" type="number" placeholder="Amount">
+            <select id="categorySelect"></select>
+            <button onclick="addExpense()">Log Expense</button>
         </div>
 
-        <div id="activityLog"></div>
+        <h3 style="margin-bottom:5px">Activity Log</h3>
+        <div id="list"></div>
     </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {getDatabase,ref,push,onValue,remove,update} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// REPLACE THESE WITH YOUR SECOND FIREBASE PROJECT CREDENTIALS
-// REPLACE THESE WITH YOUR ACTUAL FIREBASE PROJECT CREDENTIALS
-const firebaseConfig = {
-    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU", 
-    authDomain: "striped-acrobat-342207.firebaseapp.com",
-    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
-    projectId: "striped-acrobat-342207"
+// Database strings renamed for the second account/version
+const DB_PREFIX = "spending_v2"; 
+
+const firebaseConfig={
+    apiKey:"AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain:"striped-acrobat-342207.firebaseapp.com",
+    databaseURL:"https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId:"striped-acrobat-342207"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+const auth=getAuth(app);
 
-// New Database Schema Names
-const PATH_INC = "ledger_v2/income";
-const PATH_CAT = "ledger_v2/tags";
-const PATH_REC = "ledger_v2/records";
-const PATH_CFG = "ledger_v2/settings";
+const salariesRef=ref(db, `${DB_PREFIX}/salaries`);
+const categoriesRef=ref(db, `${DB_PREFIX}/categories`);
+const itemsRef=ref(db, `${DB_PREFIX}/items`);
+const configRef=ref(db, `${DB_PREFIX}/config`);
 
-let localRate = 0;
-let localWorkHours = 8;
-let activeMode = 'amt';
-let chartObj = null;
+let currentHourlyRate = 0;
+let hoursPerDay = 8;
+let currentView = 'amt';
+let expenseChart = null;
+let lastCatData = {};
+let lastTotalExp = 0;
 
-// Auth Logic
-window.handleLogin = () => signInWithEmailAndPassword(auth, email.value, password.value).catch(err => alert(err.message));
-window.handleLogout = () => signOut(auth);
-window.toggle = (id) => { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; };
+Chart.register(ChartDataLabels);
 
-onAuthStateChanged(auth, user => {
-    authBox.style.display = user ? "none" : "block";
-    mainApp.style.display = user ? "block" : "none";
-    if(user) {
-        userMail.innerText = user.email;
-        setupCalendar();
-        syncData();
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value).catch(e=>alert(e.message));
+window.logout=()=>signOut(auth);
+
+onAuthStateChanged(auth,u=>{
+    authSection.style.display = u ? "none" : "block";
+    appSection.style.display = u ? "block" : "none";
+    if(u){
+        userDisplay.innerText = u.email;
+        initMonthFilter();
+        loadConfig();
+        loadSalaries();
+        loadCategories();
     }
 });
 
-function setupCalendar() {
-    const sel = monthSelect;
+function initMonthFilter() {
+    const select = document.getElementById('monthFilter');
     const now = new Date();
-    sel.innerHTML = "";
-    for(let i=0; i<12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
-        const code = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-        sel.innerHTML += `<option value="${code}">${d.toLocaleString('default',{month:'short', year:'numeric'})}</option>`;
+    select.innerHTML = "";
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+        select.innerHTML += `<option value="${val}">${label}</option>`;
     }
-    sel.onchange = () => syncData();
+    select.onchange = () => loadExpenses();
 }
 
-// Settings & Rates
-function syncData() {
-    onValue(ref(db, PATH_CFG), s => {
-        const val = s.val() || {};
-        localRate = val.hourlyRate || 0;
-        localWorkHours = val.dayHours || 8;
-        rateLabel.innerText = localRate.toFixed(2);
-        loadCoreData();
-    });
-}
-
-window.syncRate = () => {
-    const total = parseFloat(dispBal.getAttribute('data-total-inc')) || 0;
-    const h = parseFloat(workHours.value) || 8;
-    if(total <= 0) return alert("Enter income first");
-    const newRate = total / (h * 30);
-    update(ref(db, PATH_CFG), { hourlyRate: newRate, dayHours: h });
+window.setView = (view) => {
+    currentView = view;
+    document.querySelectorAll('.view-btn-group button').forEach(b => b.classList.remove('active'));
+    document.getElementById(`view-${view}`).classList.add('active');
+    updateChart(lastCatData, lastTotalExp);
 };
 
-// Data Handlers
-function loadCoreData() {
-    // Categories
-    onValue(ref(db, PATH_CAT), s => {
-        expCat.innerHTML = '<option value="General">General</option>';
-        s.forEach(c => { expCat.innerHTML += `<option value="${c.val().name}">${c.val().name}</option>`; });
-    });
-
-    // Income
-    onValue(ref(db, PATH_INC), s => {
-        let total = 0; incList.innerHTML = "";
-        s.forEach(i => { 
-            total += i.val().amount; 
-            incList.innerHTML += `<div class="flex-row log-item"><small>${i.val().name}</small> <b>₹${i.val().amount}</b></div>`;
-        });
-        dispBal.setAttribute('data-total-inc', total);
-        processExpenses(total);
+/* CONFIG */
+function loadConfig(){
+    onValue(configRef, s => {
+        const data = s.val() || {};
+        currentHourlyRate = data.rate || 0;
+        hoursPerDay = data.workDay || 8;
+        hourlyRateDisplay.innerText = currentHourlyRate.toFixed(2);
+        loadExpenses();
     });
 }
+window.calculateRateFromDaily = () => {
+    const totalSal = parseFloat(totalIncome.innerText) || 0;
+    const hInDay = parseFloat(dailyHoursInput.value) || 8;
+    if(totalSal <= 0) return alert("Add salary first");
+    update(configRef, { rate: (totalSal / (hInDay * 30)), workDay: hInDay });
+};
+window.saveManualRate = () => {
+    const rate = parseFloat(manualRate.value);
+    if(rate > 0) update(configRef, { rate: rate });
+};
 
-function processExpenses(totalInc) {
-    onValue(ref(db, PATH_REC), s => {
-        activityLog.innerHTML = "";
-        let spent = 0;
-        const targetMonth = monthSelect.value;
-        const summary = {};
+/* DATA LOADING */
+function loadExpenses(){
+    onValue(itemsRef, s => {
+        list.innerHTML="";
+        let totalExp = 0;
+        const selectedMonth = document.getElementById('monthFilter').value;
+        const catTotals = {};
 
-        s.forEach(item => {
-            const data = item.val();
-            const dateObj = new Date(data.timestamp);
-            const itemMonth = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}`;
+        s.forEach(c=>{
+            const v=c.val();
+            const date = new Date(v.date);
+            const itemMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-            if(itemMonth === targetMonth) {
-                spent += data.val;
-                summary[data.cat] = (summary[data.cat] || 0) + data.val;
+            if(itemMonth === selectedMonth) {
+                totalExp += v.amount;
+                catTotals[v.category] = (catTotals[v.category] || 0) + v.amount;
+                const th = currentHourlyRate > 0 ? (v.amount / currentHourlyRate) : 0;
                 
-                const timeCost = localRate > 0 ? (data.val / localRate).toFixed(1) : 0;
-                activityLog.innerHTML += `
-                    <div class="card log-item">
-                        <div class="flex-row"><b>${data.label}</b> <span class="expense-text">₹${data.val}</span></div>
-                        <div class="flex-row" style="margin-top:5px">
-                            <small style="color:#9ca3af">${data.cat} • ${timeCost}hrs</small>
-                            <button onclick="dropRecord('${item.key}')" style="width:auto; padding:2px 8px; font-size:10px" class="danger">Remove</button>
-                        </div>
+                const div = document.createElement('div');
+                div.className = "card";
+                div.innerHTML = `
+                    <div class="flex-between"><b>${v.desc}</b> <span class="expense">₹${v.amount}</span></div>
+                    <div class="life-cost-box">
+                        <span class="life-cost">⏳ Time Cost: ${th.toFixed(1)}h | 📅 Life: ${(th/hoursPerDay).toFixed(2)} days</span>
+                    </div>
+                    <div class="flex-between muted" style="margin-top:5px">
+                        <small>${v.category} | ${date.toLocaleDateString()}</small>
+                        <button onclick="deleteExpense('${c.key}')" class="outline" style="color:red;padding:2px 8px">Delete</button>
                     </div>`;
+                list.prepend(div);
             }
         });
-
-        dispSpent.innerText = spent.toLocaleString();
-        dispBal.innerText = (totalInc - spent).toLocaleString();
-        renderChart(summary, spent, totalInc);
+        totalExpenses.innerText = totalExp;
+        lastCatData = catTotals;
+        lastTotalExp = totalExp;
+        updateRemaining();
+        updateChart(catTotals, totalExp);
     });
 }
 
-function renderChart(dataMap, totalSpent, totalInc) {
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    if(chartObj) chartObj.destroy();
-
-    const labels = Object.keys(dataMap);
-    const vals = Object.values(dataMap);
+function updateChart(catData, spent) {
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    if(expenseChart) expenseChart.destroy();
     
-    chartObj = new Chart(ctx, {
-        type: 'doughnut',
+    const totalSal = +totalIncome.innerText || 0;
+    const remainingVal = totalSal - spent;
+    
+    let labels = Object.keys(catData);
+    let values = Object.values(catData);
+    let colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    
+    if(remainingVal > 0) {
+        labels.push("Remaining Balance");
+        values.push(remainingVal);
+        colors.push("#d1d5db");
+    }
+
+    expenseChart = new Chart(ctx, {
+        type: 'pie',
         data: {
             labels: labels,
             datasets: [{
-                data: vals,
-                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4'],
-                borderWidth: 0
+                data: values,
+                backgroundColor: colors
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                legend: { position: 'bottom' },
                 datalabels: {
-                    color: '#fff',
-                    formatter: (v) => {
-                        if(activeMode === 'pct') return ((v/totalInc)*100).toFixed(0) + '%';
-                        if(activeMode === 'life') return (v/localRate/localWorkHours).toFixed(1) + 'd';
-                        return '₹' + v;
-                    }
+                    color: (context) => context.dataIndex === labels.length - 1 && remainingVal > 0 ? '#4b5563' : '#fff',
+                    font: { weight: 'bold', size: 10 },
+                    formatter: (value, context) => {
+                        if (currentView === 'pct') {
+                            const pct = totalSal > 0 ? ((value * 100 / totalSal).toFixed(1)) : 0;
+                            return pct + "%";
+                        } else if (currentView === 'life') {
+                            const hours = currentHourlyRate > 0 ? (value / currentHourlyRate) : 0;
+                            return (hours / hoursPerDay).toFixed(1) + "d";
+                        } else {
+                            return "₹" + value;
+                        }
+                    },
+                    textAlign: 'center'
                 }
             }
         }
     });
 }
 
-// Logic Actions
-window.changeMode = (m) => {
-    activeMode = m;
-    document.querySelectorAll('.tab-group button').forEach(b => b.classList.remove('active'));
-    document.getElementById('t-'+m).classList.add('active');
-    syncData(); 
+/* UI & OTHER LOGIC */
+window.saveSalary=async()=>{
+    const name=salaryName.value.trim(); const amt=+salaryAmount.value;
+    if(name && amt > 0) { await push(salariesRef,{name,amount:amt}); salaryName.value=salaryAmount.value=""; }
 };
-
-window.addIncome = () => {
-    if(incName.value && incAmt.value) {
-        push(ref(db, PATH_INC), { name: incName.value, amount: Number(incAmt.value) });
-        incName.value = ""; incAmt.value = "";
-    }
-};
-
-window.addEntry = () => {
-    if(!expDesc.value || !expAmt.value) return;
-    push(ref(db, PATH_REC), {
-        label: expDesc.value,
-        val: Number(expAmt.value),
-        cat: expCat.value,
-        timestamp: Date.now()
+function loadSalaries(){
+    onValue(salariesRef,s=>{
+        salaryList.innerHTML=""; let total=0;
+        s.forEach(c=>{ total+=c.val().amount; salaryList.innerHTML+=`<div class="flex-between muted">${c.val().name}: ₹${c.val().amount} <button onclick="deleteSalary('${c.key}')" class="outline">X</button></div>`; });
+        totalIncome.innerText = total; 
+        updateRemaining();
+        loadExpenses(); 
     });
-    expDesc.value = ""; expAmt.value = "";
+}
+window.deleteSalary=async(id)=>remove(ref(db, `${DB_PREFIX}/salaries/${id}`));
+window.saveCategory=async()=>{ const name = newCatInput.value.trim(); if(name) { await push(categoriesRef,{name}); newCatInput.value=""; } };
+function loadCategories(){
+    onValue(categoriesRef,s=>{
+        categorySelect.innerHTML=""; catList.innerHTML="";
+        s.forEach(c=>{ const name = c.val().name; categorySelect.innerHTML+=`<option value="${name}">${name}</option>`; catList.innerHTML += `<div class="flex-between muted">${name} <button onclick="deleteCat('${c.key}')" class="outline">X</button></div>`; });
+    });
+}
+window.deleteCat=async(id)=>remove(ref(db, `${DB_PREFIX}/categories/${id}`));
+window.addExpense=async()=>{
+    if(!descInput.value || !amountInput.value) return alert("Fill details");
+    await push(itemsRef,{ desc:descInput.value, amount:+amountInput.value, category: categorySelect.value || "General", date:Date.now() });
+    descInput.value=amountInput.value="";
 };
-
-window.dropRecord = (key) => remove(ref(db, `${PATH_REC}/${key}`));
-Chart.register(ChartDataLabels);
+window.deleteExpense=async(id)=>remove(ref(db, `${DB_PREFIX}/items/${id}`));
+function updateRemaining(){ 
+    const bal = (+totalIncome.innerText - +totalExpenses.innerText);
+    remaining.innerText = bal.toLocaleString(); 
+}
+document.querySelectorAll(".collapsible h3").forEach(h=>{ h.onclick = () => { const content = h.nextElementSibling; content.style.display = content.style.display === "block" ? "none" : "block"; } });
 </script>
 </body>
 </html>
