@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker V2</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        :root { --primary: #6366f1; --bg: #f9fafb; --text: #111827; }
+        body{font-family:'Inter', sans-serif; margin:0; background:var(--bg); color:var(--text)}
+        .container{max-width:500px; margin:auto; padding:20px}
+        .card{background:#fff; padding:20px; margin:12px 0; border-radius:16px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1)}
+        h2{text-align:center; color:var(--primary)}
+        input,select,button{width:100%; padding:12px; margin:8px 0; border-radius:10px; border:1px solid #e5e7eb; box-sizing:border-box}
+        button{background:var(--primary); color:#fff; border:none; font-weight:600; cursor:pointer}
+        button.danger{background:#ef4444}
+        button.secondary{background:#10b981}
+        .flex-row{display:flex; justify-content:space-between; align-items:center}
+        .stat-label{font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px}
+        .stat-val{font-size:22px; font-weight:800}
+        .expense-text{color:#e11d48}
+        .income-text{color:#059669}
+        .chart-box{height:350px; position:relative}
+        .tab-group{display:flex; gap:8px; margin-bottom:15px}
+        .tab-group button{padding:8px; font-size:12px; background:#f3f4f6; color:#4b5563}
+        .tab-group button.active{background:var(--primary); color:white}
+        .collapse-btn{cursor:pointer; background:#f3f4f6; padding:10px; border-radius:8px; font-size:14px; font-weight:600}
+        .collapse-content{display:none; padding:10px 0}
+        .log-item{border-bottom:1px solid #f3f4f6; padding:10px 0}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📊 Ledger Pro V2</h2>
+
+    <div id="authBox" class="card">
+        <input id="email" type="email" placeholder="New Account Email">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="handleLogin()">Sign In</button>
+    </div>
+
+    <div id="mainApp" style="display:none">
+        <div class="flex-row">
+            <small id="userMail" style="color:#6b7280"></small>
+            <button onclick="handleLogout()" style="width:auto; padding:5px 10px; font-size:12px" class="danger">Exit</button>
+        </div>
+
+        <div class="card">
+            <select id="monthSelect"></select>
+            <div class="flex-row" style="margin-top:15px">
+                <div>
+                    <div class="stat-label">Spent Total</div>
+                    <div class="stat-val expense-text">₹<span id="dispSpent">0</span></div>
+                </div>
+                <div style="text-align:right">
+                    <div class="stat-label">Savings</div>
+                    <div class="stat-val income-text">₹<span id="dispBal">0</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="tab-group">
+                <button id="t-amt" class="active" onclick="changeMode('amt')">Value</button>
+                <button id="t-pct" onclick="changeMode('pct')">Ratio %</button>
+                <button id="t-life" onclick="changeMode('life')">Life Days</button>
+            </div>
+            <div class="chart-box">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="collapse-btn" onclick="toggle('sets')">Config & Rates ⚙️</div>
+        <div id="sets" class="collapse-content">
+            <div class="card">
+                <label class="stat-label">Work Day (Hours)</label>
+                <input id="workHours" type="number" value="8">
+                <button onclick="syncRate()">Calc Rate from Salary</button>
+                <p class="stat-label">Current: ₹<span id="rateLabel">0</span>/hr</p>
+            </div>
+        </div>
+
+        <!-- Income Section -->
+        <div class="collapse-btn" onclick="toggle('inc')">Income Sources 💰</div>
+        <div id="inc" class="collapse-content">
+            <div class="card">
+                <input id="incName" placeholder="Employer/Project">
+                <input id="incAmt" type="number" placeholder="Amount">
+                <button class="secondary" onclick="addIncome()">Add Revenue</button>
+                <div id="incList"></div>
+            </div>
+        </div>
+
+        <!-- Entry Form -->
+        <div class="card">
+            <h4 style="margin:0 0 10px 0">New Transaction</h4>
+            <input id="expDesc" placeholder="Description">
+            <input id="expAmt" type="number" placeholder="Amount (₹)">
+            <select id="expCat"></select>
+            <button onclick="addEntry()">Record Expense</button>
+        </div>
+
+        <div id="activityLog"></div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// REPLACE THESE WITH YOUR SECOND FIREBASE PROJECT CREDENTIALS
+const firebaseConfig = {
+    apiKey: "YOUR_NEW_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// New Database Schema Names
+const PATH_INC = "ledger_v2/income";
+const PATH_CAT = "ledger_v2/tags";
+const PATH_REC = "ledger_v2/records";
+const PATH_CFG = "ledger_v2/settings";
+
+let localRate = 0;
+let localWorkHours = 8;
+let activeMode = 'amt';
+let chartObj = null;
+
+// Auth Logic
+window.handleLogin = () => signInWithEmailAndPassword(auth, email.value, password.value).catch(err => alert(err.message));
+window.handleLogout = () => signOut(auth);
+window.toggle = (id) => { const el = document.getElementById(id); el.style.display = el.style.display === 'block' ? 'none' : 'block'; };
+
+onAuthStateChanged(auth, user => {
+    authBox.style.display = user ? "none" : "block";
+    mainApp.style.display = user ? "block" : "none";
+    if(user) {
+        userMail.innerText = user.email;
+        setupCalendar();
+        syncData();
+    }
+});
+
+function setupCalendar() {
+    const sel = monthSelect;
+    const now = new Date();
+    sel.innerHTML = "";
+    for(let i=0; i<12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        const code = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        sel.innerHTML += `<option value="${code}">${d.toLocaleString('default',{month:'short', year:'numeric'})}</option>`;
+    }
+    sel.onchange = () => syncData();
+}
+
+// Settings & Rates
+function syncData() {
+    onValue(ref(db, PATH_CFG), s => {
+        const val = s.val() || {};
+        localRate = val.hourlyRate || 0;
+        localWorkHours = val.dayHours || 8;
+        rateLabel.innerText = localRate.toFixed(2);
+        loadCoreData();
+    });
+}
+
+window.syncRate = () => {
+    const total = parseFloat(dispBal.getAttribute('data-total-inc')) || 0;
+    const h = parseFloat(workHours.value) || 8;
+    if(total <= 0) return alert("Enter income first");
+    const newRate = total / (h * 30);
+    update(ref(db, PATH_CFG), { hourlyRate: newRate, dayHours: h });
+};
+
+// Data Handlers
+function loadCoreData() {
+    // Categories
+    onValue(ref(db, PATH_CAT), s => {
+        expCat.innerHTML = '<option value="General">General</option>';
+        s.forEach(c => { expCat.innerHTML += `<option value="${c.val().name}">${c.val().name}</option>`; });
+    });
+
+    // Income
+    onValue(ref(db, PATH_INC), s => {
+        let total = 0; incList.innerHTML = "";
+        s.forEach(i => { 
+            total += i.val().amount; 
+            incList.innerHTML += `<div class="flex-row log-item"><small>${i.val().name}</small> <b>₹${i.val().amount}</b></div>`;
+        });
+        dispBal.setAttribute('data-total-inc', total);
+        processExpenses(total);
+    });
+}
+
+function processExpenses(totalInc) {
+    onValue(ref(db, PATH_REC), s => {
+        activityLog.innerHTML = "";
+        let spent = 0;
+        const targetMonth = monthSelect.value;
+        const summary = {};
+
+        s.forEach(item => {
+            const data = item.val();
+            const dateObj = new Date(data.timestamp);
+            const itemMonth = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}`;
+
+            if(itemMonth === targetMonth) {
+                spent += data.val;
+                summary[data.cat] = (summary[data.cat] || 0) + data.val;
+                
+                const timeCost = localRate > 0 ? (data.val / localRate).toFixed(1) : 0;
+                activityLog.innerHTML += `
+                    <div class="card log-item">
+                        <div class="flex-row"><b>${data.label}</b> <span class="expense-text">₹${data.val}</span></div>
+                        <div class="flex-row" style="margin-top:5px">
+                            <small style="color:#9ca3af">${data.cat} • ${timeCost}hrs</small>
+                            <button onclick="dropRecord('${item.key}')" style="width:auto; padding:2px 8px; font-size:10px" class="danger">Remove</button>
+                        </div>
+                    </div>`;
+            }
+        });
+
+        dispSpent.innerText = spent.toLocaleString();
+        dispBal.innerText = (totalInc - spent).toLocaleString();
+        renderChart(summary, spent, totalInc);
+    });
+}
+
+function renderChart(dataMap, totalSpent, totalInc) {
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if(chartObj) chartObj.destroy();
+
+    const labels = Object.keys(dataMap);
+    const vals = Object.values(dataMap);
+    
+    chartObj = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: vals,
+                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                datalabels: {
+                    color: '#fff',
+                    formatter: (v) => {
+                        if(activeMode === 'pct') return ((v/totalInc)*100).toFixed(0) + '%';
+                        if(activeMode === 'life') return (v/localRate/localWorkHours).toFixed(1) + 'd';
+                        return '₹' + v;
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Logic Actions
+window.changeMode = (m) => {
+    activeMode = m;
+    document.querySelectorAll('.tab-group button').forEach(b => b.classList.remove('active'));
+    document.getElementById('t-'+m).classList.add('active');
+    syncData(); 
+};
+
+window.addIncome = () => {
+    if(incName.value && incAmt.value) {
+        push(ref(db, PATH_INC), { name: incName.value, amount: Number(incAmt.value) });
+        incName.value = ""; incAmt.value = "";
+    }
+};
+
+window.addEntry = () => {
+    if(!expDesc.value || !expAmt.value) return;
+    push(ref(db, PATH_REC), {
+        label: expDesc.value,
+        val: Number(expAmt.value),
+        cat: expCat.value,
+        timestamp: Date.now()
+    });
+    expDesc.value = ""; expAmt.value = "";
+};
+
+window.dropRecord = (key) => remove(ref(db, `${PATH_REC}/${key}`));
+Chart.register(ChartDataLabels);
+</script>
+</body>
+</html>
