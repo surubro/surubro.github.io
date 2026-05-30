@@ -1,3 +1,15 @@
+Here is the updated code. The simple list has been replaced with a dynamic, responsive **Calendar Grid View** (`1` to `30`/`31` depending on the selected month).
+
+### What's New:
+
+* **True Calendar Grid Layout:** Generates the correct number of days for any selected month, aligning dates to their accurate weekdays (Sunday to Saturday) with empty padding cells for shifts.
+* **Visual Highlights:** * Days with recorded work hours are highlighted in a soft green block.
+* Today's current date features a distinct border.
+
+
+* **Instant Edit Access:** Clicking directly on any date block inside the calendar opens the adjustment/manual log modal instantly for that day.
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +21,7 @@
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color: #333; }
     header { background:#2E7D32; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
 
-    #loginDiv, #appDiv { padding:20px; max-width: 600px; margin: 0 auto; }
+    #loginDiv, #appDiv { padding:20px; max-width: 700px; margin: 0 auto; }
 
     input, button, select {
       width:100%;
@@ -53,26 +65,73 @@
 
     .flex-group { display: flex; gap: 10px; }
 
-    .card {
-      background:white;
-      padding:15px;
-      margin:10px 0;
-      border-radius:8px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.1);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+    /* Calendar Design System */
+    .calendar-container {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
-    .log-details div { margin: 2px 0; }
-    .actions button {
-      background:#2196F3;
-      margin-left:5px;
-      padding:6px 12px;
-      font-size:14px;
-      width: auto;
+    .weekday-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      color: #666;
+      margin-bottom: 8px;
+      font-size: 14px;
     }
-    .actions button.btn-delete { background:#f44336; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .calendar-day {
+      background: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      min-height: 75px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-sizing: border-box;
+    }
+    .calendar-day:hover {
+      background: #f0f0f0;
+      transform: scale(1.02);
+    }
+    .calendar-day.empty {
+      background: transparent;
+      border: none;
+      cursor: default;
+      pointer-events: none;
+    }
+    .calendar-day.today {
+      border: 2px solid #2196F3;
+    }
+    .calendar-day.has-logs {
+      background: #E8F5E9;
+      border-color: #A5D6A7;
+    }
+    .day-number {
+      font-weight: bold;
+      font-size: 14px;
+      color: #444;
+    }
+    .day-hours {
+      font-size: 11px;
+      font-weight: bold;
+      color: #2E7D32;
+      text-align: right;
+    }
+    .day-timestamps {
+      font-size: 9px;
+      color: #777;
+      margin-top: 4px;
+    }
 
     /* Modal Styling */
     .modal {
@@ -120,38 +179,44 @@
   </div>
 
   <div class="box">
-    <h3>Monthly Logs</h3>
+    <h3>Monthly Scope</h3>
     <div class="flex-group">
       <select id="monthFilter" onchange="loadMonthlyLogs()"></select>
       <button onclick="openManualModal()" style="background: #0288D1; white-space: nowrap; width: auto;">+ Manual Log</button>
     </div>
-    <div style="margin-top: 10px; font-weight: bold; text-align: right; color: #2E7D32;">
+    <div style="margin-top: 10px; font-weight: bold; text-align: right; font-size: 17px; color: #2E7D32;">
       Monthly Total: <span id="monthlyTotalHours">0h 0m</span>
     </div>
   </div>
 
-  <h3>Daily Attendance History</h3>
-  <div id="list"></div>
+  <div class="calendar-container">
+    <div class="weekday-header">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div id="calendarGrid" class="calendar-grid"></div>
+  </div>
   
   <button onclick="logout()" class="btn-secondary" style="margin-top: 20px;">Logout</button>
 </div>
 
 <div id="logModal" class="modal">
   <div class="modal-content">
-    <h3 id="modalTitle">Add Manual Log</h3>
-    <input type="hidden" id="editDateId">
+    <h3 id="modalTitle">Manage Attendance</h3>
+    <input type="hidden" id="modalDate">
     
-    <label for="modalDate">Date:</label>
-    <input type="date" id="modalDate">
+    <div style="margin-bottom: 12px; font-weight: bold; color: #2E7D32;">
+      Selected Date: <span id="modalDateDisplay"></span>
+    </div>
     
     <label for="modalCheckIn">Check-In Time:</label>
     <input type="time" id="modalCheckIn">
     
-    <label for="modalCheckOut">Check-Out Time:</label>
+    <label for="modalCheckOut">Check-Out Time (Leave empty if active):</label>
     <input type="time" id="modalCheckOut">
     
     <div class="flex-group" style="margin-top: 15px;">
-      <button onclick="saveLog()" style="background: #4CAF50;">Save</button>
+      <button onclick="saveLog()" style="background: #4CAF50;">Save Logs</button>
+      <button id="btnDeleteLog" onclick="deleteLog()" style="background: #f44336; display: none;">Clear Day</button>
       <button onclick="closeManualModal()" class="btn-secondary">Cancel</button>
     </div>
   </div>
@@ -180,14 +245,13 @@
   let currentStatusListener = null;
   let monthlyLogsListener = null;
 
-  // Formatting utilities
   const getLocalDateString = (date) => {
     const offset = date.getTimezoneOffset();
     const cleanDate = new Date(date.getTime() - (offset * 60 * 1000));
     return cleanDate.toISOString().split('T')[0];
   };
 
-  // Init Month Select Dropdown with current month selected automatically
+  // Setup month selectors
   const monthFilter = document.getElementById("monthFilter");
   const initMonthDropdown = () => {
     monthFilter.innerHTML = "";
@@ -203,12 +267,11 @@
       monthFilter.appendChild(option);
       d.setMonth(d.getMonth() - 1);
     }
-    // Forces selection to default to the true current month view on load
     monthFilter.value = currentYearMonth;
   };
   initMonthDropdown();
 
-  // Authentication observer
+  // Auth monitoring
   onAuthStateChanged(auth, user => {
     currentUser = user;
     loginDiv.style.display = user ? "none" : "block";
@@ -245,7 +308,7 @@
     return `${h}h ${m}m`;
   };
 
-  // Live UI Engine for checkout / check-in states
+  // Status block management
   function setupRealtimeTracker() {
     const todayStr = getLocalDateString(new Date());
     const currentMonthStr = todayStr.substring(0, 7);
@@ -277,17 +340,12 @@
     });
   }
 
-  // Handle Automatic Live Actions
   window.handleCheckIn = () => {
     const now = new Date();
     const todayStr = getLocalDateString(now);
     const currentMonthStr = todayStr.substring(0, 7);
     const dayRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
-    
-    update(dayRef, {
-      checkIn: now.toISOString(),
-      checkOut: null
-    });
+    set(dayRef, { checkIn: now.toISOString(), checkOut: null });
   };
 
   window.handleCheckOut = () => {
@@ -296,96 +354,114 @@
     const currentMonthStr = todayStr.substring(0, 7);
     const dayRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
     
-    // Safety handling if live checkout goes past midnight locally
     onValue(dayRef, snap => {
       const data = snap.val();
       let checkInDate = data && data.checkIn ? new Date(data.checkIn) : null;
       let checkOutDate = now;
-      
       if (checkInDate && checkOutDate < checkInDate) {
-        // If current real time matches an altered timezone anomaly somehow, prevent error
         checkOutDate.setDate(checkOutDate.getDate() + 1);
       }
-      
-      update(dayRef, {
-        checkOut: checkOutDate.toISOString()
-      });
+      update(dayRef, { checkOut: checkOutDate.toISOString() });
     }, { onlyOnce: true });
   };
 
-  // Fetch and show logs
+  // Calendar Grid Builder & Month Listener
   window.loadMonthlyLogs = () => {
-    const targetMonth = monthFilter.value;
+    const targetMonth = monthFilter.value; // Format: YYYY-MM
+    const [year, month] = targetMonth.split("-").map(Number);
+    
     const monthlyRef = ref(db, `jobcheckin/${currentUser.uid}/${targetMonth}`);
     
     if (monthlyLogsListener) monthlyLogsListener();
 
     monthlyLogsListener = onValue(monthlyRef, snap => {
-      const list = document.getElementById("list");
-      list.innerHTML = "";
+      const dbData = snap.exists() ? snap.val() : {};
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+      
       let totalMonthMs = 0;
 
-      if (!snap.exists()) {
-        list.innerHTML = "<p style='text-align:center; color:#777;'>No logs found for this month.</p>";
-        document.getElementById("monthlyTotalHours").innerText = "0h 0m";
-        return;
+      // Calendar structural mechanics
+      const firstDayIndex = new Date(year, month - 1, 1).getDay(); 
+      const totalDaysInMonth = new Date(year, month, 0).getDate();
+      const todayStr = getLocalDateString(new Date());
+
+      // Padding grid elements for layout balance
+      for (let i = 0; i < firstDayIndex; i++) {
+        const padCell = document.createElement("div");
+        padCell.className = "calendar-day empty";
+        grid.appendChild(padCell);
       }
 
-      const keys = Object.keys(snap.val()).sort().reverse();
+      // Generate actual days
+      for (let day = 1; day <= totalDaysInMonth; day++) {
+        const dateString = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayRecord = dbData[dateString];
 
-      keys.forEach(dateKey => {
-        const item = snap.val()[dateKey];
-        const dayMs = calculateDuration(item.checkIn, item.checkOut);
-        totalMonthMs += dayMs;
+        const dayCell = document.createElement("div");
+        dayCell.className = "calendar-day";
+        if (dateString === todayStr) dayCell.classList.add("today");
 
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="log-details">
-            <strong style="color:#2E7D32;">${dateKey}</strong>
-            <div>⏳ <b>Total:</b> ${dayMs > 0 ? formatDuration(dayMs) : (item.checkIn && !item.checkOut ? "In Progress..." : "0h 0m")}</div>
-            <div style="font-size:13px; color:#666;">
-              In: ${formatTime(item.checkIn)} | Out: ${formatTime(item.checkOut)}
+        let cellHoursMarkup = "";
+        let cellTimestampMarkup = "";
+
+        if (dayRecord) {
+          dayCell.classList.add("has-logs");
+          const dayMs = calculateDuration(dayRecord.checkIn, dayRecord.checkOut);
+          totalMonthMs += dayMs;
+
+          cellHoursMarkup = dayMs > 0 ? formatDuration(dayMs) : (dayRecord.checkIn ? "Active" : "");
+          cellTimestampMarkup = `
+            <div class="day-timestamps">
+              In: ${formatTime(dayRecord.checkIn)}<br>
+              Out: ${formatTime(dayRecord.checkOut)}
             </div>
-          </div>
-          <div class="actions">
-            <button onclick="openEditModal('${dateKey}', '${item.checkIn}', '${item.checkOut || ''}')">Edit</button>
-            <button class="btn-delete" onclick="deleteLog('${dateKey}')">Delete</button>
-          </div>
+          `;
+        }
+
+        dayCell.innerHTML = `
+          <div class="day-number">${day}</div>
+          <div class="day-hours">${cellHoursMarkup}</div>
+          ${cellTimestampMarkup}
         `;
-        list.appendChild(card);
-      });
+
+        // Direct day block interactions
+        dayCell.onclick = () => {
+          if (dayRecord) {
+            openFormModal(dateString, dayRecord.checkIn, dayRecord.checkOut);
+          } else {
+            openFormModal(dateString, "", "");
+          }
+        };
+
+        grid.appendChild(dayCell);
+      }
 
       document.getElementById("monthlyTotalHours").innerText = formatDuration(totalMonthMs);
     });
   };
 
-  // Modal UI Handlers (Manual Entries / Modifications)
+  // Modal Controllers
   const modal = document.getElementById("logModal");
   
   window.openManualModal = () => {
-    document.getElementById("modalTitle").innerText = "Add Manual Log";
-    document.getElementById("editDateId").value = "";
-    document.getElementById("modalDate").value = getLocalDateString(new Date());
-    document.getElementById("modalDate").disabled = false;
-    document.getElementById("modalCheckIn").value = "15:00";
-    document.getElementById("modalCheckOut").value = "00:30";
-    modal.style.display = "flex";
+    openFormModal(getLocalDateString(new Date()), "", "");
   };
 
-  window.openEditModal = (dateStr, checkInIso, checkOutIso) => {
-    document.getElementById("modalTitle").innerText = "Edit Attendance Log";
-    document.getElementById("editDateId").value = dateStr;
+  function openFormModal(dateStr, checkInIso, checkOutIso) {
     document.getElementById("modalDate").value = dateStr;
-    document.getElementById("modalDate").disabled = true;
+    document.getElementById("modalDateDisplay").innerText = dateStr;
 
     const inTime = checkInIso ? new Date(checkInIso).toTimeString().substring(0,5) : "";
     const outTime = checkOutIso ? new Date(checkOutIso).toTimeString().substring(0,5) : "";
     
     document.getElementById("modalCheckIn").value = inTime;
     document.getElementById("modalCheckOut").value = outTime;
+    
+    // Toggle delete button exposure conditionally
+    document.getElementById("btnDeleteLog").style.display = checkInIso ? "block" : "none";
     modal.style.display = "flex";
-  };
+  }
 
   window.closeManualModal = () => { modal.style.display = "none"; };
 
@@ -395,7 +471,7 @@
     const outTimeVal = document.getElementById("modalCheckOut").value;
 
     if (!dateVal || !inTimeVal) {
-      alert("Date and Check-In time are required.");
+      alert("Check-In time is mandatory.");
       return;
     }
 
@@ -407,11 +483,8 @@
 
     if (outTimeVal) {
       checkOutDate = new Date(`${dateVal}T${outTimeVal}`);
-      
-      // FIX: If Check-Out hour is numerically lower than Check-In hour (e.g. 00:30 vs 15:00), 
-      // it means your shift crossed over midnight into the following morning.
       if (checkOutDate < checkInDate) {
-        checkOutDate.setDate(checkOutDate.getDate() + 1); 
+        checkOutDate.setDate(checkOutDate.getDate() + 1); // Auto midnight conversion shift
       }
     }
 
@@ -427,10 +500,13 @@
     });
   };
 
-  window.deleteLog = (dateStr) => {
-    if (confirm(`Permanently drop tracking entry logs for ${dateStr}?`)) {
+  window.deleteLog = () => {
+    const dateStr = document.getElementById("modalDate").value;
+    if (confirm(`Remove records for ${dateStr}?`)) {
       const monthStr = dateStr.substring(0, 7);
-      remove(ref(db, `jobcheckin/${currentUser.uid}/${monthStr}/${dateStr}`));
+      remove(ref(db, `jobcheckin/${currentUser.uid}/${monthStr}/${dateStr}`)).then(() => {
+        closeManualModal();
+      });
     }
   };
 </script>
