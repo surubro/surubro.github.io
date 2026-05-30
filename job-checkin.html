@@ -1,16 +1,4 @@
-Here is the complete, rewritten single-file HTML code.
 
-The data structure has been shifted to a new root node (`jobcheckin`) structured by **User ID → Year-Month (`YYYY-MM`) → Date (`YYYY-MM-DD`)**. This layout supports multi-user tracking, clean monthly calculations, and seamless daily check-ins/check-outs.
-
-### Key Features Implemented
-
-* **Real-time Check-In / Check-Out:** Live status tracker showing current shift duration if clocked in.
-* **Monthly Filtering:** Dropdown select tool to switch between months.
-* **Daily Time Calculation:** Automatically calculates total hours and minutes worked per day.
-* **Manual Logs / Adjustments:** Create missing entries or edit existing ones directly via a clean modal popup form.
-* **User Isolation:** Data is dynamically stored under each individual user's authenticated UID, ensuring security.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
