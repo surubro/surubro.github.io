@@ -1,0 +1,437 @@
+Here is the complete, rewritten single-file HTML code.
+
+The data structure has been shifted to a new root node (`jobcheckin`) structured by **User ID → Year-Month (`YYYY-MM`) → Date (`YYYY-MM-DD`)**. This layout supports multi-user tracking, clean monthly calculations, and seamless daily check-ins/check-outs.
+
+### Key Features Implemented
+
+* **Real-time Check-In / Check-Out:** Live status tracker showing current shift duration if clocked in.
+* **Monthly Filtering:** Dropdown select tool to switch between months.
+* **Daily Time Calculation:** Automatically calculates total hours and minutes worked per day.
+* **Manual Logs / Adjustments:** Create missing entries or edit existing ones directly via a clean modal popup form.
+* **User Isolation:** Data is dynamically stored under each individual user's authenticated UID, ensuring security.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Job Check-In Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; color: #333; }
+    header { background:#2E7D32; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+
+    #loginDiv, #appDiv { padding:20px; max-width: 600px; margin: 0 auto; }
+
+    input, button, select {
+      width:100%;
+      padding:12px;
+      margin:6px 0;
+      font-size:16px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button {
+      background:#2E7D32;
+      color:white;
+      font-weight:bold;
+      border:none;
+      cursor:pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #1B5E20; }
+
+    .box {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .status-panel {
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .btn-checkin { background: #4CAF50; }
+    .btn-checkin:hover { background: #388E3C; }
+    .btn-checkout { background: #f44336; }
+    .btn-checkout:hover { background: #d32f2f; }
+    .btn-secondary { background: #757575; }
+    .btn-secondary:hover { background: #616161; }
+
+    .flex-group { display: flex; gap: 10px; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .log-details div { margin: 2px 0; }
+    .actions button {
+      background:#2196F3;
+      margin-left:5px;
+      padding:6px 12px;
+      font-size:14px;
+      width: auto;
+    }
+    .actions button.btn-delete { background:#f44336; }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+
+<body>
+
+<header>⏱️ Job Check-In Tracker</header>
+
+<div id="loginDiv">
+  <div class="box">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="appDiv" style="display:none;">
+
+  <div class="box status-panel">
+    <h3>Current Status</h3>
+    <div id="statusText" style="margin-bottom: 10px; font-size: 18px; color: #555;">Loading...</div>
+    <div class="flex-group">
+      <button id="checkInBtn" class="btn-checkin" onclick="handleCheckIn()">Check In</button>
+      <button id="checkOutBtn" class="btn-checkout" onclick="handleCheckOut()" style="display:none;">Check Out</button>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3>Monthly Logs</h3>
+    <div class="flex-group">
+      <select id="monthFilter" onchange="loadMonthlyLogs()"></select>
+      <button onclick="openManualModal()" style="background: #0288D1; white-space: nowrap; width: auto;">+ Manual Log</button>
+    </div>
+    <div style="margin-top: 10px; font-weight: bold; text-align: right; color: #2E7D32;">
+      Monthly Total: <span id="monthlyTotalHours">0h 0m</span>
+    </div>
+  </div>
+
+  <h3>Daily Attendance History</h3>
+  <div id="list"></div>
+  
+  <button onclick="logout()" class="btn-secondary" style="margin-top: 20px;">Logout</button>
+</div>
+
+<div id="logModal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Add Manual Log</h3>
+    <input type="hidden" id="editDateId">
+    
+    <label for="modalDate">Date:</label>
+    <input type="date" id="modalDate">
+    
+    <label for="modalCheckIn">Check-In Time:</label>
+    <input type="time" id="modalCheckIn">
+    
+    <label for="modalCheckOut">Check-Out Time (Optional):</label>
+    <input type="time" id="modalCheckOut">
+    
+    <div class="flex-group" style="margin-top: 15px;">
+      <button onclick="saveLog()" style="background: #4CAF50;">Save</button>
+      <button onclick="closeManualModal()" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  let currentUser = null;
+  let currentStatusListener = null;
+  let monthlyLogsListener = null;
+
+  // Init Month Select Dropdown with last 6 months
+  const monthFilter = document.getElementById("monthFilter");
+  const initMonthDropdown = () => {
+    monthFilter.innerHTML = "";
+    const d = new Date();
+    for (let i = 0; i < 6; i++) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const option = document.createElement("option");
+      option.value = `${y}-${m}`;
+      option.innerText = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+      monthFilter.appendChild(option);
+      d.setMonth(d.getMonth() - 1);
+    }
+  };
+  initMonthDropdown();
+
+  // Authentication observer
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    loginDiv.style.display = user ? "none" : "block";
+    appDiv.style.display = user ? "block" : "none";
+
+    if (user) {
+      setupRealtimeTracker();
+      loadMonthlyLogs();
+    } else {
+      if (currentStatusListener) currentStatusListener();
+      if (monthlyLogsListener) monthlyLogsListener();
+    }
+  });
+
+  window.login = () =>
+    signInWithEmailAndPassword(auth, email.value, password.value).catch(e => alert(e.message));
+
+  window.logout = () => signOut(auth);
+
+  // Formatting utilities
+  const getLocalDateString = (date) => {
+    const offset = date.getTimezoneOffset();
+    const cleanDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return cleanDate.toISOString().split('T')[0];
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) return "--:--";
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const calculateDuration = (inIso, outIso) => {
+    if (!inIso || !outIso) return 0;
+    return Math.max(0, new Date(outIso) - new Date(inIso));
+  };
+
+  const formatDuration = (ms) => {
+    const mins = Math.floor(ms / 1000 / 60);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${m}m`;
+  };
+
+  // Live UI Engine for checkout / check-in states
+  function setupRealtimeTracker() {
+    const todayStr = getLocalDateString(new Date());
+    const currentMonthStr = todayStr.substring(0, 7);
+    const statusRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
+    
+    if (currentStatusListener) currentStatusListener();
+
+    currentStatusListener = onValue(statusRef, snap => {
+      const data = snap.val();
+      const checkInBtn = document.getElementById("checkInBtn");
+      const checkOutBtn = document.getElementById("checkOutBtn");
+      const statusText = document.getElementById("statusText");
+
+      if (data && data.checkIn && !data.checkOut) {
+        statusText.innerText = `Checked in at: ${formatTime(data.checkIn)}`;
+        checkInBtn.style.display = "none";
+        checkOutBtn.style.display = "block";
+      } else if (data && data.checkIn && data.checkOut) {
+        statusText.innerText = `Shift completed today. Total: ${formatDuration(calculateDuration(data.checkIn, data.checkOut))}`;
+        checkInBtn.style.display = "block";
+        checkInBtn.innerText = "🔄 Check In Again";
+        checkOutBtn.style.display = "none";
+      } else {
+        statusText.innerText = "Not checked in today";
+        checkInBtn.style.display = "block";
+        checkInBtn.innerText = "Check In";
+        checkOutBtn.style.display = "none";
+      }
+    });
+  }
+
+  // Handle Automatic Actions
+  window.handleCheckIn = () => {
+    const now = new Date();
+    const todayStr = getLocalDateString(now);
+    const currentMonthStr = todayStr.substring(0, 7);
+    const dayRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
+    
+    update(dayRef, {
+      checkIn: now.toISOString(),
+      checkOut: null
+    });
+  };
+
+  window.handleCheckOut = () => {
+    const now = new Date();
+    const todayStr = getLocalDateString(now);
+    const currentMonthStr = todayStr.substring(0, 7);
+    const dayRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
+    
+    update(dayRef, {
+      checkOut: now.toISOString()
+    });
+  };
+
+  // Fetch and show logs
+  window.loadMonthlyLogs = () => {
+    const targetMonth = monthFilter.value;
+    const monthlyRef = ref(db, `jobcheckin/${currentUser.uid}/${targetMonth}`);
+    
+    if (monthlyLogsListener) monthlyLogsListener();
+
+    monthlyLogsListener = onValue(monthlyRef, snap => {
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+      let totalMonthMs = 0;
+
+      if (!snap.exists()) {
+        list.innerHTML = "<p style='text-align:center; color:#777;'>No logs found for this month.</p>";
+        document.getElementById("monthlyTotalHours").innerText = "0h 0m";
+        return;
+      }
+
+      // Sort dates descending
+      const keys = Object.keys(snap.val()).sort().reverse();
+
+      keys.forEach(dateKey => {
+        const item = snap.val()[dateKey];
+        const dayMs = calculateDuration(item.checkIn, item.checkOut);
+        totalMonthMs += dayMs;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="log-details">
+            <strong style="color:#2E7D32;">${dateKey}</strong>
+            <div>⏳ <b>Total:</b> ${dayMs > 0 ? formatDuration(dayMs) : (item.checkIn && !item.checkOut ? "In Progress..." : "0h 0m")}</div>
+            <div style="font-size:13px; color:#666;">
+              In: ${formatTime(item.checkIn)} | Out: ${formatTime(item.checkOut)}
+            </div>
+          </div>
+          <div class="actions">
+            <button onclick="openEditModal('${dateKey}', '${item.checkIn}', '${item.checkOut || ''}')">Edit</button>
+            <button class="btn-delete" onclick="deleteLog('${dateKey}')">Delete</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      document.getElementById("monthlyTotalHours").innerText = formatDuration(totalMonthMs);
+    });
+  };
+
+  // Modal UI Handlers (Manual Entries / Modifications)
+  const modal = document.getElementById("logModal");
+  
+  window.openManualModal = () => {
+    document.getElementById("modalTitle").innerText = "Add Manual Log";
+    document.getElementById("editDateId").value = "";
+    document.getElementById("modalDate").value = getLocalDateString(new Date());
+    document.getElementById("modalDate").disabled = false;
+    document.getElementById("modalCheckIn").value = "09:00";
+    document.getElementById("modalCheckOut").value = "17:00";
+    modal.style.display = "flex";
+  };
+
+  window.openEditModal = (dateStr, checkInIso, checkOutIso) => {
+    document.getElementById("modalTitle").innerText = "Edit Attendance Log";
+    document.getElementById("editDateId").value = dateStr;
+    document.getElementById("modalDate").value = dateStr;
+    document.getElementById("modalDate").disabled = true; // Lock date when tweaking existing log
+
+    const inTime = checkInIso ? new Date(checkInIso).toTimeString().substring(0,5) : "";
+    const outTime = checkOutIso ? new Date(checkOutIso).toTimeString().substring(0,5) : "";
+    
+    document.getElementById("modalCheckIn").value = inTime;
+    document.getElementById("modalCheckOut").value = outTime;
+    modal.style.display = "flex";
+  };
+
+  window.closeManualModal = () => { modal.style.display = "none"; };
+
+  window.saveLog = () => {
+    const dateVal = document.getElementById("modalDate").value;
+    const inTimeVal = document.getElementById("modalCheckIn").value;
+    const outTimeVal = document.getElementById("modalCheckOut").value;
+
+    if (!dateVal || !inTimeVal) {
+      alert("Date and Check-In time are required.");
+      return;
+    }
+
+    const monthStr = dateVal.substring(0, 7);
+    const targetRef = ref(db, `jobcheckin/${currentUser.uid}/${monthStr}/${dateVal}`);
+
+    const checkInIso = new Date(`${dateVal}T${inTimeVal}`).toISOString();
+    let checkOutIso = null;
+    if (outTimeVal) {
+      checkOutIso = new Date(`${dateVal}T${outTimeVal}`).toISOString();
+      if (new Date(checkOutIso) < new Date(checkInIso)) {
+        alert("Check-Out time cannot be before Check-In time.");
+        return;
+      }
+    }
+
+    set(targetRef, {
+      checkIn: checkInIso,
+      checkOut: checkOutIso
+    }).then(() => {
+      closeManualModal();
+      // Auto flip picker view if adding log to a alternate month profile
+      if(monthFilter.value !== monthStr) {
+        monthFilter.value = monthStr;
+        loadMonthlyLogs();
+      }
+    });
+  };
+
+  window.deleteLog = (dateStr) => {
+    if (confirm(`Permanently drop tracking entry logs for ${dateStr}?`)) {
+      const monthStr = dateStr.substring(0, 7);
+      remove(ref(db, `jobcheckin/${currentUser.uid}/${monthStr}/${dateStr}`));
+    }
+  };
+</script>
+
+</body>
+</html>
+
+```
