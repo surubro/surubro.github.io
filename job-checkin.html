@@ -1,3 +1,12 @@
+The error occurs because when you check in at `15:00` (3:00 PM) and check out at `00:30` (12:30 AM), JavaScript reads both times on the *same calendar date*, making 12:30 AM look like it happened *before* 3:00 PM.
+
+To fix this, the script has been updated to automatically detect if the check-out time falls on the **next day** and shifts the date calculation forward by 24 hours.
+
+Additionally, the application now automatically defaults the dropdown selector to the **current active calendar month** right when you visit or refresh the page.
+
+Here is your fully updated, corrected code:
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
