@@ -24,11 +24,11 @@
         /* Input Screen */
         #input-screen {
             background: white;
-            padding: 40px 60px;
+            padding: 40px 40px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
         }
 
@@ -37,13 +37,18 @@
             color: #333;
         }
 
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         input {
-            width: 100%;
+            flex: 1;
             padding: 15px;
             font-size: 18px;
             border: 2px solid #ddd;
             border-radius: 8px;
-            margin-bottom: 20px;
             outline: none;
             transition: border 0.3s;
         }
@@ -52,29 +57,98 @@
             border-color: #0066ff;
         }
 
-        button {
+        .btn {
             background: #0066ff;
             color: white;
             border: none;
-            padding: 14px 32px;
-            font-size: 18px;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.3s;
+            white-space: nowrap;
         }
 
-        button:hover {
+        .btn:hover {
             background: #0052cc;
         }
 
-        /* Fullscreen Text Screen */
+        .btn-secondary {
+            background: #28a745;
+        }
+        .btn-secondary:hover {
+            background: #218838;
+        }
+
+        /* Saved Tags Area */
+        .tags-section {
+            text-align: left;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .tags-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .tag {
+            background: #e1ecf4;
+            color: #2c5777;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .tag:hover {
+            background: #d0e4f2;
+            transform: scale(1.03);
+        }
+
+        .tag-text {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .delete-tag {
+            color: #ca3c3c;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 2px;
+            border-radius: 50%;
+        }
+
+        .delete-tag:hover {
+            background: rgba(202, 60, 60, 0.1);
+        }
+
+        /* Fullscreen Text Screen - Pitch Black */
         #fullscreen {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: #111;
+            width: 100vw;
+            height: 100vh;
+            background: #000000;
             color: #fff;
             display: none;
             align-items: center;
@@ -97,70 +171,170 @@
 
         /* Instructions */
         .info {
-            position: absolute;
-            bottom: 30px;
-            font-size: 14px;
-            color: #666;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
-    <!-- Input Screen -->
     <div id="input-screen">
-        <h1>Enter Your Text</h1>
-        <input type="text" id="text-input" placeholder="Type something..." autocomplete="off">
-        <button onclick="showBigText()">Submit</button>
-        <div class="info">Double-click the big text to go back</div>
+        <h1>Big Text Launcher</h1>
+        
+        <div class="input-group">
+            <input type="text" id="text-input" placeholder="Type text..." autocomplete="off">
+            <button class="btn" onclick="launchCustomText()">Go</button>
+            <button class="btn btn-secondary" onclick="saveCurrentAsTag()">+ Tag</button>
+        </div>
+
+        <div class="tags-section">
+            <div class="tags-title">Click a saved word to go Fullscreen instantly:</div>
+            <div id="tags-container" class="tags-container">
+                </div>
+        </div>
+
+        <div class="info">Double-click the big text (or press ESC) to go back</div>
     </div>
 
-    <!-- Fullscreen Display -->
     <div id="fullscreen" ondblclick="hideBigText()">
         <div id="big-text"></div>
     </div>
 
     <script>
-        function showBigText() {
-            const input = document.getElementById('text-input');
-            const text = input.value.trim();
+        const inputElement = document.getElementById('text-input');
+        const fullscreenElement = document.getElementById('fullscreen');
+        const tagsContainer = document.getElementById('tags-container');
+
+        // Initial load from LocalStorage
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTags();
             
-            if (text === '') {
-                alert('Please enter some text!');
+            // Pre-fill the input box with whatever was last typed (optional convenience)
+            const lastInput = localStorage.getItem('lastBigTextInput');
+            if (lastInput) inputElement.value = lastInput;
+        });
+
+        // Get tags array from localStorage
+        function getSavedTags() {
+            const tags = localStorage.getItem('presetBigTags');
+            return tags ? JSON.parse(tags) : ["HELLO", "STOP", "GO", "SLOW DOWN"]; // Default fallback tags if empty
+        }
+
+        // Render the tag buttons inside the container
+        function renderTags() {
+            const tags = getSavedTags();
+            tagsContainer.innerHTML = '';
+
+            if(tags.length === 0) {
+                tagsContainer.innerHTML = '<span style="color: #aaa; font-style: italic; font-size: 13px;">No saved tags yet. Type above and click "+ Tag".</span>';
                 return;
             }
 
-            // Set the big text
+            tags.forEach((tagText, index) => {
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'tag';
+                // Clicking the tag body launches fullscreen immediately
+                tagDiv.onclick = () => launchTextDirectly(tagText);
+
+                const textSpan = document.createElement('span');
+                textSpan.className = 'tag-text';
+                textSpan.textContent = tagText;
+
+                const deleteSpan = document.createElement('span');
+                deleteSpan.className = 'delete-tag';
+                deleteSpan.innerHTML = '&times;';
+                // Stop click from launching fullscreen when trying to delete
+                deleteSpan.onclick = (e) => {
+                    e.stopPropagation(); 
+                    deleteTag(index);
+                };
+
+                tagDiv.appendChild(textSpan);
+                tagDiv.appendChild(deleteSpan);
+                tagsContainer.appendChild(tagDiv);
+            });
+        }
+
+        // Add current input value to the LocalStorage tag list
+        function saveCurrentAsTag() {
+            const text = inputElement.value.trim();
+            if (!text) {
+                alert('Type something in the box first to save it as a tag!');
+                return;
+            }
+
+            const tags = getSavedTags();
+            if (!tags.includes(text)) {
+                tags.push(text);
+                localStorage.setItem('presetBigTags', JSON.stringify(tags));
+                renderTags();
+            }
+        }
+
+        // Delete tag from LocalStorage
+        function deleteTag(index) {
+            const tags = getSavedTags();
+            tags.splice(index, 1);
+            localStorage.setItem('presetBigTags', JSON.stringify(tags));
+            renderTags();
+        }
+
+        // Launch from the manual "Go" button
+        function launchCustomText() {
+            const text = inputElement.value.trim();
+            if (!text) {
+                alert('Please enter some text!');
+                return;
+            }
+            localStorage.setItem('lastBigTextInput', text);
+            launchTextDirectly(text);
+        }
+
+        // The core Fullscreen triggering engine
+        function launchTextDirectly(text) {
             document.getElementById('big-text').textContent = text;
-            
-            // Hide input screen
             document.getElementById('input-screen').style.display = 'none';
-            
-            // Show fullscreen
-            const fullscreen = document.getElementById('fullscreen');
-            fullscreen.style.display = 'flex';
+            fullscreenElement.style.display = 'flex';
+
+            // Trigger True Browser Fullscreen (Hides URL bar and system menus entirely)
+            if (fullscreenElement.requestFullscreen) {
+                fullscreenElement.requestFullscreen();
+            } else if (fullscreenElement.webkitRequestFullscreen) { /* Safari */
+                fullscreenElement.webkitRequestFullscreen();
+            } else if (fullscreenElement.msRequestFullscreen) { /* IE11 */
+                fullscreenElement.msRequestFullscreen();
+            }
         }
 
         function hideBigText() {
-            // Hide fullscreen
-            document.getElementById('fullscreen').style.display = 'none';
-            
-            // Show input screen again
-            document.getElementById('input-screen').style.display = 'flex';
-            
-            // Optional: clear input for next use
-            // document.getElementById('text-input').value = '';
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            resetToInputScreen();
         }
 
-        // Allow pressing Enter key to submit
-        document.getElementById('text-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                showBigText();
-            }
+        function resetToInputScreen() {
+            fullscreenElement.style.display = 'none';
+            document.getElementById('input-screen').style.display = 'flex';
+        }
+
+        // Keep UI in sync if the user breaks fullscreen using the 'Esc' physical key
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) resetToInputScreen();
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement) resetToInputScreen();
         });
 
-        // Bonus: Click anywhere on fullscreen also works (but double-click is required as per request)
-        console.log('%cBig Text Display ready! Enter text and click Submit.', 'color: #0066ff; font-size: 14px;');
+        // Enter key shortcut inside input field
+        inputElement.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') launchCustomText();
+        });
     </script>
-
 </body>
 </html>
