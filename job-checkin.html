@@ -50,8 +50,12 @@
     .btn-checkout:hover { background: #d32f2f; }
     .btn-secondary { background: #757575; }
     .btn-secondary:hover { background: #616161; }
+    .btn-weekoff { background: #0288D1; }
+    .btn-weekoff:hover { background: #01579B; }
 
     .flex-group { display: flex; gap: 10px; }
+    .flex-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    .flex-wrap button { flex: 1; min-width: 100px; margin: 0; }
 
     /* Calendar Design System */
     .calendar-container {
@@ -104,6 +108,10 @@
       background: #E8F5E9;
       border-color: #A5D6A7;
     }
+    .calendar-day.is-weekoff {
+      background: #ECEFF1;
+      border-color: #B0BEC5;
+    }
     .day-number {
       font-weight: bold;
       font-size: 14px;
@@ -114,6 +122,9 @@
       font-weight: bold;
       color: #2E7D32;
       text-align: right;
+    }
+    .day-hours.weekoff-text {
+      color: #455A64;
     }
     .day-timestamps {
       font-size: 9px;
@@ -136,7 +147,7 @@
       padding: 20px;
       border-radius: 8px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
   </style>
@@ -196,14 +207,17 @@
       Selected Date: <span id="modalDateDisplay"></span>
     </div>
     
-    <label for="modalCheckIn">Check-In Time:</label>
-    <input type="time" id="modalCheckIn">
+    <div id="modalFormFields">
+      <label for="modalCheckIn">Check-In Time:</label>
+      <input type="time" id="modalCheckIn">
+      
+      <label for="modalCheckOut">Check-Out Time (Leave empty if active):</label>
+      <input type="time" id="modalCheckOut">
+    </div>
     
-    <label for="modalCheckOut">Check-Out Time (Leave empty if active):</label>
-    <input type="time" id="modalCheckOut">
-    
-    <div class="flex-group" style="margin-top: 15px;">
+    <div class="flex-wrap">
       <button onclick="saveLog()" style="background: #4CAF50;">Save Logs</button>
+      <button id="btnWeekOff" onclick="saveWeekOff()" class="btn-weekoff">Mark Week Off</button>
       <button id="btnDeleteLog" onclick="deleteLog()" style="background: #f44336; display: none;">Clear Day</button>
       <button onclick="closeManualModal()" class="btn-secondary">Cancel</button>
     </div>
@@ -310,7 +324,12 @@
       const checkOutBtn = document.getElementById("checkOutBtn");
       const statusText = document.getElementById("statusText");
 
-      if (data && data.checkIn && !data.checkOut) {
+      if (data && data.status === "Week Off") {
+        statusText.innerText = "Today is marked as your Week Off 🏖️";
+        checkInBtn.style.display = "block";
+        checkInBtn.innerText = "🔄 Override & Check In";
+        checkOutBtn.style.display = "none";
+      } else if (data && data.checkIn && !data.checkOut) {
         statusText.innerText = `Checked in at: ${formatTime(data.checkIn)}`;
         checkInBtn.style.display = "none";
         checkOutBtn.style.display = "block";
@@ -333,7 +352,7 @@
     const todayStr = getLocalDateString(now);
     const currentMonthStr = todayStr.substring(0, 7);
     const dayRef = ref(db, `jobcheckin/${currentUser.uid}/${currentMonthStr}/${todayStr}`);
-    set(dayRef, { checkIn: now.toISOString(), checkOut: null });
+    set(dayRef, { checkIn: now.toISOString(), checkOut: null, status: "Working" });
   };
 
   window.handleCheckOut = () => {
@@ -394,17 +413,27 @@
         let cellTimestampMarkup = "";
 
         if (dayRecord) {
-          dayCell.classList.add("has-logs");
-          const dayMs = calculateDuration(dayRecord.checkIn, dayRecord.checkOut);
-          totalMonthMs += dayMs;
+          if (dayRecord.status === "Week Off") {
+            dayCell.classList.add("is-weekoff");
+            cellHoursMarkup = `<span class="weekoff-text">Week Off</span>`;
+            cellTimestampMarkup = `
+              <div class="day-timestamps" style="color: #607D8B; font-weight: bold; text-align: center; margin-top: 8px;">
+                🏖️ Off Day
+              </div>
+            `;
+          } else {
+            dayCell.classList.add("has-logs");
+            const dayMs = calculateDuration(dayRecord.checkIn, dayRecord.checkOut);
+            totalMonthMs += dayMs;
 
-          cellHoursMarkup = dayMs > 0 ? formatDuration(dayMs) : (dayRecord.checkIn ? "Active" : "");
-          cellTimestampMarkup = `
-            <div class="day-timestamps">
-              In: ${formatTime(dayRecord.checkIn)}<br>
-              Out: ${formatTime(dayRecord.checkOut)}
-            </div>
-          `;
+            cellHoursMarkup = dayMs > 0 ? formatDuration(dayMs) : (dayRecord.checkIn ? "Active" : "");
+            cellTimestampMarkup = `
+              <div class="day-timestamps">
+                In: ${formatTime(dayRecord.checkIn)}<br>
+                Out: ${formatTime(dayRecord.checkOut)}
+              </div>
+            `;
+          }
         }
 
         dayCell.innerHTML = `
@@ -416,9 +445,9 @@
         // Direct day block interactions
         dayCell.onclick = () => {
           if (dayRecord) {
-            openFormModal(dateString, dayRecord.checkIn, dayRecord.checkOut);
+            openFormModal(dateString, dayRecord.checkIn || "", dayRecord.checkOut || "", dayRecord.status || "Working");
           } else {
-            openFormModal(dateString, "", "");
+            openFormModal(dateString, "", "", "Working");
           }
         };
 
@@ -433,10 +462,10 @@
   const modal = document.getElementById("logModal");
   
   window.openManualModal = () => {
-    openFormModal(getLocalDateString(new Date()), "", "");
+    openFormModal(getLocalDateString(new Date()), "", "", "Working");
   };
 
-  function openFormModal(dateStr, checkInIso, checkOutIso) {
+  function openFormModal(dateStr, checkInIso, checkOutIso, currentStatus) {
     document.getElementById("modalDate").value = dateStr;
     document.getElementById("modalDateDisplay").innerText = dateStr;
 
@@ -446,8 +475,20 @@
     document.getElementById("modalCheckIn").value = inTime;
     document.getElementById("modalCheckOut").value = outTime;
     
+    // Toggle fields based on status profile
+    const formFields = document.getElementById("modalFormFields");
+    const btnWeekOff = document.getElementById("btnWeekOff");
+    
+    if (currentStatus === "Week Off") {
+      formFields.style.display = "none";
+      btnWeekOff.style.display = "none";
+    } else {
+      formFields.style.display = "block";
+      btnWeekOff.style.display = "block";
+    }
+
     // Toggle delete button exposure conditionally
-    document.getElementById("btnDeleteLog").style.display = checkInIso ? "block" : "none";
+    document.getElementById("btnDeleteLog").style.display = (checkInIso || currentStatus === "Week Off") ? "block" : "none";
     modal.style.display = "flex";
   }
 
@@ -469,7 +510,7 @@
     let checkInDate = new Date(`${dateVal}T${inTimeVal}`);
     let checkOutDate = null;
 
-    if (outTimeVal) {
+  if (outTimeVal) {
       checkOutDate = new Date(`${dateVal}T${outTimeVal}`);
       if (checkOutDate < checkInDate) {
         checkOutDate.setDate(checkOutDate.getDate() + 1); // Auto midnight conversion shift
@@ -478,7 +519,26 @@
 
     set(targetRef, {
       checkIn: checkInDate.toISOString(),
-      checkOut: checkOutDate ? checkOutDate.toISOString() : null
+      checkOut: checkOutDate ? checkOutDate.toISOString() : null,
+      status: "Working"
+    }).then(() => {
+      closeManualModal();
+      if(monthFilter.value !== monthStr) {
+        monthFilter.value = monthStr;
+        loadMonthlyLogs();
+      }
+    });
+  };
+
+  window.saveWeekOff = () => {
+    const dateVal = document.getElementById("modalDate").value;
+    if (!dateVal) return;
+
+    const monthStr = dateVal.substring(0, 7);
+    const targetRef = ref(db, `jobcheckin/${currentUser.uid}/${monthStr}/${dateVal}`);
+
+    set(targetRef, {
+      status: "Week Off"
     }).then(() => {
       closeManualModal();
       if(monthFilter.value !== monthStr) {
@@ -501,5 +561,3 @@
 
 </body>
 </html>
-
-```
