@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shelf Life Search - Restaurant Excellence</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #e8e8e8;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 25px 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    header p {
+      color: #a0aec0;
+      font-size: 0.95rem;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 16px 20px 16px 50px;
+      font-size: 1.1rem;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .search-box input::placeholder {
+      color: #718096;
+    }
+
+    .search-box input:focus {
+      border-color: #e94560;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 0 0 4px rgba(233, 69, 96, 0.2);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #718096;
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+
+    .result-count {
+      text-align: center;
+      color: #a0aec0;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      min-height: 20px;
+    }
+
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 15px;
+      align-items: center;
+      transition: all 0.25s ease;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(233, 69, 96, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .item-code {
+      background: linear-gradient(135deg, #e94560, #c23a51);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 8px 0;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 70px;
+    }
+
+    .item-name {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #f0f0f0;
+      word-break: break-word;
+    }
+
+    .shelf-life {
+      background: rgba(72, 187, 120, 0.15);
+      color: #68d391;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(72, 187, 120, 0.3);
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .shelf-life.short {
+      background: rgba(245, 101, 101, 0.15);
+      color: #fc8181;
+      border-color: rgba(245, 101, 101, 0.3);
+    }
+
+    .shelf-life.medium {
+      background: rgba(237, 137, 54, 0.15);
+      color: #f6ad55;
+      border-color: rgba(237, 137, 54, 0.3);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 50px 20px;
+      color: #718096;
+      font-size: 1.1rem;
+    }
+
+    .no-results span {
+      display: block;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      color: #4a5568;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.4rem;
+      }
+
+      .card {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .item-code {
+        width: 80px;
+        margin: 0 auto;
+      }
+
+      .shelf-life {
+        justify-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Restaurant Excellence</h1>
+      <p>Shelf Life / Hold Time Lookup</p>
+    </header>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by item name or code..."
+        autocomplete="off"
+        autofocus
+      >
+    </div>
+
+    <div class="result-count" id="resultCount"></div>
+    <div class="results" id="results"></div>
+
+    <footer>
+      Total items: <span id="totalItems">0</span> &nbsp;|&nbsp; Type to search instantly
+    </footer>
+  </div>
+
+  <script>
+    const data = [
+      { code: 1, name: "Suma Breakup", shelf: "EOD" },
+      { code: 2, name: "Suma Sink Det", shelf: "5 Hours" },
+      { code: 3, name: "Suma Sink San Sanitizer", shelf: "5 Hours" },
+      { code: 4, name: "Suma Equip San Sanitizer", shelf: "4 Hours" },
+      { code: 5, name: "Sanitizer Spray Bottle", shelf: "EOD" },
+      { code: 11, name: "Lemon", shelf: "2 Hours" },
+      { code: 12, name: "Lemon - EOD", shelf: "EOD" },
+      { code: 13, name: "Lemon", shelf: "24 Hours" },
+      { code: 14, name: "Lemon Whole", shelf: "72 Hours" },
+      { code: 15, name: "Mint", shelf: "2 Hours" },
+      { code: 16, name: "Mint Leaves - EOD", shelf: "EOD" },
+      { code: 17, name: "Mint Leaves", shelf: "24 Hours" },
+      { code: 18, name: "Mint Leave Whole", shelf: "72 Hours" },
+      { code: 19, name: "Choco Lava Cake", shelf: "48 Hours" },
+      { code: 20, name: "Choco Mud Pie", shelf: "48 Hours" },
+      { code: 21, name: "Coffee Mousse Cake", shelf: "48 Hours" },
+      { code: 22, name: "Krush Lime", shelf: "30 Days" },
+      { code: 23, name: "Sugar syrup", shelf: "30 Days" },
+      { code: 24, name: "Hazelnut Flavoured Syrup", shelf: "30 Days" },
+      { code: 25, name: "Mojito Syrup", shelf: "3 Months" },
+      { code: 26, name: "Cocoa powder -station", shelf: "EOD" },
+      { code: 27, name: "Milk", shelf: "24 Hours" },
+      { code: 28, name: "Milk - Open Ambient", shelf: "6 Hours" },
+      { code: 29, name: "Coffee Beans - Station", shelf: "48 Hours" },
+      { code: 30, name: "Cocoa powder", shelf: "10 Days" },
+      { code: 31, name: "Coffee Beans - Open Pkt", shelf: "7 Days" },
+      { code: 32, name: "Chocolate cookies", shelf: "48 Hours" },
+      { code: 33, name: "Chocolate cookies", shelf: "120 Hours" },
+      { code: 34, name: "Black Currant Boba", shelf: "360 Hours" },
+      { code: 35, name: "Black Currant Boba", shelf: "EOD" },
+      { code: 36, name: "Kala Khatta Syrup", shelf: "360 Hours" },
+      { code: 37, name: "Coffee Frappe Powder", shelf: "30 Days" },
+      { code: 38, name: "Snickers Choco Mousse Cake", shelf: "48 Hours" },
+      { code: 51, name: "Chicken 9 Cut -Thawing", shelf: "48 Hours" },
+      { code: 52, name: "Chicken Strips - Thawing", shelf: "48 Hours" },
+      { code: 53, name: "Chicken Wings - Thawing", shelf: "48 Hours" },
+      { code: 54, name: "Chicken Popcorn - Thawing", shelf: "48 Hours" },
+      { code: 55, name: "Chicken Zinger - Thawing", shelf: "48 Hours" },
+      { code: 56, name: "Chicken Drumsticks - Thawing", shelf: "48 Hours" },
+      { code: 57, name: "Chicken Whole Leg - Thawing", shelf: "NA" },
+      { code: 58, name: "Chicken Boneless Wings - Thawing", shelf: "48 Hours" },
+      { code: 61, name: "Chicken 9 Cut - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 62, name: "Chicken Strips - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 63, name: "Chicken Wings - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 64, name: "Chicken Popcorn - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 65, name: "Chicken Drumsticks - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 66, name: "Chicken Zinger - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 67, name: "Chicken Whole Leg - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 68, name: "Chicken Boneless Wings - Chilled", shelf: "Kill Date + 72 Hours" },
+      { code: 71, name: "Chicken 9 Cut - Ch. Marination", shelf: "Day 1" },
+      { code: 72, name: "Chicken Strips - Ch. Marination", shelf: "Day 1" },
+      { code: 73, name: "Chicken Wings - Ch. Marination", shelf: "Day 1" },
+      { code: 74, name: "Chicken Popcorn - Ch. Marination", shelf: "Day 1" },
+      { code: 75, name: "Chicken Zinger - Ch. Marination", shelf: "Day 1" },
+      { code: 76, name: "Smoky Drum - Ch. Marination", shelf: "Day 1" },
+      { code: 77, name: "Chicken Leg piece - Ch. Marination", shelf: "Day 1" },
+      { code: 78, name: "Chicken Boneless Wings - Ch. Marination", shelf: "Day 1" },
+      { code: 81, name: "Chicken 9 Cut - Ch. Marination", shelf: "Day 2" },
+      { code: 82, name: "Chicken Strips - Ch. Marination", shelf: "Day 2" },
+      { code: 83, name: "Chicken Wings - Ch. Marination", shelf: "Day 2" },
+      { code: 84, name: "Chicken Popcorn - Ch. Marination", shelf: "Day 2" },
+      { code: 85, name: "Chicken Zinger - Ch. Marination", shelf: "Day 2" },
+      { code: 86, name: "Smoky Drum - Ch. Marination", shelf: "Day 2" },
+      { code: 87, name: "Chicken Leg piece - Ch. Marination", shelf: "Day 2" },
+      { code: 88, name: "Chicken Boneless Wings - Ch. Marination", shelf: "Day 2" },
+      { code: 91, name: "Chicken 9 Cut - Ch. Marination", shelf: "Day 3" },
+      { code: 92, name: "Chicken Strips - Ch. Marination", shelf: "Day 3" },
+      { code: 93, name: "Chicken Wings - Ch. Marination", shelf: "Day 3" },
+      { code: 94, name: "Chicken Popcorn - Ch. Marination", shelf: "Day 3" },
+      { code: 95, name: "Chicken Zinger - Ch. Marination", shelf: "Day 3" },
+      { code: 96, name: "Smoky Drum - Ch. Marination", shelf: "Day 3" },
+      { code: 97, name: "Chicken Leg piece - Ch. Marination", shelf: "Day 3" },
+      { code: 98, name: "Chicken Boneless Wings - Ch. Marination", shelf: "Day 3" },
+      { code: 101, name: "Chicken 9 Cut - Fz. Marination", shelf: "48 Hours" },
+      { code: 102, name: "Chicken Strips - Fz. Marination", shelf: "48 Hours" },
+      { code: 103, name: "Chicken Wings - Fz. Marination", shelf: "48 Hours" },
+      { code: 104, name: "Chicken Popcorn - Fz. Marination", shelf: "48 Hours" },
+      { code: 105, name: "Chicken Zinger - Fz. Marination", shelf: "48 Hours" },
+      { code: 106, name: "Smoky Drum - Fz. Marination", shelf: "48 Hours" },
+      { code: 107, name: "Chicken Leg piece - Fz. Marination", shelf: "48 Hours" },
+      { code: 108, name: "Chicken Boneless Wings - Fz. Marination", shelf: "48 Hours" },
+      { code: 111, name: "Chili Lime Seasoning - EOD", shelf: "EOD" },
+      { code: 112, name: "Oriental Chilli - EOD", shelf: "EOD" },
+      { code: 113, name: "Peri Peri Seasoning - EOD", shelf: "EOD" },
+      { code: 114, name: "Maida - Storage", shelf: "168 Hours" },
+      { code: 115, name: "Red Glaze", shelf: "4 Hours" },
+      { code: 121, name: "Frozen - Sesame Bun", shelf: "48 Hours" },
+      { code: 122, name: "Frozen - Longer Bun", shelf: "48 Hours" },
+      { code: 123, name: "Frozen - Peri Peri Bun", shelf: "48 Hours" },
+      { code: 124, name: "Frozen - Brioche Bun", shelf: "48 Hours" },
+      { code: 125, name: "Frozen - Whole Wheat Bun", shelf: "48 Hours" },
+      { code: 128, name: "Sesame Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 129, name: "Longer Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 130, name: "Peri Peri Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 131, name: "Brioche Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 132, name: "Whole Wheat Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 133, name: "Plain Bun - Open Pkt", shelf: "12 Hours" },
+      { code: 135, name: "ONA - Sesame Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 136, name: "ONA - Longer Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 137, name: "ONA - Peri Peri Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 138, name: "ONA - Brioche Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 139, name: "ONA - Whole Wheat Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 140, name: "ONA - Plain Bun - Open Pkt", shelf: "3 Hour" },
+      { code: 143, name: "French Fries - Open Pkt", shelf: "24 Hours" },
+      { code: 144, name: "Paneer Patty - Open Pkt", shelf: "72 Hours" },
+      { code: 145, name: "Veg Zinger Patty Half - Open Pkt", shelf: "72 Hours" },
+      { code: 146, name: "Veg Patty - Open Pkt", shelf: "72 Hours" },
+      { code: 147, name: "Hashbrown Patty - Open Pkt", shelf: "72 Hours" },
+      { code: 148, name: "Chana Patty - Open Pkt", shelf: "72 Hours" },
+      { code: 151, name: "French Fries - Cooked", shelf: "7 Min" },
+      { code: 152, name: "Paneer Patty - Cooked", shelf: "45 Min" },
+      { code: 153, name: "Veg Zinger Patty Half - Cooked", shelf: "30 Min" },
+      { code: 154, name: "Veg Patty - Cooked", shelf: "25 Min" },
+      { code: 155, name: "Hashbrown Patty - Cooked", shelf: "25 Min" },
+      { code: 156, name: "Chana Patty - Cooked", shelf: "20 Min" },
+      { code: 157, name: "Egg Patty", shelf: "24 Hours" },
+      { code: 158, name: "Egg Patty - Open Pkt", shelf: "72 Hours" },
+      { code: 159, name: "Rice Bulk", shelf: "4 Hour" },
+      { code: 160, name: "Gravy Bulk", shelf: "4 Hour" },
+      { code: 161, name: "Rice/Gravy Portion", shelf: "2 Hours" },
+      { code: 162, name: "Dark chocolate chips cookies", shelf: "72 Hours" },
+      { code: 163, name: "Oatmeal & Rasin cookies", shelf: "72 Hours" },
+      { code: 164, name: "Lettuce Cut - Cold Well", shelf: "4 Hours" },
+      { code: 165, name: "Lettuce", shelf: "EOD" },
+      { code: 166, name: "Lettuce", shelf: "48 Hours" },
+      { code: 167, name: "Lettuce Whole", shelf: "72 Hours" },
+      { code: 168, name: "Onion Slice - Cold well", shelf: "4 Hours" },
+      { code: 169, name: "Onion - EOD", shelf: "EOD" },
+      { code: 170, name: "Onion Slice", shelf: "24 Hours" },
+      { code: 171, name: "Onion Whole", shelf: "72 Hours" },
+      { code: 172, name: "Green Chilli - EOD", shelf: "EOD" },
+      { code: 173, name: "Green Chilli", shelf: "24 Hours" },
+      { code: 174, name: "Green Chilli Chopped", shelf: "24 Hours" },
+      { code: 175, name: "Green Chilli Whole", shelf: "72 Hours" },
+      { code: 176, name: "Garlic Chopped - EOD", shelf: "EOD" },
+      { code: 177, name: "Garlic Chopped", shelf: "24 Hours" },
+      { code: 178, name: "Garlic Whole", shelf: "72 Hours" },
+      { code: 179, name: "Tomato Slice - Cold well", shelf: "4 Hours" },
+      { code: 180, name: "Tomato Slice", shelf: "EOD" },
+      { code: 181, name: "Tomato", shelf: "24 Hours" },
+      { code: 182, name: "Tomato Whole", shelf: "72 Hours" },
+      { code: 183, name: "Green Capsicum - EOD", shelf: "EOD" },
+      { code: 184, name: "Green Capsicum", shelf: "24 Hours" },
+      { code: 185, name: "Capsicum Green Whole", shelf: "72 Hours" },
+      { code: 186, name: "Oil - Open Can", shelf: "240 Hours" },
+      { code: 187, name: "S/B Oil - Section", shelf: "240 Hours" },
+      { code: 188, name: "Cheese slice - Cold well", shelf: "4 Hours" },
+      { code: 189, name: "Cheese Slice - Under Counter", shelf: "48 Hours" },
+      { code: 190, name: "Cheese Slice - Chiller", shelf: "168 Hours" },
+      { code: 191, name: "Butter - Chiller", shelf: "48 Hours" },
+      { code: 192, name: "Laccha Paratha - Open pkt", shelf: "EOD" },
+      { code: 193, name: "Laccha Paratha", shelf: "36 Hours" },
+      { code: 194, name: "Salt - Open Pkt", shelf: "240 Hours" },
+      { code: 195, name: "Salt - EOD", shelf: "EOD" },
+      { code: 196, name: "Dynamite sauce - EOD", shelf: "EOD" },
+      { code: 197, name: "Eggless Mayonnaise - EOD", shelf: "EOD" },
+      { code: 198, name: "Nashville - EOD", shelf: "EOD" },
+      { code: 199, name: "Siracha - EOD", shelf: "EOD" },
+      { code: 200, name: "Tandoori Masala Mayo - EOD", shelf: "EOD" },
+      { code: 201, name: "Three Chili Mayo EOD", shelf: "EOD" },
+      { code: 202, name: "Black Sauce - EOD", shelf: "EOD" },
+      { code: 203, name: "Tangy kimchi - EOD", shelf: "EOD" },
+      { code: 204, name: "Thousand Island Sauce - EOD", shelf: "EOD" },
+      { code: 205, name: "Habanero - EOD", shelf: "EOD" },
+      { code: 206, name: "Spicy Garlic Mayo - EOD", shelf: "EOD" },
+      { code: 207, name: "Cheese Flavoured Sauce - EOD", shelf: "EOD" },
+      { code: 208, name: "Pickled Dill Slices", shelf: "EOD" },
+      { code: 209, name: "Dynamite sauce - EOD", shelf: "EOD" },
+      { code: 210, name: "Eggless Mayonnaise - EOD", shelf: "EOD" },
+      { code: 211, name: "Thousand Island Sauce - EOD", shelf: "EOD" },
+      { code: 212, name: "Dynamite sauce - Open pkt", shelf: "96 Hours" },
+      { code: 213, name: "Eggless Mayonnaise - Open pkt", shelf: "96 Hours" },
+      { code: 214, name: "Nashville - Open pkt", shelf: "96 Hours" },
+      { code: 215, name: "Siracha - Open pkt", shelf: "120 Hours" },
+      { code: 216, name: "Tandoori Masala Mayo - Open pkt", shelf: "96 Hours" },
+      { code: 217, name: "Three Chili Mayo - Open pkt", shelf: "96 Hours" },
+      { code: 218, name: "Black Sauce - Open pkt", shelf: "96 Hours" },
+      { code: 219, name: "Tangy kimchi - Open pkt", shelf: "96 Hours" },
+      { code: 220, name: "Thousand Island Sauce - Open pkt", shelf: "96 Hours" },
+      { code: 221, name: "Habanero - Open pkt", shelf: "96 Hours" },
+      { code: 222, name: "Spicy Garlic Mayo - Open pkt", shelf: "96 Hours" },
+      { code: 223, name: "Pickled Dill Slices", shelf: "96 Hours" },
+      { code: 224, name: "Cheese Flavoured Sauce - Open Pkt", shelf: "48 Hours" },
+      { code: 225, name: "Prepack Dips", shelf: "12 Hours" },
+      { code: 226, name: "Easy Melt Cheese", shelf: "72 Hours" },
+      { code: 227, name: "Easy Melt Cheese - Coldwell", shelf: "4 Hours" },
+      { code: 228, name: "Pan Pizza Sauce - Open Pkt", shelf: "144 Hours" },
+      { code: 229, name: "Pizza Sauce Premix - Ambient", shelf: "EOD" },
+      { code: 230, name: "Pizza Sauce Premix - Chiller", shelf: "72 Hours" },
+      { code: 231, name: "Capsicum mix - Open Pkt", shelf: "24 Hours" },
+      { code: 232, name: "Veggie Mix - Coldwell", shelf: "4 Hours" },
+      { code: 233, name: "Veggie Mix - EOD", shelf: "EOD" },
+      { code: 234, name: "Herby Treat Seasoning - Open Pkt", shelf: "24 Hours" },
+      { code: 235, name: "Herby Treat Seasoning - EOD", shelf: "EOD" },
+      { code: 236, name: "Fiery Texas BBQ Sauce", shelf: "6 Hours" },
+      { code: 237, name: "Tortilla 9.5inch", shelf: "36 Hours" },
+      { code: 238, name: "Tortilla 9.5inch - Open pkt", shelf: "EOD" },
+      { code: 239, name: "Mixed Vegetables pickle - Open pkt", shelf: "120 Hours" },
+      { code: 240, name: "Mixed Vegetables pickle - Coldwell", shelf: "EOD" },
+      { code: 241, name: "Shawarma Mayonnaise - Open Pkt", shelf: "96 Hours" },
+      { code: 242, name: "Shawarma Mayonnaise - Ambient", shelf: "EOD" },
+      { code: 243, name: "Shawarma Mayonnaise - Ambient", shelf: "EOD" },
+      { code: 250, name: "Grilled Chicken Hot Wings", shelf: "45 Min" },
+      { code: 251, name: "Grilled Chicken Zinger Fillet", shelf: "45 Min" }
+    ];
+
+    const searchInput = document.getElementById('searchInput');
+    const resultsDiv = document.getElementById('results');
+    const resultCount = document.getElementById('resultCount');
+    document.getElementById('totalItems').textContent = data.length;
+
+    function getShelfClass(shelf) {
+      const s = shelf.toLowerCase();
+      if (s.includes('min') || s.includes('eod') || s === 'na' ||
+          s.includes('2 hour') || s.includes('3 hour') || s.includes('4 hour') ||
+          s.includes('5 hour') || s.includes('6 hour') || s.includes('7 min')) {
+        return 'short';
+      }
+      if (s.includes('12 hour') || s.includes('24 hour') || s.includes('day 1') ||
+          s.includes('day 2') || s.includes('day 3')) {
+        return 'medium';
+      }
+      return '';
+    }
+
+    function render(items) {
+      if (items.length === 0) {
+        resultsDiv.innerHTML = `
+          <div class="no-results">
+            <span>🔎</span>
+            No items found. Try a different name or code.
+          </div>`;
+        resultCount.textContent = '';
+        return;
+      }
+
+      resultCount.textContent = `Showing ${items.length} item${items.length > 1 ? 's' : ''}`;
+      resultsDiv.innerHTML = items.map(item => `
+        <div class="card">
+          <div class="item-code">${item.code}</div>
+          <div class="item-name">${item.name}</div>
+          <div class="shelf-life ${getShelfClass(item.shelf)}">${item.shelf}</div>
+        </div>
+      `).join('');
+    }
+
+    function search() {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!query) {
+        render(data);
+        return;
+      }
+      const filtered = data.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        String(item.code).includes(query)
+      );
+      render(filtered);
+    }
+
+    searchInput.addEventListener('input', search);
+    // Show all items on load
+    render(data);
+  </script>
+</body>
+</html>
