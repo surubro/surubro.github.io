@@ -1,21 +1,32 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Surendra Sonawane — Personal Profile</title>
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
 
-<meta name="description"
-content="Personal profile of Surendra Sonawane from Navi Mumbai.">
+>
+
+<title>
+    Surendra Sonawane — Personal Profile
+</title>
+
+<meta
+name="description"
+content="Personal profile of Surendra Sonawane from Navi Mumbai."
+
+>
 
 <style>
 
-/* =========================
+/* ==================================================
    RESET
-========================= */
+================================================== */
 
 * {
     margin: 0;
@@ -28,6 +39,7 @@ html {
 }
 
 body {
+
     font-family:
         Inter,
         -apple-system,
@@ -46,9 +58,9 @@ body {
 }
 
 
-/* =========================
+/* ==================================================
    NAVBAR
-========================= */
+================================================== */
 
 .navbar {
 
@@ -80,8 +92,10 @@ body {
         blur(20px);
 
     border-bottom:
-        1px solid rgba(0,0,0,.06);
+        1px solid
+        rgba(0,0,0,.06);
 }
+
 
 .logo {
 
@@ -92,10 +106,12 @@ body {
     letter-spacing: -1px;
 }
 
+
 .logo span {
 
     color: #7357ff;
 }
+
 
 .nav-links {
 
@@ -103,6 +119,7 @@ body {
 
     gap: 30px;
 }
+
 
 .nav-links a {
 
@@ -117,10 +134,12 @@ body {
     transition: .2s;
 }
 
+
 .nav-links a:hover {
 
     color: #7357ff;
 }
+
 
 .nav-button {
 
@@ -144,6 +163,7 @@ body {
     transition: .25s;
 }
 
+
 .nav-button:hover {
 
     transform:
@@ -154,9 +174,9 @@ body {
 }
 
 
-/* =========================
+/* ==================================================
    HERO
-========================= */
+================================================== */
 
 .hero {
 
@@ -191,6 +211,7 @@ body {
         #f5f5f7;
 }
 
+
 .hero-small {
 
     color: #7357ff;
@@ -206,6 +227,7 @@ body {
     margin-bottom: 18px;
 }
 
+
 .hero h1 {
 
     font-size:
@@ -220,10 +242,12 @@ body {
     margin-bottom: 28px;
 }
 
+
 .hero h1 span {
 
     color: #7357ff;
 }
+
 
 .hero-description {
 
@@ -236,6 +260,7 @@ body {
     margin-bottom: 35px;
 }
 
+
 .hero-buttons {
 
     display: flex;
@@ -244,6 +269,7 @@ body {
 
     flex-wrap: wrap;
 }
+
 
 .primary-button,
 .secondary-button {
@@ -262,12 +288,14 @@ body {
     transition: .25s;
 }
 
+
 .primary-button {
 
     background: #111;
 
     color: white;
 }
+
 
 .secondary-button {
 
@@ -279,6 +307,7 @@ body {
         1px solid #ddd;
 }
 
+
 .primary-button:hover,
 .secondary-button:hover {
 
@@ -287,9 +316,9 @@ body {
 }
 
 
-/* =========================
+/* ==================================================
    PROFILE CARD
-========================= */
+================================================== */
 
 .profile-wrapper {
 
@@ -297,6 +326,7 @@ body {
 
     justify-content: center;
 }
+
 
 .profile-card {
 
@@ -325,12 +355,14 @@ body {
     transition: .4s;
 }
 
+
 .profile-card:hover {
 
     transform:
         rotate(0deg)
         translateY(-8px);
 }
+
 
 .profile-card::before {
 
@@ -339,6 +371,7 @@ body {
     position: absolute;
 
     width: 280px;
+
     height: 280px;
 
     border-radius: 50%;
@@ -346,10 +379,13 @@ body {
     background: #7357ff;
 
     top: -120px;
+
     right: -100px;
 
-    filter: blur(5px);
+    filter:
+        blur(5px);
 }
+
 
 .profile-card::after {
 
@@ -358,6 +394,7 @@ body {
     position: absolute;
 
     width: 200px;
+
     height: 200px;
 
     border-radius: 50%;
@@ -365,12 +402,15 @@ body {
     background: #00d4ff;
 
     bottom: -120px;
+
     left: -100px;
 
     opacity: .35;
 
-    filter: blur(30px);
+    filter:
+        blur(30px);
 }
+
 
 .avatar {
 
@@ -379,6 +419,7 @@ body {
     z-index: 2;
 
     width: 90px;
+
     height: 90px;
 
     border-radius: 50%;
@@ -407,6 +448,7 @@ body {
         rgba(255,255,255,.12);
 }
 
+
 .profile-card h2,
 .profile-card p,
 .profile-location,
@@ -417,6 +459,7 @@ body {
     z-index: 2;
 }
 
+
 .profile-card h2 {
 
     font-size: 30px;
@@ -424,12 +467,14 @@ body {
     letter-spacing: -1px;
 }
 
+
 .profile-card p {
 
     color: #aaa;
 
     margin-top: 5px;
 }
+
 
 .profile-location {
 
@@ -439,6 +484,7 @@ body {
 
     font-size: 14px;
 }
+
 
 .profile-status {
 
@@ -461,9 +507,11 @@ body {
     font-size: 12px;
 }
 
+
 .status-dot {
 
     width: 7px;
+
     height: 7px;
 
     background: #35df83;
@@ -472,15 +520,16 @@ body {
 }
 
 
-/* =========================
+/* ==================================================
    SECTIONS
-========================= */
+================================================== */
 
 section {
 
     padding:
         110px 7%;
 }
+
 
 .section-label {
 
@@ -497,6 +546,7 @@ section {
     margin-bottom: 12px;
 }
 
+
 .section-title {
 
     font-size:
@@ -510,14 +560,15 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    ABOUT
-========================= */
+================================================== */
 
 .about {
 
     background: white;
 }
+
 
 .about-grid {
 
@@ -531,6 +582,7 @@ section {
     align-items: start;
 }
 
+
 .about-text {
 
     font-size: 21px;
@@ -540,10 +592,12 @@ section {
     max-width: 650px;
 }
 
+
 .about-text strong {
 
     color: #111;
 }
+
 
 .info-list {
 
@@ -551,6 +605,7 @@ section {
 
     gap: 12px;
 }
+
 
 .info-card {
 
@@ -570,11 +625,13 @@ section {
     transition: .25s;
 }
 
+
 .info-card:hover {
 
     transform:
         translateX(5px);
 }
+
 
 .info-card span:first-child {
 
@@ -583,21 +640,23 @@ section {
     font-size: 13px;
 }
 
+
 .info-card span:last-child {
 
     font-weight: 700;
 }
 
 
-/* =========================
+/* ==================================================
    INTERESTS
-========================= */
+================================================== */
 
 .interests {
 
     background:
         #f5f5f7;
 }
+
 
 .interest-grid {
 
@@ -608,6 +667,7 @@ section {
 
     gap: 18px;
 }
+
 
 .interest-card {
 
@@ -632,6 +692,7 @@ section {
         rgba(0,0,0,.05);
 }
 
+
 .interest-card:hover {
 
     transform:
@@ -642,17 +703,22 @@ section {
         rgba(0,0,0,.08);
 }
 
+
 .interest-icon {
 
     font-size: 40px;
 }
+
 
 .interest-card h3 {
 
     font-size: 25px;
 
     letter-spacing: -1px;
+
+    margin-bottom: 6px;
 }
+
 
 .interest-card p {
 
@@ -662,9 +728,9 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    MUSIC
-========================= */
+================================================== */
 
 .music {
 
@@ -673,15 +739,18 @@ section {
     color: white;
 }
 
+
 .music .section-label {
 
     color: #9d8aff;
 }
 
+
 .music .section-title {
 
     max-width: 800px;
 }
+
 
 .music-grid {
 
@@ -692,6 +761,7 @@ section {
 
     gap: 20px;
 }
+
 
 .music-card {
 
@@ -710,6 +780,7 @@ section {
     transition: .3s;
 }
 
+
 .music-card:hover {
 
     background:
@@ -719,12 +790,14 @@ section {
         translateY(-5px);
 }
 
+
 .music-card .big-icon {
 
     font-size: 45px;
 
     margin-bottom: 35px;
 }
+
 
 .music-card h3 {
 
@@ -733,20 +806,22 @@ section {
     margin-bottom: 8px;
 }
 
+
 .music-card p {
 
     color: #999;
 }
 
 
-/* =========================
-   WEB EXPLORATION
-========================= */
+/* ==================================================
+   EXPLORE
+================================================== */
 
 .explore {
 
     background: white;
 }
+
 
 .explore-box {
 
@@ -770,6 +845,7 @@ section {
     gap: 40px;
 }
 
+
 .explore-box h3 {
 
     font-size:
@@ -780,6 +856,7 @@ section {
     max-width: 650px;
 }
 
+
 .explore-box p {
 
     color: #666;
@@ -789,9 +866,11 @@ section {
     margin-top: 15px;
 }
 
+
 .explore-icon {
 
     width: 120px;
+
     height: 120px;
 
     flex-shrink: 0;
@@ -815,15 +894,16 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    CONTACT
-========================= */
+================================================== */
 
 .contact {
 
     background:
         #f5f5f7;
 }
+
 
 .contact-card {
 
@@ -838,6 +918,7 @@ section {
     text-align: center;
 }
 
+
 .contact-card h2 {
 
     font-size:
@@ -850,6 +931,7 @@ section {
     margin-bottom: 20px;
 }
 
+
 .contact-card > p {
 
     color: #999;
@@ -861,9 +943,9 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    SOCIAL LINKS
-========================= */
+================================================== */
 
 .social-links {
 
@@ -879,6 +961,7 @@ section {
 
     gap: 12px;
 }
+
 
 .social-link {
 
@@ -908,6 +991,7 @@ section {
     transition: .25s;
 }
 
+
 .social-link:hover {
 
     background:
@@ -920,9 +1004,11 @@ section {
         rgba(255,255,255,.18);
 }
 
+
 .social-icon {
 
     width: 45px;
+
     height: 45px;
 
     flex-shrink: 0;
@@ -944,12 +1030,14 @@ section {
     font-weight: 800;
 }
 
+
 .social-link strong {
 
     display: block;
 
     font-size: 14px;
 }
+
 
 .social-link small {
 
@@ -963,9 +1051,9 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    CONTACT BUTTON
-========================= */
+================================================== */
 
 .contact-button {
 
@@ -987,6 +1075,7 @@ section {
     transition: .25s;
 }
 
+
 .contact-button:hover {
 
     background:
@@ -999,9 +1088,9 @@ section {
 }
 
 
-/* =========================
+/* ==================================================
    FOOTER
-========================= */
+================================================== */
 
 footer {
 
@@ -1021,21 +1110,23 @@ footer {
     font-size: 13px;
 }
 
+
 footer strong {
 
     color: white;
 }
 
 
-/* =========================
-   ANIMATION
-========================= */
+/* ==================================================
+   HERO ANIMATION
+================================================== */
 
 .fade-up {
 
     animation:
         fadeUp .8s ease both;
 }
+
 
 @keyframes fadeUp {
 
@@ -1057,9 +1148,35 @@ footer strong {
 }
 
 
-/* =========================
-   MOBILE
-========================= */
+/* ==================================================
+   SCROLL ANIMATION
+================================================== */
+
+.animate {
+
+    opacity: 0;
+
+    transform:
+        translateY(25px);
+
+    transition:
+        opacity .6s ease,
+        transform .6s ease;
+}
+
+
+.animate.show {
+
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+/* ==================================================
+   TABLET / MOBILE
+================================================== */
 
 @media(max-width: 850px) {
 
@@ -1069,30 +1186,36 @@ footer strong {
             0 5%;
     }
 
+
     .nav-links {
 
         display: none;
     }
+
 
     .hero {
 
         padding:
             125px 5% 70px;
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
 
         gap: 50px;
     }
+
 
     .hero h1 {
 
         letter-spacing: -4px;
     }
 
+
     .hero-description {
 
         font-size: 17px;
     }
+
 
     section {
 
@@ -1100,22 +1223,29 @@ footer strong {
             80px 5%;
     }
 
+
     .about-grid {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
 
         gap: 40px;
     }
 
+
     .interest-grid {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
+
 
     .music-grid {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
+
 
     .explore-box {
 
@@ -1126,13 +1256,16 @@ footer strong {
         padding: 35px;
     }
 
+
     .explore-icon {
 
         width: 90px;
+
         height: 90px;
 
         font-size: 38px;
     }
+
 
     .contact-card {
 
@@ -1140,10 +1273,13 @@ footer strong {
             40px 20px;
     }
 
+
     .social-links {
 
-        grid-template-columns: 1fr;
+        grid-template-columns:
+            1fr;
     }
+
 
     footer {
 
@@ -1152,9 +1288,9 @@ footer strong {
 }
 
 
-/* =========================
+/* ==================================================
    SMALL PHONES
-========================= */
+================================================== */
 
 @media(max-width: 400px) {
 
@@ -1163,10 +1299,12 @@ footer strong {
         font-size: 55px;
     }
 
+
     .profile-card {
 
         padding: 28px;
     }
+
 
     .contact-card h2 {
 
@@ -1180,9 +1318,9 @@ footer strong {
 
 <body>
 
-<!-- =========================
+<!-- ==================================================
      NAVIGATION
-========================= -->
+================================================== -->
 
 <nav class="navbar">
 
@@ -1190,6 +1328,7 @@ footer strong {
 <div class="logo">
     Surendra<span>.</span>
 </div>
+
 
 <div class="nav-links">
 
@@ -1211,30 +1350,42 @@ footer strong {
 
 </div>
 
-<a href="#contact" class="nav-button">
+
+<a
+    href="#contact"
+    class="nav-button"
+>
     Say Hello
 </a>
 ```
 
 </nav>
 
-<!-- =========================
+<!-- ==================================================
      HERO
-========================= -->
+================================================== -->
 
 <header class="hero">
 
 ```
 <div class="fade-up">
 
+
     <div class="hero-small">
         Personal Profile
     </div>
 
+
     <h1>
+
         Hi, I'm<br>
-        <span>Surendra.</span>
+
+        <span>
+            Surendra.
+        </span>
+
     </h1>
+
 
     <p class="hero-description">
 
@@ -1244,40 +1395,59 @@ footer strong {
 
     </p>
 
+
     <div class="hero-buttons">
 
-        <a href="#about" class="primary-button">
+
+        <a
+            href="#about"
+            class="primary-button"
+        >
             Explore Profile
         </a>
 
-        <a href="#interests" class="secondary-button">
+
+        <a
+            href="#interests"
+            class="secondary-button"
+        >
             My Interests
         </a>
 
+
     </div>
+
 
 </div>
 
 
 <div class="profile-wrapper fade-up">
 
+
     <div class="profile-card">
+
 
         <div class="avatar">
             SS
         </div>
 
+
         <h2>
             Surendra Sonawane
         </h2>
+
 
         <p>
             Personal Profile
         </p>
 
+
         <div class="profile-location">
+
             📍 Navi Mumbai, Maharashtra
+
         </div>
+
 
         <div class="profile-status">
 
@@ -1287,42 +1457,63 @@ footer strong {
 
         </div>
 
+
     </div>
+
 
 </div>
 ```
 
 </header>
 
-<!-- =========================
+<!-- ==================================================
      ABOUT
-========================= -->
+================================================== -->
 
-<section class="about" id="about">
+<section
+    class="about"
+    id="about"
+>
 
 ```
 <div class="section-label">
     About me
 </div>
 
+
 <h2 class="section-title">
+
     A little about<br>
+
     who I am.
+
 </h2>
 
 
 <div class="about-grid">
 
+
     <div class="about-text">
+
 
         <p>
 
-            I'm <strong>Surendra Sonawane</strong>,
-            based in <strong>Navi Mumbai</strong>.
+            I'm
+            <strong>
+                Surendra Sonawane
+            </strong>,
+
+            based in
+
+            <strong>
+                Navi Mumbai
+            </strong>.
 
         </p>
 
+
         <br>
+
 
         <p>
 
@@ -1333,7 +1524,9 @@ footer strong {
 
         </p>
 
+
         <br>
+
 
         <p>
 
@@ -1342,10 +1535,12 @@ footer strong {
 
         </p>
 
+
     </div>
 
 
     <div class="info-list">
+
 
         <div class="info-card">
 
@@ -1398,23 +1593,29 @@ footer strong {
 
         </div>
 
+
     </div>
+
 
 </div>
 ```
 
 </section>
 
-<!-- =========================
+<!-- ==================================================
      INTERESTS
-========================= -->
+================================================== -->
 
-<section class="interests" id="interests">
+<section
+    class="interests"
+    id="interests"
+>
 
 ```
 <div class="section-label">
     Interests
 </div>
+
 
 <h2 class="section-title">
     Things I enjoy.
@@ -1424,7 +1625,7 @@ footer strong {
 <div class="interest-grid">
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             🎧
@@ -1448,7 +1649,7 @@ footer strong {
     </div>
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             🌐
@@ -1472,7 +1673,7 @@ footer strong {
     </div>
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             💻
@@ -1496,7 +1697,7 @@ footer strong {
     </div>
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             🔎
@@ -1520,7 +1721,7 @@ footer strong {
     </div>
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             📱
@@ -1544,7 +1745,7 @@ footer strong {
     </div>
 
 
-    <div class="interest-card">
+    <div class="interest-card animate">
 
         <div class="interest-icon">
             🚀
@@ -1567,25 +1768,31 @@ footer strong {
 
     </div>
 
+
 </div>
 ```
 
 </section>
 
-<!-- =========================
+<!-- ==================================================
      MUSIC
-========================= -->
+================================================== -->
 
-<section class="music" id="music">
+<section
+    class="music"
+    id="music"
+>
 
 ```
 <div class="section-label">
     Free time
 </div>
 
+
 <h2 class="section-title">
 
     Sometimes I just<br>
+
     put on my headphones.
 
 </h2>
@@ -1594,15 +1801,17 @@ footer strong {
 <div class="music-grid">
 
 
-    <div class="music-card">
+    <div class="music-card animate">
 
         <div class="big-icon">
             🎵
         </div>
 
+
         <h3>
             Listening to Music
         </h3>
+
 
         <p>
 
@@ -1614,15 +1823,17 @@ footer strong {
     </div>
 
 
-    <div class="music-card">
+    <div class="music-card animate">
 
         <div class="big-icon">
             🎧
         </div>
 
+
         <h3>
             Discovering New Music
         </h3>
+
 
         <p>
 
@@ -1633,37 +1844,45 @@ footer strong {
 
     </div>
 
+
 </div>
 ```
 
 </section>
 
-<!-- =========================
+<!-- ==================================================
      WEB EXPLORATION
-========================= -->
+================================================== -->
 
-<section class="explore" id="explore">
+<section
+    class="explore"
+    id="explore"
+>
 
 ```
 <div class="section-label">
     The internet
 </div>
 
+
 <h2 class="section-title">
 
     There is always<br>
+
     something to discover.
 
 </h2>
 
 
-<div class="explore-box">
+<div class="explore-box animate">
+
 
     <div>
 
         <h3>
             I like exploring the web.
         </h3>
+
 
         <p>
 
@@ -1684,23 +1903,29 @@ footer strong {
         🌐
     </div>
 
+
 </div>
 ```
 
 </section>
 
-<!-- =========================
+<!-- ==================================================
      CONTACT
-========================= -->
+================================================== -->
 
-<section class="contact" id="contact">
+<section
+    class="contact"
+    id="contact"
+>
 
 ```
 <div class="contact-card">
 
+
     <h2>
         Let's connect.
     </h2>
+
 
     <p>
 
@@ -1710,9 +1935,9 @@ footer strong {
     </p>
 
 
-    <!-- =========================
+    <!-- ==================================================
          SOCIAL LINKS
-    ========================= -->
+    ================================================== -->
 
     <div class="social-links">
 
@@ -1730,6 +1955,7 @@ footer strong {
                 𝕏
             </span>
 
+
             <span>
 
                 <strong>
@@ -1745,7 +1971,7 @@ footer strong {
         </a>
 
 
-        <!-- Instagram -->
+        <!-- INSTAGRAM -->
 
         <a
             href="https://instagram.com/chickentikka02"
@@ -1757,6 +1983,7 @@ footer strong {
             <span class="social-icon">
                 ◎
             </span>
+
 
             <span>
 
@@ -1773,7 +2000,7 @@ footer strong {
         </a>
 
 
-        <!-- Reddit -->
+        <!-- REDDIT -->
 
         <a
             href="https://www.reddit.com/user/GhostOfMandalore_/"
@@ -1785,6 +2012,7 @@ footer strong {
             <span class="social-icon">
                 ●
             </span>
+
 
             <span>
 
@@ -1801,7 +2029,7 @@ footer strong {
         </a>
 
 
-        <!-- Website -->
+        <!-- WEBSITE -->
 
         <a
             href="http://35.208.200.11:39247"
@@ -1813,6 +2041,7 @@ footer strong {
             <span class="social-icon">
                 🌐
             </span>
+
 
             <span>
 
@@ -1832,7 +2061,7 @@ footer strong {
     </div>
 
 
-    <!-- EMAIL BUTTON -->
+    <!-- EMAIL -->
 
     <a
         href="mailto:your-email@example.com"
@@ -1841,14 +2070,15 @@ footer strong {
         Send a Message
     </a>
 
+
 </div>
 ```
 
 </section>
 
-<!-- =========================
+<!-- ==================================================
      FOOTER
-========================= -->
+================================================== -->
 
 <footer>
 
@@ -1856,11 +2086,13 @@ footer strong {
 <div>
 
     © 2026
+
     <strong>
         Surendra Sonawane
     </strong>
 
 </div>
+
 
 <div>
 
@@ -1873,13 +2105,13 @@ footer strong {
 
 <script>
 
-/* =========================
+/* ==================================================
    SCROLL ANIMATION
-========================= */
+================================================== */
 
 const elements =
     document.querySelectorAll(
-        ".interest-card, .music-card, .info-card, .explore-box"
+        ".animate"
     );
 
 
@@ -1888,22 +2120,25 @@ const observer =
 
         entries => {
 
-            entries.forEach(entry => {
+            entries.forEach(
+                entry => {
 
-                if (entry.isIntersecting) {
+                    if (
+                        entry.isIntersecting
+                    ) {
 
-                    entry.target.style.opacity = "1";
+                        entry.target.classList.add(
+                            "show"
+                        );
 
-                    entry.target.style.transform =
-                        "translateY(0)";
+                        observer.unobserve(
+                            entry.target
+                        );
 
-                    observer.unobserve(
-                        entry.target
-                    );
+                    }
 
                 }
-
-            });
+            );
 
         },
 
@@ -1914,21 +2149,18 @@ const observer =
     );
 
 
-elements.forEach(element => {
+elements.forEach(
+    element => {
 
-    element.style.opacity = "0";
+        observer.observe(
+            element
+        );
 
-    element.style.transform =
-        "translateY(25px)";
-
-    element.style.transition =
-        "opacity .6s ease, transform .6s ease";
-
-    observer.observe(element);
-
-});
+    }
+);
 
 </script>
 
 </body>
+
 </html>
