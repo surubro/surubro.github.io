@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,9 +8,10 @@
 <title>Surendra Sonawane — Personal Profile</title>
 
 <meta name="description"
-      content="Personal profile of Surendra Sonawane from Navi Mumbai. Music, technology, web exploration and personal interests.">
+content="Personal profile of Surendra Sonawane from Navi Mumbai. Music, technology, web exploration and personal interests.">
 
 <style>
+
 * {
     margin: 0;
     padding: 0;
@@ -23,10 +25,13 @@ html {
 body {
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
                  Roboto, Helvetica, Arial, sans-serif;
+
     background: #f5f5f7;
     color: #111;
+
     line-height: 1.5;
 }
+
 
 /* =========================
    NAVBAR
@@ -34,9 +39,11 @@ body {
 
 .navbar {
     position: fixed;
+
     top: 0;
     left: 0;
     right: 0;
+
     z-index: 1000;
 
     height: 72px;
@@ -48,6 +55,7 @@ body {
     padding: 0 7%;
 
     background: rgba(255,255,255,.78);
+
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
 
@@ -56,7 +64,9 @@ body {
 
 .logo {
     font-size: 21px;
+
     font-weight: 800;
+
     letter-spacing: -1px;
 }
 
@@ -66,13 +76,17 @@ body {
 
 .nav-links {
     display: flex;
+
     gap: 30px;
 }
 
 .nav-links a {
     text-decoration: none;
+
     color: #555;
+
     font-size: 14px;
+
     font-weight: 600;
 
     transition: .2s;
@@ -84,9 +98,11 @@ body {
 
 .nav-button {
     background: #111;
+
     color: white;
 
     border: none;
+
     border-radius: 100px;
 
     padding: 11px 18px;
@@ -94,6 +110,7 @@ body {
     text-decoration: none;
 
     font-size: 13px;
+
     font-weight: 700;
 
     transition: .25s;
@@ -101,6 +118,7 @@ body {
 
 .nav-button:hover {
     transform: translateY(-2px);
+
     background: #7357ff;
 }
 
@@ -115,23 +133,38 @@ body {
     padding: 150px 7% 80px;
 
     display: grid;
+
     grid-template-columns: 1.2fr .8fr;
 
     align-items: center;
+
     gap: 70px;
 
     background:
-        radial-gradient(circle at 80% 20%, rgba(115,87,255,.20), transparent 30%),
-        radial-gradient(circle at 20% 70%, rgba(0,210,255,.10), transparent 30%),
+        radial-gradient(
+            circle at 80% 20%,
+            rgba(115,87,255,.20),
+            transparent 30%
+        ),
+
+        radial-gradient(
+            circle at 20% 70%,
+            rgba(0,210,255,.10),
+            transparent 30%
+        ),
+
         #f5f5f7;
 }
 
 .hero-small {
     color: #7357ff;
+
     font-weight: 800;
+
     font-size: 13px;
 
     letter-spacing: 1.5px;
+
     text-transform: uppercase;
 
     margin-bottom: 18px;
@@ -139,7 +172,9 @@ body {
 
 .hero h1 {
     font-size: clamp(52px, 7vw, 100px);
+
     line-height: .95;
+
     letter-spacing: -6px;
 
     max-width: 900px;
@@ -155,6 +190,7 @@ body {
     max-width: 650px;
 
     font-size: 19px;
+
     color: #666;
 
     margin-bottom: 35px;
@@ -162,18 +198,22 @@ body {
 
 .hero-buttons {
     display: flex;
+
     gap: 12px;
+
     flex-wrap: wrap;
 }
 
 .primary-button,
 .secondary-button {
     padding: 15px 23px;
+
     border-radius: 100px;
 
     text-decoration: none;
 
     font-size: 14px;
+
     font-weight: 700;
 
     transition: .25s;
@@ -181,11 +221,13 @@ body {
 
 .primary-button {
     background: #111;
+
     color: white;
 }
 
 .secondary-button {
     background: white;
+
     color: #111;
 
     border: 1px solid #ddd;
@@ -203,6 +245,7 @@ body {
 
 .profile-wrapper {
     display: flex;
+
     justify-content: center;
 }
 
@@ -214,9 +257,11 @@ body {
     border-radius: 34px;
 
     background: #111;
+
     color: white;
 
     position: relative;
+
     overflow: hidden;
 
     box-shadow: 0 30px 80px rgba(0,0,0,.18);
@@ -270,6 +315,7 @@ body {
 
 .avatar {
     position: relative;
+
     z-index: 2;
 
     width: 90px;
@@ -278,12 +324,19 @@ body {
     border-radius: 50%;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    background: linear-gradient(135deg,#7357ff,#00cfff);
+    background:
+        linear-gradient(
+            135deg,
+            #7357ff,
+            #00cfff
+        );
 
     font-size: 31px;
+
     font-weight: 900;
 
     margin-bottom: 28px;
@@ -296,22 +349,27 @@ body {
 .profile-location,
 .profile-status {
     position: relative;
+
     z-index: 2;
 }
 
 .profile-card h2 {
     font-size: 30px;
+
     letter-spacing: -1px;
 }
 
 .profile-card p {
     color: #aaa;
+
     margin-top: 5px;
 }
 
 .profile-location {
     margin-top: 25px;
+
     color: #ddd;
+
     font-size: 14px;
 }
 
@@ -319,12 +377,15 @@ body {
     margin-top: 25px;
 
     display: inline-flex;
+
     align-items: center;
+
     gap: 8px;
 
     padding: 8px 13px;
 
     background: rgba(255,255,255,.08);
+
     border-radius: 100px;
 
     font-size: 12px;
@@ -335,6 +396,7 @@ body {
     height: 7px;
 
     background: #35df83;
+
     border-radius: 50%;
 }
 
@@ -349,9 +411,11 @@ section {
 
 .section-label {
     font-size: 12px;
+
     font-weight: 800;
 
     text-transform: uppercase;
+
     letter-spacing: 2px;
 
     color: #7357ff;
@@ -361,6 +425,7 @@ section {
 
 .section-title {
     font-size: clamp(38px, 5vw, 65px);
+
     letter-spacing: -3px;
 
     line-height: 1;
@@ -379,6 +444,7 @@ section {
 
 .about-grid {
     display: grid;
+
     grid-template-columns: 1fr 1fr;
 
     gap: 70px;
@@ -388,6 +454,7 @@ section {
 
 .about-text {
     font-size: 21px;
+
     color: #555;
 
     max-width: 650px;
@@ -399,6 +466,7 @@ section {
 
 .info-list {
     display: grid;
+
     gap: 12px;
 }
 
@@ -410,7 +478,9 @@ section {
     padding: 20px;
 
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
 
     transition: .25s;
@@ -422,6 +492,7 @@ section {
 
 .info-card span:first-child {
     color: #777;
+
     font-size: 13px;
 }
 
@@ -441,7 +512,8 @@ section {
 .interest-grid {
     display: grid;
 
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns:
+        repeat(3, 1fr);
 
     gap: 18px;
 }
@@ -456,7 +528,9 @@ section {
     background: white;
 
     display: flex;
+
     flex-direction: column;
+
     justify-content: space-between;
 
     transition: .3s;
@@ -466,7 +540,9 @@ section {
 
 .interest-card:hover {
     transform: translateY(-7px);
-    box-shadow: 0 20px 50px rgba(0,0,0,.08);
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.08);
 }
 
 .interest-icon {
@@ -475,21 +551,26 @@ section {
 
 .interest-card h3 {
     font-size: 25px;
+
     letter-spacing: -1px;
+
+    margin-bottom: 6px;
 }
 
 .interest-card p {
     color: #777;
+
     font-size: 14px;
 }
 
 
 /* =========================
-   MUSIC SECTION
+   MUSIC
 ========================= */
 
 .music {
     background: #111;
+
     color: white;
 }
 
@@ -525,16 +606,19 @@ section {
 
 .music-card:hover {
     background: #222225;
+
     transform: translateY(-5px);
 }
 
 .music-card .big-icon {
     font-size: 45px;
+
     margin-bottom: 35px;
 }
 
 .music-card h3 {
     font-size: 25px;
+
     margin-bottom: 8px;
 }
 
@@ -557,11 +641,16 @@ section {
     border-radius: 35px;
 
     background:
-        linear-gradient(135deg, #f3efff, #eefaff);
+        linear-gradient(
+            135deg,
+            #f3efff,
+            #eefaff
+        );
 
     display: flex;
 
     justify-content: space-between;
+
     align-items: center;
 
     gap: 40px;
@@ -592,10 +681,13 @@ section {
     border-radius: 35px;
 
     background: #111;
+
     color: white;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     font-size: 50px;
@@ -614,6 +706,7 @@ section {
 
 .contact-card {
     background: #111;
+
     color: white;
 
     padding: 60px;
@@ -633,13 +726,107 @@ section {
     margin-bottom: 20px;
 }
 
-.contact-card p {
+.contact-card > p {
     color: #999;
 
     max-width: 550px;
 
     margin: auto auto 30px;
 }
+
+
+/* =========================
+   SOCIAL LINKS
+========================= */
+
+.social-links {
+    max-width: 650px;
+
+    margin: 0 auto 30px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+.social-link {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 16px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.07);
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    color: white;
+
+    text-decoration: none;
+
+    text-align: left;
+
+    transition: .25s;
+}
+
+.social-link:hover {
+    background: rgba(255,255,255,.14);
+
+    transform: translateY(-4px);
+
+    border-color:
+        rgba(255,255,255,.18);
+}
+
+.social-icon {
+    width: 45px;
+    height: 45px;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: white;
+
+    color: #111;
+
+    font-size: 22px;
+
+    font-weight: 800;
+}
+
+.social-link strong {
+    display: block;
+
+    font-size: 14px;
+}
+
+.social-link small {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #999;
+
+    font-size: 12px;
+}
+
+
+/* =========================
+   CONTACT BUTTON
+========================= */
 
 .contact-button {
     display: inline-block;
@@ -649,6 +836,7 @@ section {
     border-radius: 100px;
 
     background: white;
+
     color: #111;
 
     text-decoration: none;
@@ -660,6 +848,7 @@ section {
 
 .contact-button:hover {
     background: #7357ff;
+
     color: white;
 
     transform: translateY(-3px);
@@ -672,6 +861,7 @@ section {
 
 footer {
     background: #111;
+
     color: #777;
 
     padding: 30px 7%;
@@ -695,19 +885,26 @@ footer strong {
 ========================= */
 
 .fade-up {
-    animation: fadeUp .8s ease both;
+    animation:
+        fadeUp .8s ease both;
 }
 
 @keyframes fadeUp {
+
     from {
         opacity: 0;
-        transform: translateY(25px);
+
+        transform:
+            translateY(25px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
+
 }
 
 
@@ -726,7 +923,9 @@ footer strong {
     }
 
     .hero {
-        padding: 125px 5% 70px;
+
+        padding:
+            125px 5% 70px;
 
         grid-template-columns: 1fr;
 
@@ -747,6 +946,7 @@ footer strong {
 
     .about-grid {
         grid-template-columns: 1fr;
+
         gap: 40px;
     }
 
@@ -759,7 +959,9 @@ footer strong {
     }
 
     .explore-box {
+
         flex-direction: column;
+
         align-items: flex-start;
 
         padding: 35px;
@@ -768,22 +970,50 @@ footer strong {
     .explore-icon {
         width: 90px;
         height: 90px;
+
         font-size: 38px;
     }
 
     .contact-card {
-        padding: 40px 25px;
+        padding: 40px 20px;
+    }
+
+    .social-links {
+        grid-template-columns: 1fr;
     }
 
     footer {
         flex-direction: column;
     }
+
 }
+
+
+/* =========================
+   SMALL PHONES
+========================= */
+
+@media(max-width: 400px) {
+
+    .hero h1 {
+        font-size: 55px;
+    }
+
+    .profile-card {
+        padding: 28px;
+    }
+
+    .contact-card h2 {
+        letter-spacing: -2px;
+    }
+
+}
+
 </style>
+
 </head>
 
 <body>
-
 
 <!-- =========================
      NAVIGATION
@@ -791,23 +1021,37 @@ footer strong {
 
 <nav class="navbar">
 
-    <div class="logo">
-        Surendra<span>.</span>
-    </div>
+```
+<div class="logo">
+    Surendra<span>.</span>
+</div>
 
-    <div class="nav-links">
-        <a href="#about">About</a>
-        <a href="#interests">Interests</a>
-        <a href="#music">Music</a>
-        <a href="#explore">Explore</a>
-    </div>
+<div class="nav-links">
 
-    <a href="#contact" class="nav-button">
-        Say Hello
+    <a href="#about">
+        About
     </a>
 
-</nav>
+    <a href="#interests">
+        Interests
+    </a>
 
+    <a href="#music">
+        Music
+    </a>
+
+    <a href="#explore">
+        Explore
+    </a>
+
+</div>
+
+<a href="#contact" class="nav-button">
+    Say Hello
+</a>
+```
+
+</nav>
 
 <!-- =========================
      HERO
@@ -815,69 +1059,75 @@ footer strong {
 
 <header class="hero">
 
-    <div class="fade-up">
+```
+<div class="fade-up">
 
-        <div class="hero-small">
-            Personal Profile
+    <div class="hero-small">
+        Personal Profile
+    </div>
+
+    <h1>
+        Hi, I'm<br>
+        <span>Surendra.</span>
+    </h1>
+
+    <p class="hero-description">
+
+        A curious person from Navi Mumbai who enjoys
+        music, discovering new things, exploring the
+        web and learning something interesting every day.
+
+    </p>
+
+    <div class="hero-buttons">
+
+        <a href="#about" class="primary-button">
+            Explore Profile
+        </a>
+
+        <a href="#interests" class="secondary-button">
+            My Interests
+        </a>
+
+    </div>
+
+</div>
+
+
+<div class="profile-wrapper fade-up">
+
+    <div class="profile-card">
+
+        <div class="avatar">
+            SS
         </div>
 
-        <h1>
-            Hi, I'm<br>
-            <span>Surendra.</span>
-        </h1>
+        <h2>
+            Surendra Sonawane
+        </h2>
 
-        <p class="hero-description">
-            A curious person from Navi Mumbai who enjoys music,
-            discovering new things, exploring the web and learning
-            something interesting every day.
+        <p>
+            Personal Profile
         </p>
 
-        <div class="hero-buttons">
+        <div class="profile-location">
+            📍 Navi Mumbai, Maharashtra
+        </div>
 
-            <a href="#about" class="primary-button">
-                Explore Profile
-            </a>
+        <div class="profile-status">
 
-            <a href="#interests" class="secondary-button">
-                My Interests
-            </a>
+            <span class="status-dot"></span>
+
+            Exploring something new
 
         </div>
 
     </div>
 
-
-    <div class="profile-wrapper fade-up">
-
-        <div class="profile-card">
-
-            <div class="avatar">
-                SS
-            </div>
-
-            <h2>
-                Surendra Sonawane
-            </h2>
-
-            <p>
-                Personal Profile
-            </p>
-
-            <div class="profile-location">
-                📍 Navi Mumbai, Maharashtra
-            </div>
-
-            <div class="profile-status">
-                <span class="status-dot"></span>
-                Exploring something new
-            </div>
-
-        </div>
-
-    </div>
+</div>
+```
 
 </header>
-
 
 <!-- =========================
      ABOUT
@@ -885,72 +1135,111 @@ footer strong {
 
 <section class="about" id="about">
 
-    <div class="section-label">
-        About me
+```
+<div class="section-label">
+    About me
+</div>
+
+<h2 class="section-title">
+    A little about<br>
+    who I am.
+</h2>
+
+
+<div class="about-grid">
+
+    <div class="about-text">
+
+        <p>
+
+            I'm <strong>Surendra Sonawane</strong>,
+            based in <strong>Navi Mumbai</strong>.
+
+        </p>
+
+        <br>
+
+        <p>
+
+            I enjoy spending my free time listening
+            to music, exploring the web, discovering
+            useful websites, learning about technology
+            and simply following interesting things
+            that catch my attention.
+
+        </p>
+
+        <br>
+
+        <p>
+
+            I like the internet because there is always
+            something new to discover.
+
+        </p>
+
     </div>
 
-    <h2 class="section-title">
-        A little about<br>
-        who I am.
-    </h2>
 
+    <div class="info-list">
 
-    <div class="about-grid">
+        <div class="info-card">
 
-        <div class="about-text">
+            <span>
+                Name
+            </span>
 
-            <p>
-                I'm <strong>Surendra Sonawane</strong>, based in
-                <strong>Navi Mumbai</strong>.
-            </p>
-
-            <br>
-
-            <p>
-                I enjoy spending my free time listening to music,
-                exploring the web, discovering useful websites,
-                learning about technology and simply following
-                interesting things that catch my attention.
-            </p>
-
-            <br>
-
-            <p>
-                I like the internet because there is always
-                something new to discover.
-            </p>
+            <span>
+                Surendra Sonawane
+            </span>
 
         </div>
 
 
-        <div class="info-list">
+        <div class="info-card">
 
-            <div class="info-card">
-                <span>Name</span>
-                <span>Surendra Sonawane</span>
-            </div>
+            <span>
+                Location
+            </span>
 
-            <div class="info-card">
-                <span>Location</span>
-                <span>Navi Mumbai</span>
-            </div>
+            <span>
+                Navi Mumbai
+            </span>
 
-            <div class="info-card">
-                <span>Country</span>
-                <span>India 🇮🇳</span>
-            </div>
+        </div>
 
-            <div class="info-card">
-                <span>Free time</span>
-                <span>Music & Web</span>
-            </div>
+
+        <div class="info-card">
+
+            <span>
+                Country
+            </span>
+
+            <span>
+                India 🇮🇳
+            </span>
+
+        </div>
+
+
+        <div class="info-card">
+
+            <span>
+                Free time
+            </span>
+
+            <span>
+                Music & Web
+            </span>
 
         </div>
 
     </div>
+
+</div>
+```
 
 </section>
-
 
 <!-- =========================
      INTERESTS
@@ -958,128 +1247,154 @@ footer strong {
 
 <section class="interests" id="interests">
 
-    <div class="section-label">
-        Interests
-    </div>
+```
+<div class="section-label">
+    Interests
+</div>
 
-    <h2 class="section-title">
-        Things I enjoy.
-    </h2>
+<h2 class="section-title">
+    Things I enjoy.
+</h2>
 
 
-    <div class="interest-grid">
+<div class="interest-grid">
 
-        <div class="interest-card">
 
-            <div class="interest-icon">
-                🎧
-            </div>
+    <div class="interest-card">
 
-            <div>
-                <h3>Music</h3>
-
-                <p>
-                    Listening to music whenever I have
-                    some free time.
-                </p>
-            </div>
-
+        <div class="interest-icon">
+            🎧
         </div>
 
+        <div>
 
-        <div class="interest-card">
+            <h3>
+                Music
+            </h3>
 
-            <div class="interest-icon">
-                🌐
-            </div>
-
-            <div>
-                <h3>Web Exploring</h3>
-
-                <p>
-                    Finding interesting websites,
-                    tools and things around the internet.
-                </p>
-            </div>
-
-        </div>
-
-
-        <div class="interest-card">
-
-            <div class="interest-icon">
-                💻
-            </div>
-
-            <div>
-                <h3>Technology</h3>
-
-                <p>
-                    Exploring technology, software,
-                    websites and digital projects.
-                </p>
-            </div>
-
-        </div>
-
-
-        <div class="interest-card">
-
-            <div class="interest-icon">
-                🔎
-            </div>
-
-            <div>
-                <h3>Curiosity</h3>
-
-                <p>
-                    If something looks interesting,
-                    I like to find out how it works.
-                </p>
-            </div>
-
-        </div>
-
-
-        <div class="interest-card">
-
-            <div class="interest-icon">
-                📱
-            </div>
-
-            <div>
-                <h3>Digital World</h3>
-
-                <p>
-                    Exploring apps, services and
-                    useful digital experiences.
-                </p>
-            </div>
-
-        </div>
-
-
-        <div class="interest-card">
-
-            <div class="interest-icon">
-                🚀
-            </div>
-
-            <div>
-                <h3>Learning</h3>
-
-                <p>
-                    Learning new things whenever
-                    something catches my attention.
-                </p>
-            </div>
+            <p>
+                Listening to music whenever
+                I have some free time.
+            </p>
 
         </div>
 
     </div>
+
+
+    <div class="interest-card">
+
+        <div class="interest-icon">
+            🌐
+        </div>
+
+        <div>
+
+            <h3>
+                Web Exploring
+            </h3>
+
+            <p>
+                Finding interesting websites,
+                tools and things around the internet.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="interest-card">
+
+        <div class="interest-icon">
+            💻
+        </div>
+
+        <div>
+
+            <h3>
+                Technology
+            </h3>
+
+            <p>
+                Exploring technology, software,
+                websites and digital projects.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="interest-card">
+
+        <div class="interest-icon">
+            🔎
+        </div>
+
+        <div>
+
+            <h3>
+                Curiosity
+            </h3>
+
+            <p>
+                If something looks interesting,
+                I like to find out how it works.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="interest-card">
+
+        <div class="interest-icon">
+            📱
+        </div>
+
+        <div>
+
+            <h3>
+                Digital World
+            </h3>
+
+            <p>
+                Exploring apps, services and
+                useful digital experiences.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="interest-card">
+
+        <div class="interest-icon">
+            🚀
+        </div>
+
+        <div>
+
+            <h3>
+                Learning
+            </h3>
+
+            <p>
+                Learning new things whenever
+                something catches my attention.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+```
 
 </section>
-
 
 <!-- =========================
      MUSIC
@@ -1087,57 +1402,66 @@ footer strong {
 
 <section class="music" id="music">
 
-    <div class="section-label">
-        Free time
-    </div>
+```
+<div class="section-label">
+    Free time
+</div>
 
-    <h2 class="section-title">
-        Sometimes I just<br>
-        put on my headphones.
-    </h2>
+<h2 class="section-title">
+
+    Sometimes I just<br>
+    put on my headphones.
+
+</h2>
 
 
-    <div class="music-grid">
+<div class="music-grid">
 
-        <div class="music-card">
 
-            <div class="big-icon">
-                🎵
-            </div>
+    <div class="music-card">
 
-            <h3>
-                Listening to Music
-            </h3>
-
-            <p>
-                Music is one of the simple things I enjoy
-                when I want to relax or spend some quiet time.
-            </p>
-
+        <div class="big-icon">
+            🎵
         </div>
 
+        <h3>
+            Listening to Music
+        </h3>
 
-        <div class="music-card">
+        <p>
 
-            <div class="big-icon">
-                🎧
-            </div>
+            Music is one of the simple things
+            I enjoy when I want to relax or
+            spend some quiet time.
 
-            <h3>
-                Discovering New Music
-            </h3>
-
-            <p>
-                Finding new songs, artists and different
-                sounds is part of the fun.
-            </p>
-
-        </div>
+        </p>
 
     </div>
+
+
+    <div class="music-card">
+
+        <div class="big-icon">
+            🎧
+        </div>
+
+        <h3>
+            Discovering New Music
+        </h3>
+
+        <p>
+
+            Finding new songs, artists and
+            different sounds is part of the fun.
+
+        </p>
+
+    </div>
+
+</div>
+```
 
 </section>
-
 
 <!-- =========================
      WEB EXPLORATION
@@ -1145,74 +1469,202 @@ footer strong {
 
 <section class="explore" id="explore">
 
-    <div class="section-label">
-        The internet
+```
+<div class="section-label">
+    The internet
+</div>
+
+<h2 class="section-title">
+
+    There is always<br>
+    something to discover.
+
+</h2>
+
+
+<div class="explore-box">
+
+    <div>
+
+        <h3>
+            I like exploring the web.
+        </h3>
+
+        <p>
+
+            Interesting websites, new technology,
+            useful tools, random discoveries and
+            things I have never seen before.
+
+            Sometimes you start with one search
+            and end up discovering something
+            completely different.
+
+        </p>
+
     </div>
 
-    <h2 class="section-title">
-        There is always<br>
-        something to discover.
-    </h2>
 
-
-    <div class="explore-box">
-
-        <div>
-
-            <h3>
-                I like exploring the web.
-            </h3>
-
-            <p>
-                Interesting websites, new technology,
-                useful tools, random discoveries and
-                things I have never seen before.
-                Sometimes you start with one search
-                and end up discovering something
-                completely different.
-            </p>
-
-        </div>
-
-
-        <div class="explore-icon">
-            🌐
-        </div>
-
+    <div class="explore-icon">
+        🌐
     </div>
+
+</div>
+```
 
 </section>
 
-
 <!-- =========================
-     CONTACT
+     CONTACT / SOCIAL
 ========================= -->
 
 <section class="contact" id="contact">
 
-    <div class="contact-card">
+```
+<div class="contact-card">
 
-        <h2>
-            Let's connect.
-        </h2>
+    <h2>
+        Let's connect.
+    </h2>
 
-        <p>
-            Thanks for visiting my personal profile.
-            Feel free to say hello.
-        </p>
+    <p>
 
-        <!-- Change this email -->
+        Thanks for visiting my personal profile.
+        Find me around the web or send me a message.
+
+    </p>
+
+
+    <div class="social-links">
+
+
+        <!-- X -->
+
         <a
-            href="mailto:your-email@example.com"
-            class="contact-button"
+            href="https://x.com/batmanxd3301"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
         >
-            Send a Message
+
+            <span class="social-icon">
+                𝕏
+            </span>
+
+            <span>
+
+                <strong>
+                    X
+                </strong>
+
+                <small>
+                    @batmanxd3301
+                </small>
+
+            </span>
+
+        </a>
+
+
+        <!-- Instagram -->
+
+        <a
+            href="https://instagram.com/YOUR_USERNAME"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+        >
+
+            <span class="social-icon">
+                ◎
+            </span>
+
+            <span>
+
+                <strong>
+                    Instagram
+                </strong>
+
+                <small>
+                    @YOUR_USERNAME
+                </small>
+
+            </span>
+
+        </a>
+
+
+        <!-- Reddit -->
+
+        <a
+            href="https://reddit.com/user/YOUR_USERNAME"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+        >
+
+            <span class="social-icon">
+                ●
+            </span>
+
+            <span>
+
+                <strong>
+                    Reddit
+                </strong>
+
+                <small>
+                    u/YOUR_USERNAME
+                </small>
+
+            </span>
+
+        </a>
+
+
+        <!-- Website -->
+
+        <a
+            href="https://YOUR-WEBSITE.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="social-link"
+        >
+
+            <span class="social-icon">
+                🌐
+            </span>
+
+            <span>
+
+                <strong>
+                    Website
+                </strong>
+
+                <small>
+                    YOUR-WEBSITE.com
+                </small>
+
+            </span>
+
         </a>
 
     </div>
 
-</section>
 
+    <!-- Email -->
+
+    <a
+        href="mailto:your-email@example.com"
+        class="contact-button"
+    >
+        Send a Message
+    </a>
+
+</div>
+```
+
+</section>
 
 <!-- =========================
      FOOTER
@@ -1220,49 +1672,67 @@ footer strong {
 
 <footer>
 
-    <div>
-        © 2026 <strong>Surendra Sonawane</strong>
-    </div>
+```
+<div>
 
-    <div>
-        Navi Mumbai, India 🇮🇳
-    </div>
+    © 2026
+    <strong>
+        Surendra Sonawane
+    </strong>
+
+</div>
+
+<div>
+
+    Navi Mumbai, India 🇮🇳
+
+</div>
+```
 
 </footer>
 
-
 <script>
 
+
 /* =========================
-   SIMPLE SCROLL ANIMATION
+   SCROLL ANIMATION
 ========================= */
 
-const elements = document.querySelectorAll(
-    ".interest-card, .music-card, .info-card, .explore-box"
-);
+const elements =
+    document.querySelectorAll(
+        ".interest-card, .music-card, .info-card, .explore-box"
+    );
 
-const observer = new IntersectionObserver(
-    entries => {
 
-        entries.forEach(entry => {
+const observer =
+    new IntersectionObserver(
 
-            if (entry.isIntersecting) {
+        entries => {
 
-                entry.target.style.opacity = "1";
-                entry.target.style.transform =
-                    "translateY(0)";
+            entries.forEach(entry => {
 
-                observer.unobserve(entry.target);
+                if (entry.isIntersecting) {
 
-            }
+                    entry.target.style.opacity = "1";
 
-        });
+                    entry.target.style.transform =
+                        "translateY(0)";
 
-    },
-    {
-        threshold: 0.1
-    }
-);
+                    observer.unobserve(
+                        entry.target
+                    );
+
+                }
+
+            });
+
+        },
+
+        {
+            threshold: 0.1
+        }
+
+    );
 
 
 elements.forEach(element => {
@@ -1278,6 +1748,7 @@ elements.forEach(element => {
     observer.observe(element);
 
 });
+
 
 </script>
 
