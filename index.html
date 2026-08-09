@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Surendra Sonawane — Personal Profile</title>
+
+<meta name="description"
+      content="Personal profile of Surendra Sonawane from Navi Mumbai. Music, technology, web exploration and personal interests.">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f7;
+    color: #111;
+    line-height: 1.5;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 7%;
+
+    background: rgba(255,255,255,.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.logo {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.logo span {
+    color: #7357ff;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-size: 14px;
+    font-weight: 600;
+
+    transition: .2s;
+}
+
+.nav-links a:hover {
+    color: #7357ff;
+}
+
+.nav-button {
+    background: #111;
+    color: white;
+
+    border: none;
+    border-radius: 100px;
+
+    padding: 11px 18px;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition: .25s;
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    background: #7357ff;
+}
+
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+    min-height: 100vh;
+
+    padding: 150px 7% 80px;
+
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+
+    align-items: center;
+    gap: 70px;
+
+    background:
+        radial-gradient(circle at 80% 20%, rgba(115,87,255,.20), transparent 30%),
+        radial-gradient(circle at 20% 70%, rgba(0,210,255,.10), transparent 30%),
+        #f5f5f7;
+}
+
+.hero-small {
+    color: #7357ff;
+    font-weight: 800;
+    font-size: 13px;
+
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+
+    margin-bottom: 18px;
+}
+
+.hero h1 {
+    font-size: clamp(52px, 7vw, 100px);
+    line-height: .95;
+    letter-spacing: -6px;
+
+    max-width: 900px;
+
+    margin-bottom: 28px;
+}
+
+.hero h1 span {
+    color: #7357ff;
+}
+
+.hero-description {
+    max-width: 650px;
+
+    font-size: 19px;
+    color: #666;
+
+    margin-bottom: 35px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.primary-button,
+.secondary-button {
+    padding: 15px 23px;
+    border-radius: 100px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    transition: .25s;
+}
+
+.primary-button {
+    background: #111;
+    color: white;
+}
+
+.secondary-button {
+    background: white;
+    color: #111;
+
+    border: 1px solid #ddd;
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+    transform: translateY(-3px);
+}
+
+
+/* =========================
+   PROFILE CARD
+========================= */
+
+.profile-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.profile-card {
+    width: min(380px, 100%);
+
+    padding: 35px;
+
+    border-radius: 34px;
+
+    background: #111;
+    color: white;
+
+    position: relative;
+    overflow: hidden;
+
+    box-shadow: 0 30px 80px rgba(0,0,0,.18);
+
+    transform: rotate(2deg);
+
+    transition: .4s;
+}
+
+.profile-card:hover {
+    transform: rotate(0deg) translateY(-8px);
+}
+
+.profile-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+    height: 280px;
+
+    border-radius: 50%;
+
+    background: #7357ff;
+
+    top: -120px;
+    right: -100px;
+
+    filter: blur(5px);
+}
+
+.profile-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 200px;
+    height: 200px;
+
+    border-radius: 50%;
+
+    background: #00d4ff;
+
+    bottom: -120px;
+    left: -100px;
+
+    opacity: .35;
+
+    filter: blur(30px);
+}
+
+.avatar {
+    position: relative;
+    z-index: 2;
+
+    width: 90px;
+    height: 90px;
+
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(135deg,#7357ff,#00cfff);
+
+    font-size: 31px;
+    font-weight: 900;
+
+    margin-bottom: 28px;
+
+    border: 4px solid rgba(255,255,255,.12);
+}
+
+.profile-card h2,
+.profile-card p,
+.profile-location,
+.profile-status {
+    position: relative;
+    z-index: 2;
+}
+
+.profile-card h2 {
+    font-size: 30px;
+    letter-spacing: -1px;
+}
+
+.profile-card p {
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.profile-location {
+    margin-top: 25px;
+    color: #ddd;
+    font-size: 14px;
+}
+
+.profile-status {
+    margin-top: 25px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 13px;
+
+    background: rgba(255,255,255,.08);
+    border-radius: 100px;
+
+    font-size: 12px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
+    background: #35df83;
+    border-radius: 50%;
+}
+
+
+/* =========================
+   SECTIONS
+========================= */
+
+section {
+    padding: 110px 7%;
+}
+
+.section-label {
+    font-size: 12px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+    letter-spacing: 2px;
+
+    color: #7357ff;
+
+    margin-bottom: 12px;
+}
+
+.section-title {
+    font-size: clamp(38px, 5vw, 65px);
+    letter-spacing: -3px;
+
+    line-height: 1;
+
+    margin-bottom: 50px;
+}
+
+
+/* =========================
+   ABOUT
+========================= */
+
+.about {
+    background: white;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 70px;
+
+    align-items: start;
+}
+
+.about-text {
+    font-size: 21px;
+    color: #555;
+
+    max-width: 650px;
+}
+
+.about-text strong {
+    color: #111;
+}
+
+.info-list {
+    display: grid;
+    gap: 12px;
+}
+
+.info-card {
+    background: #f5f5f7;
+
+    border-radius: 20px;
+
+    padding: 20px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    transition: .25s;
+}
+
+.info-card:hover {
+    transform: translateX(5px);
+}
+
+.info-card span:first-child {
+    color: #777;
+    font-size: 13px;
+}
+
+.info-card span:last-child {
+    font-weight: 700;
+}
+
+
+/* =========================
+   INTERESTS
+========================= */
+
+.interests {
+    background: #f5f5f7;
+}
+
+.interest-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 18px;
+}
+
+.interest-card {
+    min-height: 260px;
+
+    padding: 30px;
+
+    border-radius: 28px;
+
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    transition: .3s;
+
+    border: 1px solid rgba(0,0,0,.05);
+}
+
+.interest-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 20px 50px rgba(0,0,0,.08);
+}
+
+.interest-icon {
+    font-size: 40px;
+}
+
+.interest-card h3 {
+    font-size: 25px;
+    letter-spacing: -1px;
+}
+
+.interest-card p {
+    color: #777;
+    font-size: 14px;
+}
+
+
+/* =========================
+   MUSIC SECTION
+========================= */
+
+.music {
+    background: #111;
+    color: white;
+}
+
+.music .section-label {
+    color: #9d8aff;
+}
+
+.music .section-title {
+    max-width: 800px;
+}
+
+.music-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 20px;
+}
+
+.music-card {
+    padding: 35px;
+
+    min-height: 240px;
+
+    border-radius: 28px;
+
+    background: #1b1b1d;
+
+    border: 1px solid rgba(255,255,255,.07);
+
+    transition: .3s;
+}
+
+.music-card:hover {
+    background: #222225;
+    transform: translateY(-5px);
+}
+
+.music-card .big-icon {
+    font-size: 45px;
+    margin-bottom: 35px;
+}
+
+.music-card h3 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.music-card p {
+    color: #999;
+}
+
+
+/* =========================
+   WEB EXPLORATION
+========================= */
+
+.explore {
+    background: white;
+}
+
+.explore-box {
+    padding: 50px;
+
+    border-radius: 35px;
+
+    background:
+        linear-gradient(135deg, #f3efff, #eefaff);
+
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 40px;
+}
+
+.explore-box h3 {
+    font-size: clamp(30px, 4vw, 50px);
+
+    letter-spacing: -2px;
+
+    max-width: 650px;
+}
+
+.explore-box p {
+    color: #666;
+
+    max-width: 600px;
+
+    margin-top: 15px;
+}
+
+.explore-icon {
+    width: 120px;
+    height: 120px;
+
+    flex-shrink: 0;
+
+    border-radius: 35px;
+
+    background: #111;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 50px;
+
+    transform: rotate(8deg);
+}
+
+
+/* =========================
+   CONTACT
+========================= */
+
+.contact {
+    background: #f5f5f7;
+}
+
+.contact-card {
+    background: #111;
+    color: white;
+
+    padding: 60px;
+
+    border-radius: 35px;
+
+    text-align: center;
+}
+
+.contact-card h2 {
+    font-size: clamp(40px, 6vw, 75px);
+
+    letter-spacing: -4px;
+
+    line-height: .95;
+
+    margin-bottom: 20px;
+}
+
+.contact-card p {
+    color: #999;
+
+    max-width: 550px;
+
+    margin: auto auto 30px;
+}
+
+.contact-button {
+    display: inline-block;
+
+    padding: 15px 25px;
+
+    border-radius: 100px;
+
+    background: white;
+    color: #111;
+
+    text-decoration: none;
+
+    font-weight: 800;
+
+    transition: .25s;
+}
+
+.contact-button:hover {
+    background: #7357ff;
+    color: white;
+
+    transform: translateY(-3px);
+}
+
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    background: #111;
+    color: #777;
+
+    padding: 30px 7%;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    font-size: 13px;
+}
+
+footer strong {
+    color: white;
+}
+
+
+/* =========================
+   ANIMATION
+========================= */
+
+.fade-up {
+    animation: fadeUp .8s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width: 850px) {
+
+    .navbar {
+        padding: 0 5%;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .hero {
+        padding: 125px 5% 70px;
+
+        grid-template-columns: 1fr;
+
+        gap: 50px;
+    }
+
+    .hero h1 {
+        letter-spacing: -4px;
+    }
+
+    .hero-description {
+        font-size: 17px;
+    }
+
+    section {
+        padding: 80px 5%;
+    }
+
+    .about-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .interest-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .music-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .explore-box {
+        flex-direction: column;
+        align-items: flex-start;
+
+        padding: 35px;
+    }
+
+    .explore-icon {
+        width: 90px;
+        height: 90px;
+        font-size: 38px;
+    }
+
+    .contact-card {
+        padding: 40px 25px;
+    }
+
+    footer {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        Surendra<span>.</span>
+    </div>
+
+    <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#interests">Interests</a>
+        <a href="#music">Music</a>
+        <a href="#explore">Explore</a>
+    </div>
+
+    <a href="#contact" class="nav-button">
+        Say Hello
+    </a>
+
+</nav>
+
+
+<!-- =========================
+     HERO
+========================= -->
+
+<header class="hero">
+
+    <div class="fade-up">
+
+        <div class="hero-small">
+            Personal Profile
+        </div>
+
+        <h1>
+            Hi, I'm<br>
+            <span>Surendra.</span>
+        </h1>
+
+        <p class="hero-description">
+            A curious person from Navi Mumbai who enjoys music,
+            discovering new things, exploring the web and learning
+            something interesting every day.
+        </p>
+
+        <div class="hero-buttons">
+
+            <a href="#about" class="primary-button">
+                Explore Profile
+            </a>
+
+            <a href="#interests" class="secondary-button">
+                My Interests
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="profile-wrapper fade-up">
+
+        <div class="profile-card">
+
+            <div class="avatar">
+                SS
+            </div>
+
+            <h2>
+                Surendra Sonawane
+            </h2>
+
+            <p>
+                Personal Profile
+            </p>
+
+            <div class="profile-location">
+                📍 Navi Mumbai, Maharashtra
+            </div>
+
+            <div class="profile-status">
+                <span class="status-dot"></span>
+                Exploring something new
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section class="about" id="about">
+
+    <div class="section-label">
+        About me
+    </div>
+
+    <h2 class="section-title">
+        A little about<br>
+        who I am.
+    </h2>
+
+
+    <div class="about-grid">
+
+        <div class="about-text">
+
+            <p>
+                I'm <strong>Surendra Sonawane</strong>, based in
+                <strong>Navi Mumbai</strong>.
+            </p>
+
+            <br>
+
+            <p>
+                I enjoy spending my free time listening to music,
+                exploring the web, discovering useful websites,
+                learning about technology and simply following
+                interesting things that catch my attention.
+            </p>
+
+            <br>
+
+            <p>
+                I like the internet because there is always
+                something new to discover.
+            </p>
+
+        </div>
+
+
+        <div class="info-list">
+
+            <div class="info-card">
+                <span>Name</span>
+                <span>Surendra Sonawane</span>
+            </div>
+
+            <div class="info-card">
+                <span>Location</span>
+                <span>Navi Mumbai</span>
+            </div>
+
+            <div class="info-card">
+                <span>Country</span>
+                <span>India 🇮🇳</span>
+            </div>
+
+            <div class="info-card">
+                <span>Free time</span>
+                <span>Music & Web</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     INTERESTS
+========================= -->
+
+<section class="interests" id="interests">
+
+    <div class="section-label">
+        Interests
+    </div>
+
+    <h2 class="section-title">
+        Things I enjoy.
+    </h2>
+
+
+    <div class="interest-grid">
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                🎧
+            </div>
+
+            <div>
+                <h3>Music</h3>
+
+                <p>
+                    Listening to music whenever I have
+                    some free time.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                🌐
+            </div>
+
+            <div>
+                <h3>Web Exploring</h3>
+
+                <p>
+                    Finding interesting websites,
+                    tools and things around the internet.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                💻
+            </div>
+
+            <div>
+                <h3>Technology</h3>
+
+                <p>
+                    Exploring technology, software,
+                    websites and digital projects.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                🔎
+            </div>
+
+            <div>
+                <h3>Curiosity</h3>
+
+                <p>
+                    If something looks interesting,
+                    I like to find out how it works.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                📱
+            </div>
+
+            <div>
+                <h3>Digital World</h3>
+
+                <p>
+                    Exploring apps, services and
+                    useful digital experiences.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="interest-card">
+
+            <div class="interest-icon">
+                🚀
+            </div>
+
+            <div>
+                <h3>Learning</h3>
+
+                <p>
+                    Learning new things whenever
+                    something catches my attention.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     MUSIC
+========================= -->
+
+<section class="music" id="music">
+
+    <div class="section-label">
+        Free time
+    </div>
+
+    <h2 class="section-title">
+        Sometimes I just<br>
+        put on my headphones.
+    </h2>
+
+
+    <div class="music-grid">
+
+        <div class="music-card">
+
+            <div class="big-icon">
+                🎵
+            </div>
+
+            <h3>
+                Listening to Music
+            </h3>
+
+            <p>
+                Music is one of the simple things I enjoy
+                when I want to relax or spend some quiet time.
+            </p>
+
+        </div>
+
+
+        <div class="music-card">
+
+            <div class="big-icon">
+                🎧
+            </div>
+
+            <h3>
+                Discovering New Music
+            </h3>
+
+            <p>
+                Finding new songs, artists and different
+                sounds is part of the fun.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     WEB EXPLORATION
+========================= -->
+
+<section class="explore" id="explore">
+
+    <div class="section-label">
+        The internet
+    </div>
+
+    <h2 class="section-title">
+        There is always<br>
+        something to discover.
+    </h2>
+
+
+    <div class="explore-box">
+
+        <div>
+
+            <h3>
+                I like exploring the web.
+            </h3>
+
+            <p>
+                Interesting websites, new technology,
+                useful tools, random discoveries and
+                things I have never seen before.
+                Sometimes you start with one search
+                and end up discovering something
+                completely different.
+            </p>
+
+        </div>
+
+
+        <div class="explore-icon">
+            🌐
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     CONTACT
+========================= -->
+
+<section class="contact" id="contact">
+
+    <div class="contact-card">
+
+        <h2>
+            Let's connect.
+        </h2>
+
+        <p>
+            Thanks for visiting my personal profile.
+            Feel free to say hello.
+        </p>
+
+        <!-- Change this email -->
+        <a
+            href="mailto:your-email@example.com"
+            class="contact-button"
+        >
+            Send a Message
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <div>
+        © 2026 <strong>Surendra Sonawane</strong>
+    </div>
+
+    <div>
+        Navi Mumbai, India 🇮🇳
+    </div>
+
+</footer>
+
+
+<script>
+
+/* =========================
+   SIMPLE SCROLL ANIMATION
+========================= */
+
+const elements = document.querySelectorAll(
+    ".interest-card, .music-card, .info-card, .explore-box"
+);
+
+const observer = new IntersectionObserver(
+    entries => {
+
+        entries.forEach(entry => {
+
+            if (entry.isIntersecting) {
+
+                entry.target.style.opacity = "1";
+                entry.target.style.transform =
+                    "translateY(0)";
+
+                observer.unobserve(entry.target);
+
+            }
+
+        });
+
+    },
+    {
+        threshold: 0.1
+    }
+);
+
+
+elements.forEach(element => {
+
+    element.style.opacity = "0";
+
+    element.style.transform =
+        "translateY(25px)";
+
+    element.style.transition =
+        "opacity .6s ease, transform .6s ease";
+
+    observer.observe(element);
+
+});
+
+</script>
+
+</body>
+</html>
