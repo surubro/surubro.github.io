@@ -5,59 +5,158 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>M Total Spend - Audit Mode</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f3f4f6; color: #1f2937; }
-    .container { max-width: 500px; margin: auto; padding: 20px; }
-    h2 { text-align: center; color: #111827; }
-    
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #111827;
+    }
+
     /* Summary Section */
-    .summary-card { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; text-align: center; }
-    .label { font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-    .val { font-size: 1.2rem; font-weight: bold; margin-top: 5px; }
+    .summary-card {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      text-align: center;
+    }
+    .label {
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .val {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 5px;
+    }
     .expense-text { color: #dc2626; }
     .remaining-text { color: #059669; }
 
-    /* Audit/Physical Balance Box */
-    .audit-box { background: #1e293b; color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .diff-badge { font-size: 0.85rem; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
+    /* Audit / Physical Balance Box */
+    .audit-box {
+      background: #1e293b;
+      color: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .diff-badge {
+      font-size: 0.85rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
     .match { background: #059669; }
     .mismatch { background: #b91c1c; }
 
-    /* Input Styling */
-    .card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #e5e7eb; }
-    input, button, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 1rem; box-sizing: border-box; }
-    button { background: #4f46e5; color: white; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    /* Cards & Inputs */
+    .card {
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.2s;
+    }
     button:hover { opacity: 0.9; }
     .secondary-btn { background: #d97706; }
-    .danger-btn { background: #ef4444; margin-top: 20px; }
+    .danger-btn {
+      background: #ef4444;
+      margin-top: 20px;
+    }
 
-    /* List Styling */
-    .history-item { background: white; padding: 12px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #4f46e5; }
+    /* History */
+    .history-item {
+      background: white;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #4f46e5;
+    }
     .history-info { flex: 1; }
     .history-info strong { display: block; }
-    .history-info small { color: #6b7280; font-size: 0.75rem; }
-    .delete-btn { background: none; color: #ef4444; width: auto; padding: 5px; font-size: 0.8rem; border: none; }
+    .history-info small {
+      color: #6b7280;
+      font-size: 0.75rem;
+    }
+    .delete-btn {
+      background: none;
+      color: #ef4444;
+      width: auto;
+      padding: 5px;
+      font-size: 0.8rem;
+      border: none;
+    }
   </style>
 </head>
 <body>
-
   <div class="container">
     <h2>💰 M Total Spend</h2>
 
+    <!-- Login -->
     <div id="authSection">
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
       <button onclick="login()">Login</button>
     </div>
 
+    <!-- App -->
     <div id="appSection" style="display:none;">
+      <!-- Summary -->
       <div class="summary-card">
         <div class="summary-grid">
-          <div><div class="label">App Balance</div><div class="val remaining-text">₹<span id="appBal">0</span></div></div>
-          <div><div class="label">Total Spent</div><div class="val expense-text">₹<span id="totalExp">0</span></div></div>
+          <div>
+            <div class="label">App Balance</div>
+            <div class="val remaining-text">₹<span id="appBal">0</span></div>
+          </div>
+          <div>
+            <div class="label">Total Spent</div>
+            <div class="val expense-text">₹<span id="totalExp">0</span></div>
+          </div>
         </div>
       </div>
 
+      <!-- Physical Cash Audit -->
       <div class="audit-box">
         <div>
           <div class="label" style="color:#94a3b8">Physical Cash</div>
@@ -66,17 +165,21 @@
         <div id="diffTag" class="diff-badge">Diff: ₹0</div>
       </div>
 
+      <!-- Update Physical Cash -->
       <div class="card">
         <strong class="label">Update Actual Cash</strong>
         <input type="number" id="actualInput" placeholder="Enter cash in hand">
         <button class="secondary-btn" onclick="updatePhysical()">Update Only</button>
       </div>
 
+      <!-- Add Expense (fields are optional except Amount) -->
       <div class="card">
         <strong class="label">Record New Expense</strong>
-        <input type="text" id="descInput" placeholder="Description">
-        <input type="number" id="amountInput" placeholder="Amount">
-        <select id="incomeSelect"></select>
+        <input type="text" id="descInput" placeholder="Description (optional)">
+        <input type="number" id="amountInput" placeholder="Amount *">
+        <select id="incomeSelect">
+          <option value="">— No Income Source —</option>
+        </select>
         <select id="categorySelect">
           <option value="Food">Food</option>
           <option value="Travel">Travel</option>
@@ -86,8 +189,9 @@
         <button onclick="addExpense()">Add Expense</button>
       </div>
 
+      <!-- Setup -->
       <div class="card">
-        <div style="cursor:pointer; font-weight:bold" onclick="toggle('setup')">⚙️ Income/Category Setup</div>
+        <div style="cursor:pointer; font-weight:bold" onclick="toggle('setup')">⚙️ Income / Category Setup</div>
         <div id="setup" style="display:none; margin-top:10px;">
           <input type="text" id="incName" placeholder="Income Name (e.g. Salary)">
           <input type="number" id="incAmt" placeholder="Original Amount">
@@ -128,8 +232,11 @@
       el.style.display = el.style.display === 'none' ? 'block' : 'none';
     };
 
-    // Authentication
-    window.login = () => signInWithEmailAndPassword(auth, email.value, password.value).catch(e => alert(e.message));
+    // Auth
+    window.login = () => {
+      signInWithEmailAndPassword(auth, email.value, password.value)
+        .catch(e => alert(e.message));
+    };
     window.logout = () => signOut(auth);
 
     onAuthStateChanged(auth, (user) => {
@@ -143,16 +250,17 @@
       }
     });
 
-    // Real-time Listeners
+    // Real-time listeners
     function startListeners() {
-      // 1. App Balance (From Income Sources)
+      // 1. App Balance (from incomes)
       onValue(ref(db, "mspend/incomes"), (snap) => {
         let balance = 0;
-        incomeSelect.innerHTML = "";
+        incomeSelect.innerHTML = '<option value="">— No Income Source —</option>';
         snap.forEach(c => {
           balance += c.val().remaining;
-          let opt = document.createElement("option");
-          opt.value = c.key; opt.textContent = c.val().desc;
+          const opt = document.createElement("option");
+          opt.value = c.key;
+          opt.textContent = c.val().desc;
           incomeSelect.appendChild(opt);
         });
         document.getElementById("appBal").innerText = balance.toFixed(2);
@@ -167,17 +275,18 @@
 
       // 3. Categories
       onValue(ref(db, "mspend/categories"), (snap) => {
-        if(snap.exists()) {
+        if (snap.exists()) {
           categorySelect.innerHTML = "";
           snap.forEach(c => {
-            let opt = document.createElement("option");
-            opt.value = c.val().name; opt.textContent = c.val().name;
+            const opt = document.createElement("option");
+            opt.value = c.val().name;
+            opt.textContent = c.val().name;
             categorySelect.appendChild(opt);
           });
         }
       });
 
-      // 4. Expenses List
+      // 4. Expenses
       onValue(ref(db, "mspend/items"), (snap) => {
         expenseList.innerHTML = "";
         let total = 0;
@@ -188,12 +297,12 @@
           item.className = "history-item";
           item.innerHTML = `
             <div class="history-info">
-              <strong>${e.desc}</strong>
-              <small>${e.category} • ${e.incomeName} • ${new Date(e.date).toLocaleDateString()}</small>
+              <strong>${e.desc || "(No description)"}</strong>
+              <small>${e.category || "Misc"} • ${e.incomeName || "No source"} • ${new Date(e.date).toLocaleDateString()}</small>
             </div>
             <div style="text-align:right">
               <b>₹${e.amount}</b><br>
-              <button class="delete-btn" onclick="deleteItem('${c.key}', '${e.incomeId}', ${e.amount})">Delete</button>
+              <button class="delete-btn" onclick="deleteItem('${c.key}', '${e.incomeId || ''}', ${e.amount})">Delete</button>
             </div>
           `;
           expenseList.prepend(item);
@@ -203,15 +312,15 @@
     }
 
     function calcDiff() {
-      const app = parseFloat(document.getElementById("appBal").innerText) || 0;
+      const appBal = parseFloat(document.getElementById("appBal").innerText) || 0;
       const phys = parseFloat(document.getElementById("physBal").innerText) || 0;
-      const diff = phys - app;
+      const diff = phys - appBal;
       const tag = document.getElementById("diffTag");
       tag.innerText = `Diff: ₹${diff.toFixed(2)}`;
       tag.className = "diff-badge " + (diff === 0 ? "match" : "mismatch");
     }
 
-    // Actions
+    // Update physical cash only
     window.updatePhysical = async () => {
       const val = parseFloat(actualInput.value);
       if (!isNaN(val)) {
@@ -220,53 +329,98 @@
       }
     };
 
+    // Add expense – only Amount is required
     window.addExpense = async () => {
-      const desc = descInput.value;
+      const desc = descInput.value.trim();
       const amt = parseFloat(amountInput.value);
       const incId = incomeSelect.value;
-      if (!desc || isNaN(amt) || !incId) return alert("Fill all fields");
+      const category = categorySelect.value || "Misc";
 
-      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
+      if (isNaN(amt) || amt <= 0) {
+        return alert("Please enter a valid amount");
+      }
+
       const updates = {};
       const key = push(ref(db, "mspend/items")).key;
-      updates[`mspend/items/${key}`] = { desc, amount: amt, category: categorySelect.value, incomeId: incId, incomeName: incSnap.val().desc, date: Date.now() };
-      updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining - amt;
-      
+
+      let incomeName = "No source";
+
+      if (incId) {
+        const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
+        if (incSnap.exists()) {
+          incomeName = incSnap.val().desc;
+          updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining - amt;
+        }
+      }
+
+      updates[`mspend/items/${key}`] = {
+        desc: desc || "",
+        amount: amt,
+        category,
+        incomeId: incId || null,
+        incomeName,
+        date: Date.now()
+      };
+
       await update(ref(db), updates);
-      descInput.value = ""; amountInput.value = "";
+
+      descInput.value = "";
+      amountInput.value = "";
+      incomeSelect.value = "";
     };
 
+    // Delete expense
     window.deleteItem = async (id, incId, amt) => {
-      const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
       const updates = {};
-      if(incSnap.exists()) updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
       updates[`mspend/items/${id}`] = null;
+
+      if (incId) {
+        const incSnap = await get(ref(db, `mspend/incomes/${incId}`));
+        if (incSnap.exists()) {
+          updates[`mspend/incomes/${incId}/remaining`] = incSnap.val().remaining + amt;
+        }
+      }
+
       await update(ref(db), updates);
     };
 
+    // Add income source
     window.addIncome = async () => {
+      const name = incName.value.trim();
       const amt = parseFloat(incAmt.value);
-      if (incName.value && !isNaN(amt)) {
-        await push(ref(db, "mspend/incomes"), { desc: incName.value, amount: amt, remaining: amt, date: Date.now() });
-        incName.value = ""; incAmt.value = "";
+      if (name && !isNaN(amt) && amt > 0) {
+        await push(ref(db, "mspend/incomes"), {
+          desc: name,
+          amount: amt,
+          remaining: amt,
+          date: Date.now()
+        });
+        incName.value = "";
+        incAmt.value = "";
+      } else {
+        alert("Please enter a name and valid amount");
       }
     };
 
+    // Add category
     window.addCategory = async () => {
-      if (newCat.value) {
-        await push(ref(db, "mspend/categories"), { name: newCat.value });
+      const name = newCat.value.trim();
+      if (name) {
+        await push(ref(db, "mspend/categories"), { name });
         newCat.value = "";
       }
     };
 
+    // Full wipe
     window.wipeSystem = async () => {
       const pw = prompt("Master Password:");
       if (pw !== MASTER_PW) return alert("Wrong password");
       if (confirm("THIS WILL WIPE EVERYTHING. System will reset to ₹0. Proceed?")) {
-        await set(ref(db, "mspend"), { 
+        await set(ref(db, "mspend"), {
           physical_balance: 0,
           items: null,
-          incomes: null
+          incomes: null,
+          categories: null
         });
         alert("System Reset Successfully");
       }
