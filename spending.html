@@ -179,7 +179,7 @@ window.setView = (view) => {
 function loadConfig(){
     onValue(configRef, s => {
         const data = s.val() || {};
-        currentHourlyRate = data.rate || 0;
+        currentHourlyRate = data.rate || 50;
         hoursPerDay = data.workDay || 8;
         hourlyRateDisplay.innerText = currentHourlyRate.toFixed(2);
         loadExpenses();
