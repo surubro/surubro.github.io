@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Money Manager 2 Tally — Dual Managers</title>
+  <title>Money Manager 4</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Speed up Firebase module fetch -->
@@ -107,14 +107,14 @@
     .openings .sub.original { background:#f3e5f5; }
     .openings .sub.whatif   { background:#e3f2fd; }
 
-    /* collapsible headers (used by What-If + Tally) */
+    /* collapsible header (What-If only) */
     .head {
       display:flex;
       justify-content:space-between;
       align-items:center;
       cursor:pointer;
       user-select:none;
-      margin:0;
+      margin:0 0 6px;
       font-size:14px;
       font-weight:bold;
     }
@@ -124,13 +124,8 @@
     }
     .head.collapsed .arrow { transform:rotate(-90deg); }
 
-    .openings .original .head,
-    .openings .original h4   { color:#673ab7; }
-    .openings .whatif   .head,
-    .openings .whatif   h4   { color:#1976d2; }
-
-    /* Tally header colour */
-    #tallyHead { font-size:16px; color:#4CAF50; }
+    .openings .original h4   { color:#673ab7; margin:0 0 6px; font-size:14px; }
+    .openings .whatif   .head { color:#1976d2; }
 
     .body { overflow:hidden; }
 
@@ -194,7 +189,7 @@
 
 <body>
 
-<header>💰 Money Manager 2 Tally</header>
+<header>💰 Money Manager 4 Tally</header>
 
 <!-- LOADING OVERLAY (hidden once Firebase is ready) -->
 <div id="loading">
@@ -237,7 +232,7 @@
 
       <!-- What-If (collapsed by default) -->
       <div class="sub whatif">
-        <div class="head collapsed" id="whatifHead" onclick="toggleSection('whatif')">
+        <div class="head collapsed" id="whatifHead" onclick="toggleWhatIf()">
           <span>🔵 What-If Opening</span>
           <span class="arrow">▼</span>
         </div>
@@ -250,25 +245,19 @@
     </div>
   </div>
 
-  <!-- TALLY (collapsed by default) -->
+  <!-- TALLY (always visible) -->
   <div class="box">
-    <div class="head collapsed" id="tallyHead" onclick="toggleSection('tally')">
-      <span>📊 Tally</span>
-      <span class="arrow">▼</span>
+    <h3>Tally</h3>
+
+    <div class="tally">
+      <div class="opening">Original<br>₹<span id="opening">0.00</span></div>
+      <div class="whatif">What-If<br>₹<span id="openingWhatIf">0.00</span></div>
+      <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
     </div>
-    <div class="body" id="tallyBody" style="display:none; margin-top:10px;">
 
-      <div class="tally">
-        <div class="opening">Original<br>₹<span id="opening">0.00</span></div>
-        <div class="whatif">What-If<br>₹<span id="openingWhatIf">0.00</span></div>
-        <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
-      </div>
-
-      <div class="tally2">
-        <div class="balance">Balance (Original)<br>₹<span id="balance">0.00</span></div>
-        <div class="balance-w">Balance (What-If)<br>₹<span id="balanceWhatIf">0.00</span></div>
-      </div>
-
+    <div class="tally2">
+      <div class="balance">Balance (Original)<br>₹<span id="balance">0.00</span></div>
+      <div class="balance-w">Balance (What-If)<br>₹<span id="balanceWhatIf">0.00</span></div>
     </div>
   </div>
 
@@ -338,10 +327,10 @@
     $("balanceWhatIf").innerText = money(whatIfOpening   - totalExpense);
   }
 
-  /* ---------- collapse toggles (What-If + Tally) ---------- */
-  window.toggleSection = which => {
-    const head = which === "whatif" ? $("whatifHead") : $("tallyHead");
-    const body = which === "whatif" ? $("whatifBody") : $("tallyBody");
+  /* ---------- What-If collapse toggle (only this section) ---------- */
+  window.toggleWhatIf = () => {
+    const head = $("whatifHead");
+    const body = $("whatifBody");
     const isCollapsed = head.classList.contains("collapsed");
 
     if (isCollapsed) {
