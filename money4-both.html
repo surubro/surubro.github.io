@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Money Manager 2 Tally — Dual Space</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+
+    #loginDiv, #appDiv { padding:20px; }
+
+    input, button {
+      width:100%;
+      padding:10px;
+      margin:6px 0;
+      font-size:16px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button {
+      background:#4CAF50;
+      color:white;
+      font-weight:bold;
+      border:none;
+      cursor:pointer;
+    }
+
+    /* ===== SPACE SWITCHER TABS ===== */
+    .tabs {
+      display:flex;
+      gap:10px;
+      margin-bottom:15px;
+    }
+    .tabs button {
+      flex:1;
+      margin:0;
+      background:#e0e0e0;
+      color:#333;
+      border:2px solid transparent;
+      transition:background .15s, color .15s;
+    }
+    .tabs button.active {
+      background:#4CAF50;
+      color:#fff;
+      border-color:#2e7d32;
+    }
+
+    .space-label {
+      text-align:center;
+      font-weight:bold;
+      color:#4CAF50;
+      margin-bottom:12px;
+      font-size:15px;
+    }
+
+    .box {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .tally {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      text-align:center;
+      font-weight:bold;
+    }
+
+    .opening { color:#673ab7; }
+    .expense { color:#f44336; }
+    .balance { color:#333; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .actions button {
+      background:#2196F3;
+      margin-left:5px;
+      padding:6px 10px;
+      font-size:14px;
+      width:auto;
+    }
+
+    .actions button:last-child {
+      background:#f44336;
+    }
+
+    .empty {
+      text-align:center;
+      color:#999;
+      padding:15px;
+      background:white;
+      border-radius:8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>💰 Money Manager 2 Tally</header>
+
+<!-- LOGIN -->
+<div id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="appDiv" style="display:none;">
+
+  <!-- ===== SPACE SWITCHER ===== -->
+  <div class="tabs">
+    <button class="tab active" data-space="A" onclick="switchSpace('A')">📁 Manager 1</button>
+    <button class="tab"        data-space="B" onclick="switchSpace('B')">📁 Manager 2</button>
+  </div>
+
+  <div class="space-label">Active: <span id="spaceName">Money Manager 1</span></div>
+
+  <!-- OPENING BALANCE -->
+  <div class="box">
+    <h3>Opening Amount</h3>
+    <input type="number" id="openingInput" placeholder="Enter opening amount">
+    <button onclick="saveOpening()">Save / Update</button>
+  </div>
+
+  <!-- TALLY -->
+  <div class="box">
+    <h3>Tally</h3>
+    <div class="tally">
+      <div class="opening">Opening<br>₹<span id="opening">0.00</span></div>
+      <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
+      <div class="balance">Balance<br>₹<span id="balance">0.00</span></div>
+    </div>
+  </div>
+
+  <!-- ADD EXPENSE -->
+  <div class="box">
+    <h3>Add Expense</h3>
+    <input type="text" id="desc" placeholder="Expense description">
+    <input type="number" id="amount" placeholder="Amount spent">
+    <button onclick="addExpense()">➕ Add Expense</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <h3>Expenses</h3>
+  <div id="list"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  /* ============================================================
+     FIREBASE CONFIG  (same project, different data paths below)
+     ============================================================ */
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getDatabase(app);
+  const auth = getAuth();
+
+  /* ============================================================
+     TWO INDEPENDENT DATABASE STRINGS (paths)
+     Everything is stored under these two root nodes.
+     ============================================================ */
+  const SPACES = {
+    A: { name: "Money Manager 1", path: "moneyManagerA" },
+    B: { name: "Money Manager 2", path: "moneyManagerB" }
+  };
+  /* ============================================================ */
+
+  /* ---------- state ---------- */
+  let currentSpace  = localStorage.getItem("mm_space") || "A";
+  let unsubOpening  = null;
+  let unsubExpenses = null;
+  let openingAmount = 0;
+  let totalExpense  = 0;
+
+  /* ---------- helpers ---------- */
+  const $ = id => document.getElementById(id);
+  const money = n => Number(n || 0).toFixed(2);
+  const escapeHtml = s => String(s).replace(/[&<>"']/g,
+    c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+  function refreshBalance() {
+    $("expense").innerText = money(totalExpense);
+    $("balance").innerText = money(openingAmount - totalExpense);
+  }
+
+  /* ---------- detach / attach listeners ---------- */
+  function detach() {
+    if (unsubOpening)  { unsubOpening();  unsubOpening  = null; }
+    if (unsubExpenses) { unsubExpenses(); unsubExpenses = null; }
+  }
+
+  function attach(spaceKey) {
+    detach();
+
+    const space      = SPACES[spaceKey];
+    const openingRef = ref(db, space.path + "/openingBalance");
+    const expenseRef = ref(db, space.path + "/expenses");
+
+    /* reset UI for the newly selected space */
+    openingAmount = 0;
+    totalExpense  = 0;
+    $("list").innerHTML         = "";
+    $("openingInput").value     = "";
+    $("desc").value             = "";
+    $("amount").value           = "";
+    $("opening").innerText      = "0.00";
+    refreshBalance();
+
+    /* header + tab highlight */
+    $("spaceName").innerText = space.name;
+    document.querySelectorAll(".tab").forEach(btn =>
+      btn.classList.toggle("active", btn.dataset.space === spaceKey)
+    );
+
+    /* live opening balance */
+    unsubOpening = onValue(openingRef, snap => {
+      openingAmount = snap.exists() ? Number(snap.val()) : 0;
+      $("opening").innerText = money(openingAmount);
+      refreshBalance();
+    });
+
+    /* live expense list */
+    unsubExpenses = onValue(expenseRef, snap => {
+      const list = $("list");
+      list.innerHTML = "";
+      totalExpense = 0;
+
+      if (!snap.exists()) {
+        list.innerHTML = `<div class="empty">No expenses yet in ${escapeHtml(space.name)}.</div>`;
+        refreshBalance();
+        return;
+      }
+
+      snap.forEach(child => {
+        const val    = child.val() || {};
+        const desc   = val.desc ?? "(no description)";
+        const amount = Number(val.amount || 0);
+        const id     = child.key;
+
+        totalExpense += amount;
+
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(desc)}</strong><br>
+            ₹${money(amount)}
+          </div>
+          <div class="actions">
+            <button onclick="editExpense('${id}', ${amount})">Edit</button>
+            <button onclick="deleteExpense('${id}')">Delete</button>
+          </div>`;
+        list.prepend(div);
+      });
+
+      refreshBalance();
+    });
+  }
+
+  /* ---------- auth ---------- */
+  onAuthStateChanged(auth, user => {
+    $("loginDiv").style.display = user ? "none"  : "block";
+    $("appDiv").style.display   = user ? "block" : "none";
+
+    if (user) {
+      attach(currentSpace);   // attach listeners for the active space
+    } else {
+      detach();               // stop listening when logged out
+    }
+  });
+
+  window.login = () =>
+    signInWithEmailAndPassword(auth, $("email").value, $("password").value)
+      .catch(e => alert(e.message));
+
+  window.logout = () => signOut(auth);
+
+  /* ---------- space switching ---------- */
+  window.switchSpace = key => {
+    if (!SPACES[key] || key === currentSpace) return;
+    currentSpace = key;
+    localStorage.setItem("mm_space", key);   // remember choice on refresh
+    attach(key);
+  };
+
+  /* ---------- actions (always act on the ACTIVE space) ---------- */
+  window.saveOpening = () => {
+    const v = parseFloat($("openingInput").value);
+    if (!isNaN(v)) {
+      set(ref(db, SPACES[currentSpace].path + "/openingBalance"), v);
+      $("openingInput").value = "";
+    }
+  };
+
+  window.addExpense = () => {
+    const d = $("desc").value.trim();
+    const a = parseFloat($("amount").value);
+    if (d && !isNaN(a) && a > 0) {
+      push(ref(db, SPACES[currentSpace].path + "/expenses"), { desc: d, amount: a });
+      $("desc").value   = "";
+      $("amount").value = "";
+    }
+  };
+
+  window.editExpense = (id, oldAmount) => {
+    const n = parseFloat(prompt("Edit amount:", oldAmount));
+    if (!isNaN(n) && n > 0) {
+      update(ref(db, SPACES[currentSpace].path + "/expenses/" + id), { amount: n });
+    }
+  };
+
+  window.deleteExpense = id => {
+    if (confirm("Delete this expense?")) {
+      remove(ref(db, SPACES[currentSpace].path + "/expenses/" + id));
+    }
+  };
+</script>
+
+</body>
+  </html>
