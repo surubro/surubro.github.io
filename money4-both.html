@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Money Manager 2 Tally — Dual Space</title>
+  <title>Money Manager 2 Tally — Dual Managers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -65,17 +65,63 @@
       box-shadow:0 2px 5px rgba(0,0,0,0.1);
     }
 
+    /* two opening boxes side by side */
+    .openings {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      align-items:start;
+    }
+    .openings .sub { padding:10px; border-radius:8px; }
+    .openings .sub.original { background:#f3e5f5; }
+    .openings .sub.whatif   { background:#e3f2fd; }
+
+    /* collapsible header for What-If */
+    .sub .head {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      cursor:pointer;
+      user-select:none;
+      margin:0 0 6px;
+      font-size:14px;
+      font-weight:bold;
+    }
+    .sub .head .arrow {
+      font-size:12px;
+      transition:transform .2s;
+    }
+    .sub .head.collapsed .arrow { transform:rotate(-90deg); }
+
+    .sub .body { overflow:hidden; }
+
+    .openings .original h4,
+    .openings .original .head  { color:#673ab7; }
+    .openings .whatif   h4,
+    .openings .whatif   .head  { color:#1976d2; }
+
+    /* tally */
     .tally {
       display:grid;
       grid-template-columns:repeat(3,1fr);
       gap:10px;
       text-align:center;
       font-weight:bold;
+      margin-bottom:10px;
+    }
+    .tally2 {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      text-align:center;
+      font-weight:bold;
     }
 
-    .opening { color:#673ab7; }
-    .expense { color:#f44336; }
-    .balance { color:#333; }
+    .opening   { color:#673ab7; }
+    .whatif    { color:#1976d2; }
+    .expense   { color:#f44336; }
+    .balance   { color:#333; }
+    .balance-w { color:#1976d2; }
 
     .card {
       background:white;
@@ -95,10 +141,7 @@
       font-size:14px;
       width:auto;
     }
-
-    .actions button:last-child {
-      background:#f44336;
-    }
+    .actions button:last-child { background:#f44336; }
 
     .empty {
       text-align:center;
@@ -106,6 +149,11 @@
       padding:15px;
       background:white;
       border-radius:8px;
+    }
+
+    @media (max-width: 520px) {
+      .openings { grid-template-columns: 1fr; }
+      .tally    { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -125,7 +173,7 @@
 <!-- APP -->
 <div id="appDiv" style="display:none;">
 
-  <!-- ===== SPACE SWITCHER ===== -->
+  <!-- ===== MANAGER SWITCHER ===== -->
   <div class="tabs">
     <button class="tab active" data-space="A" onclick="switchSpace('A')">📁 Manager 1</button>
     <button class="tab"        data-space="B" onclick="switchSpace('B')">📁 Manager 2</button>
@@ -133,26 +181,54 @@
 
   <div class="space-label">Active: <span id="spaceName">Money Manager 1</span></div>
 
-  <!-- OPENING BALANCE -->
+  <!-- TWO OPENING AMOUNTS -->
   <div class="box">
-    <h3>Opening Amount</h3>
-    <input type="number" id="openingInput" placeholder="Enter opening amount">
-    <button onclick="saveOpening()">Save / Update</button>
+    <h3>Opening Amounts</h3>
+    <div class="openings">
+
+      <!-- Original (always visible) -->
+      <div class="sub original">
+        <h4>🟣 Original Opening</h4>
+        <div class="body">
+          <input type="number" id="openingInputOriginal" placeholder="Original amount">
+          <button onclick="saveOpening('original')">Save Original</button>
+        </div>
+      </div>
+
+      <!-- What-If (collapsed by default, click header to expand) -->
+      <div class="sub whatif">
+        <div class="head collapsed" id="whatifHead" onclick="toggleWhatIf()">
+          <span>🔵 What-If Opening</span>
+          <span class="arrow">▼</span>
+        </div>
+        <div class="body" id="whatifBody" style="display:none;">
+          <input type="number" id="openingInputWhatIf" placeholder="What-if amount">
+          <button onclick="saveOpening('whatif')">Save What-If</button>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- TALLY -->
   <div class="box">
     <h3>Tally</h3>
+
     <div class="tally">
-      <div class="opening">Opening<br>₹<span id="opening">0.00</span></div>
+      <div class="opening">Original<br>₹<span id="opening">0.00</span></div>
+      <div class="whatif">What-If<br>₹<span id="openingWhatIf">0.00</span></div>
       <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
-      <div class="balance">Balance<br>₹<span id="balance">0.00</span></div>
+    </div>
+
+    <div class="tally2">
+      <div class="balance">Balance (Original)<br>₹<span id="balance">0.00</span></div>
+      <div class="balance-w">Balance (What-If)<br>₹<span id="balanceWhatIf">0.00</span></div>
     </div>
   </div>
 
   <!-- ADD EXPENSE -->
   <div class="box">
-    <h3>Add Expense</h3>
+    <h3>Add Expense <small style="font-weight:normal;color:#666;">(shared inside this manager)</small></h3>
     <input type="text" id="desc" placeholder="Expense description">
     <input type="number" id="amount" placeholder="Amount spent">
     <button onclick="addExpense()">➕ Add Expense</button>
@@ -169,7 +245,7 @@
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
   /* ============================================================
-     FIREBASE CONFIG  (same project, different data paths below)
+     FIREBASE CONFIG
      ============================================================ */
   const firebaseConfig = {
     apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
@@ -186,21 +262,21 @@
   const auth = getAuth();
 
   /* ============================================================
-     TWO INDEPENDENT DATABASE STRINGS (paths)
-     Everything is stored under these two root nodes.
+     TWO SEPARATE MANAGERS
      ============================================================ */
   const SPACES = {
     A: { name: "Money Manager 1", path: "moneyManagerA" },
     B: { name: "Money Manager 2", path: "moneyManagerB" }
   };
-  /* ============================================================ */
 
   /* ---------- state ---------- */
-  let currentSpace  = localStorage.getItem("mm_space") || "A";
-  let unsubOpening  = null;
+  let currentSpace = localStorage.getItem("mm_space") || "A";
+  let unsubOpenings = null;
   let unsubExpenses = null;
-  let openingAmount = 0;
-  let totalExpense  = 0;
+
+  let originalOpening = 0;
+  let whatIfOpening   = 0;
+  let totalExpense    = 0;
 
   /* ---------- helpers ---------- */
   const $ = id => document.getElementById(id);
@@ -208,33 +284,52 @@
   const escapeHtml = s => String(s).replace(/[&<>"']/g,
     c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  function refreshBalance() {
-    $("expense").innerText = money(totalExpense);
-    $("balance").innerText = money(openingAmount - totalExpense);
+  function refreshTally() {
+    $("opening").innerText       = money(originalOpening);
+    $("openingWhatIf").innerText = money(whatIfOpening);
+    $("expense").innerText       = money(totalExpense);
+    $("balance").innerText       = money(originalOpening - totalExpense);
+    $("balanceWhatIf").innerText = money(whatIfOpening   - totalExpense);
   }
+
+  /* ---------- What-If collapse toggle ---------- */
+  window.toggleWhatIf = () => {
+    const head = $("whatifHead");
+    const body = $("whatifBody");
+    const isCollapsed = head.classList.contains("collapsed");
+
+    if (isCollapsed) {
+      head.classList.remove("collapsed");
+      body.style.display = "block";
+    } else {
+      head.classList.add("collapsed");
+      body.style.display = "none";
+    }
+  };
 
   /* ---------- detach / attach listeners ---------- */
   function detach() {
-    if (unsubOpening)  { unsubOpening();  unsubOpening  = null; }
+    if (unsubOpenings) { unsubOpenings(); unsubOpenings = null; }
     if (unsubExpenses) { unsubExpenses(); unsubExpenses = null; }
   }
 
   function attach(spaceKey) {
     detach();
 
-    const space      = SPACES[spaceKey];
-    const openingRef = ref(db, space.path + "/openingBalance");
-    const expenseRef = ref(db, space.path + "/expenses");
+    const space       = SPACES[spaceKey];
+    const openingsRef = ref(db, space.path + "/openings");
+    const expenseRef  = ref(db, space.path + "/expenses");
 
-    /* reset UI for the newly selected space */
-    openingAmount = 0;
-    totalExpense  = 0;
-    $("list").innerHTML         = "";
-    $("openingInput").value     = "";
-    $("desc").value             = "";
-    $("amount").value           = "";
-    $("opening").innerText      = "0.00";
-    refreshBalance();
+    /* reset UI */
+    originalOpening = 0;
+    whatIfOpening   = 0;
+    totalExpense    = 0;
+    $("openingInputOriginal").value = "";
+    $("openingInputWhatIf").value   = "";
+    $("desc").value   = "";
+    $("amount").value = "";
+    $("list").innerHTML = "";
+    refreshTally();
 
     /* header + tab highlight */
     $("spaceName").innerText = space.name;
@@ -242,11 +337,12 @@
       btn.classList.toggle("active", btn.dataset.space === spaceKey)
     );
 
-    /* live opening balance */
-    unsubOpening = onValue(openingRef, snap => {
-      openingAmount = snap.exists() ? Number(snap.val()) : 0;
-      $("opening").innerText = money(openingAmount);
-      refreshBalance();
+    /* live openings */
+    unsubOpenings = onValue(openingsRef, snap => {
+      const v = snap.val() || {};
+      originalOpening = Number(v.original || 0);
+      whatIfOpening   = Number(v.whatif   || 0);
+      refreshTally();
     });
 
     /* live expense list */
@@ -257,7 +353,7 @@
 
       if (!snap.exists()) {
         list.innerHTML = `<div class="empty">No expenses yet in ${escapeHtml(space.name)}.</div>`;
-        refreshBalance();
+        refreshTally();
         return;
       }
 
@@ -283,7 +379,7 @@
         list.prepend(div);
       });
 
-      refreshBalance();
+      refreshTally();
     });
   }
 
@@ -292,11 +388,8 @@
     $("loginDiv").style.display = user ? "none"  : "block";
     $("appDiv").style.display   = user ? "block" : "none";
 
-    if (user) {
-      attach(currentSpace);   // attach listeners for the active space
-    } else {
-      detach();               // stop listening when logged out
-    }
+    if (user) attach(currentSpace);
+    else      detach();
   });
 
   window.login = () =>
@@ -305,23 +398,32 @@
 
   window.logout = () => signOut(auth);
 
-  /* ---------- space switching ---------- */
+  /* ---------- switch manager ---------- */
   window.switchSpace = key => {
     if (!SPACES[key] || key === currentSpace) return;
     currentSpace = key;
-    localStorage.setItem("mm_space", key);   // remember choice on refresh
+    localStorage.setItem("mm_space", key);
     attach(key);
   };
 
-  /* ---------- actions (always act on the ACTIVE space) ---------- */
-  window.saveOpening = () => {
-    const v = parseFloat($("openingInput").value);
-    if (!isNaN(v)) {
-      set(ref(db, SPACES[currentSpace].path + "/openingBalance"), v);
-      $("openingInput").value = "";
+  /* ---------- save opening amounts ---------- */
+  window.saveOpening = which => {
+    const openingsRef = ref(db, SPACES[currentSpace].path + "/openings");
+
+    if (which === "original") {
+      const v = parseFloat($("openingInputOriginal").value);
+      if (isNaN(v)) { alert("Enter a valid Original amount."); return; }
+      update(openingsRef, { original: v });
+      $("openingInputOriginal").value = "";
+    } else {
+      const v = parseFloat($("openingInputWhatIf").value);
+      if (isNaN(v)) { alert("Enter a valid What-If amount."); return; }
+      update(openingsRef, { whatif: v });
+      $("openingInputWhatIf").value = "";
     }
   };
 
+  /* ---------- expenses ---------- */
   window.addExpense = () => {
     const d = $("desc").value.trim();
     const a = parseFloat($("amount").value);
@@ -347,4 +449,4 @@
 </script>
 
 </body>
-  </html>
+</html>
