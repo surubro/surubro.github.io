@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Money Manager 2 Tally</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+
+    #loginDiv, #appDiv { padding:20px; }
+
+    input, button {
+      width:100%;
+      padding:10px;
+      margin:6px 0;
+      font-size:16px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button {
+      background:#4CAF50;
+      color:white;
+      font-weight:bold;
+      border:none;
+      cursor:pointer;
+    }
+
+    .box {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .tally {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      text-align:center;
+      font-weight:bold;
+    }
+
+    .opening { color:#673ab7; }
+    .expense { color:#f44336; }
+    .balance { color:#333; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .actions button {
+      background:#2196F3;
+      margin-left:5px;
+      padding:6px 10px;
+      font-size:14px;
+    }
+
+    .actions button:last-child {
+      background:#f44336;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>💰 Money Manager 2 Tally</header>
+
+<!-- LOGIN -->
+<div id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="appDiv" style="display:none;">
+
+  <!-- OPENING BALANCE -->
+  <div class="box">
+    <h3>Opening Amount</h3>
+    <input type="number" id="openingInput" placeholder="Enter opening amount">
+    <button onclick="saveOpening()">Save / Update</button>
+  </div>
+
+  <!-- TALLY -->
+  <div class="box">
+    <h3>Tally</h3>
+    <div class="tally">
+      <div class="opening">Opening<br>₹<span id="opening">0</span></div>
+      <div class="expense">Expenses<br>₹<span id="expense">0</span></div>
+      <div class="balance">Balance<br>₹<span id="balance">0</span></div>
+    </div>
+  </div>
+
+  <!-- ADD EXPENSE -->
+  <div class="box">
+    <h3>Add Expense</h3>
+    <input type="text" id="desc" placeholder="Expense description">
+    <input type="number" id="amount" placeholder="Amount spent">
+    <button onclick="addExpense()">➕ Add Expense</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <h3>Expenses</h3>
+  <div id="list"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  /* ====== CHANGED DATABASE PATHS (separate storage) ====== */
+  const BASE_PATH    = "money2TallyV2";                       // whole app namespace
+  const expenseRef   = ref(db, BASE_PATH + "/expenses");      // all entries = expenses
+  const openingRef   = ref(db, BASE_PATH + "/openingBalance");// opening amount
+  /* ======================================================= */
+
+  let openingAmount = 0;
+
+  onAuthStateChanged(auth, user => {
+    loginDiv.style.display = user ? "none" : "block";
+    appDiv.style.display = user ? "block" : "none";
+  });
+
+  window.login = () =>
+    signInWithEmailAndPassword(auth, email.value, password.value)
+      .catch(e => alert(e.message));
+
+  window.logout = () => signOut(auth);
+
+  window.saveOpening = () => {
+    const v = parseFloat(openingInput.value);
+    if (!isNaN(v)) {
+      set(openingRef, v);
+      openingInput.value = "";
+    }
+  };
+
+  window.addExpense = () => {
+    const d = desc.value.trim();
+    const a = parseFloat(amount.value);
+    if (d && !isNaN(a) && a > 0) {
+      push(expenseRef, { desc: d, amount: a });
+      desc.value = "";
+      amount.value = "";
+    }
+  };
+
+  window.editExpense = (id, oldAmount) => {
+    const n = parseFloat(prompt("Edit amount:", oldAmount));
+    if (!isNaN(n) && n > 0) {
+      update(ref(db, BASE_PATH + "/expenses/" + id), { amount: n });
+    }
+  };
+
+  window.deleteExpense = id => {
+    if (confirm("Delete this expense?")) {
+      remove(ref(db, BASE_PATH + "/expenses/" + id));
+    }
+  };
+
+  onValue(openingRef, snap => {
+    openingAmount = snap.exists() ? snap.val() : 0;
+    document.getElementById("opening").innerText = openingAmount.toFixed(2);
+    refreshBalance();
+  });
+
+  let totalExpense = 0;
+
+  function refreshBalance() {
+    document.getElementById("expense").innerText = totalExpense.toFixed(2);
+    document.getElementById("balance").innerText =
+      (openingAmount - totalExpense).toFixed(2);
+  }
+
+  onValue(expenseRef, snap => {
+    list.innerHTML = "";
+    totalExpense = 0;
+
+    snap.forEach(c => {
+      const { desc, amount } = c.val();
+      const id = c.key;
+      totalExpense += Number(amount);
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div>
+          <strong>${desc}</strong><br>
+          ₹${amount}
+        </div>
+        <div class="actions">
+          <button onclick="editExpense('${id}', ${amount})">Edit</button>
+          <button onclick="deleteExpense('${id}')">Delete</button>
+        </div>
+      `;
+      list.prepend(div);
+    });
+
+    refreshBalance();
+  });
+</script>
+
+</body>
+</html>
