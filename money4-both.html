@@ -5,6 +5,12 @@
   <title>Money Manager 2 Tally — Dual Managers</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Speed up Firebase module fetch -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://striped-acrobat-342207-default-rtdb.firebaseio.com" crossorigin>
+  <link rel="dns-prefetch" href="https://striped-acrobat-342207-default-rtdb.firebaseio.com">
+
   <style>
     body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
     header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
@@ -28,6 +34,31 @@
       border:none;
       cursor:pointer;
     }
+
+    /* ===== LOADING OVERLAY ===== */
+    #loading {
+      position:fixed;
+      inset:0;
+      background:#f5f5f5;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      color:#4CAF50;
+      font-weight:bold;
+      font-size:16px;
+    }
+    .spinner {
+      width:38px;
+      height:38px;
+      border:4px solid #c8e6c9;
+      border-top-color:#4CAF50;
+      border-radius:50%;
+      animation:spin .9s linear infinite;
+      margin-bottom:12px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* ===== SPACE SWITCHER TABS ===== */
     .tabs {
@@ -76,29 +107,32 @@
     .openings .sub.original { background:#f3e5f5; }
     .openings .sub.whatif   { background:#e3f2fd; }
 
-    /* collapsible header for What-If */
-    .sub .head {
+    /* collapsible headers (used by What-If + Tally) */
+    .head {
       display:flex;
       justify-content:space-between;
       align-items:center;
       cursor:pointer;
       user-select:none;
-      margin:0 0 6px;
+      margin:0;
       font-size:14px;
       font-weight:bold;
     }
-    .sub .head .arrow {
+    .head .arrow {
       font-size:12px;
       transition:transform .2s;
     }
-    .sub .head.collapsed .arrow { transform:rotate(-90deg); }
+    .head.collapsed .arrow { transform:rotate(-90deg); }
 
-    .sub .body { overflow:hidden; }
+    .openings .original .head,
+    .openings .original h4   { color:#673ab7; }
+    .openings .whatif   .head,
+    .openings .whatif   h4   { color:#1976d2; }
 
-    .openings .original h4,
-    .openings .original .head  { color:#673ab7; }
-    .openings .whatif   h4,
-    .openings .whatif   .head  { color:#1976d2; }
+    /* Tally header colour */
+    #tallyHead { font-size:16px; color:#4CAF50; }
+
+    .body { overflow:hidden; }
 
     /* tally */
     .tally {
@@ -162,8 +196,14 @@
 
 <header>💰 Money Manager 2 Tally</header>
 
+<!-- LOADING OVERLAY (hidden once Firebase is ready) -->
+<div id="loading">
+  <div class="spinner"></div>
+  Loading…
+</div>
+
 <!-- LOGIN -->
-<div id="loginDiv">
+<div id="loginDiv" style="display:none;">
   <h2>Login</h2>
   <input type="email" id="email" placeholder="Email">
   <input type="password" id="password" placeholder="Password">
@@ -195,9 +235,9 @@
         </div>
       </div>
 
-      <!-- What-If (collapsed by default, click header to expand) -->
+      <!-- What-If (collapsed by default) -->
       <div class="sub whatif">
-        <div class="head collapsed" id="whatifHead" onclick="toggleWhatIf()">
+        <div class="head collapsed" id="whatifHead" onclick="toggleSection('whatif')">
           <span>🔵 What-If Opening</span>
           <span class="arrow">▼</span>
         </div>
@@ -210,19 +250,25 @@
     </div>
   </div>
 
-  <!-- TALLY -->
+  <!-- TALLY (collapsed by default) -->
   <div class="box">
-    <h3>Tally</h3>
-
-    <div class="tally">
-      <div class="opening">Original<br>₹<span id="opening">0.00</span></div>
-      <div class="whatif">What-If<br>₹<span id="openingWhatIf">0.00</span></div>
-      <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
+    <div class="head collapsed" id="tallyHead" onclick="toggleSection('tally')">
+      <span>📊 Tally</span>
+      <span class="arrow">▼</span>
     </div>
+    <div class="body" id="tallyBody" style="display:none; margin-top:10px;">
 
-    <div class="tally2">
-      <div class="balance">Balance (Original)<br>₹<span id="balance">0.00</span></div>
-      <div class="balance-w">Balance (What-If)<br>₹<span id="balanceWhatIf">0.00</span></div>
+      <div class="tally">
+        <div class="opening">Original<br>₹<span id="opening">0.00</span></div>
+        <div class="whatif">What-If<br>₹<span id="openingWhatIf">0.00</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
+      </div>
+
+      <div class="tally2">
+        <div class="balance">Balance (Original)<br>₹<span id="balance">0.00</span></div>
+        <div class="balance-w">Balance (What-If)<br>₹<span id="balanceWhatIf">0.00</span></div>
+      </div>
+
     </div>
   </div>
 
@@ -292,10 +338,10 @@
     $("balanceWhatIf").innerText = money(whatIfOpening   - totalExpense);
   }
 
-  /* ---------- What-If collapse toggle ---------- */
-  window.toggleWhatIf = () => {
-    const head = $("whatifHead");
-    const body = $("whatifBody");
+  /* ---------- collapse toggles (What-If + Tally) ---------- */
+  window.toggleSection = which => {
+    const head = which === "whatif" ? $("whatifHead") : $("tallyHead");
+    const body = which === "whatif" ? $("whatifBody") : $("tallyBody");
     const isCollapsed = head.classList.contains("collapsed");
 
     if (isCollapsed) {
@@ -385,6 +431,9 @@
 
   /* ---------- auth ---------- */
   onAuthStateChanged(auth, user => {
+    /* hide loading overlay the first time auth resolves */
+    $("loading").style.display = "none";
+
     $("loginDiv").style.display = user ? "none"  : "block";
     $("appDiv").style.display   = user ? "block" : "none";
 
