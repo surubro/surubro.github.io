@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Money 5 Tally</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
+    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:22px; font-weight:bold; }
+
+    #loginDiv, #appDiv { padding:20px; }
+
+    input, button {
+      width:100%;
+      padding:10px;
+      margin:6px 0;
+      font-size:16px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      box-sizing:border-box;
+    }
+
+    button {
+      background:#4CAF50;
+      color:white;
+      font-weight:bold;
+      border:none;
+      cursor:pointer;
+    }
+
+    .box {
+      background:white;
+      padding:15px;
+      margin-bottom:15px;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .tally {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      text-align:center;
+      font-weight:bold;
+    }
+
+    .opening { color:#673ab7; }
+    .expense { color:#f44336; }
+    .balance { color:#333; }
+
+    .card {
+      background:white;
+      padding:15px;
+      margin:10px 0;
+      border-radius:8px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .actions button {
+      background:#2196F3;
+      margin-left:5px;
+      padding:6px 10px;
+      font-size:14px;
+      width:auto;
+    }
+
+    .actions button:last-child {
+      background:#f44336;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      flex: 1 0 70px;
+      padding: 12px 8px;
+      background: #ddd;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .tab-btn.active {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .logout-btn {
+      background: #777;
+      margin-top: 5px;
+    }
+
+    .small-note {
+      font-size: 13px;
+      color: #777;
+      text-align: center;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<header>💰 Money 5 Tally</header>
+
+<div id="loginDiv">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div id="appDiv" style="display:none;">
+
+  <!-- Tab buttons: Tally 1 to 5 -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tally="1" onclick="switchTally(1)">Tally 1</button>
+    <button class="tab-btn" data-tally="2" onclick="switchTally(2)">Tally 2</button>
+    <button class="tab-btn" data-tally="3" onclick="switchTally(3)">Tally 3</button>
+    <button class="tab-btn" data-tally="4" onclick="switchTally(4)">Tally 4</button>
+    <button class="tab-btn" data-tally="5" onclick="switchTally(5)">Tally 5</button>
+  </div>
+
+  <!-- ========== TALLY 1 ========== -->
+  <div id="tally1" class="tab-content active">
+    <div class="box">
+      <h3>Opening Amount (Tally 1)</h3>
+      <input type="number" id="openingInput1" placeholder="Enter opening amount">
+      <button onclick="saveOpening(1)">Save / Update</button>
+    </div>
+    <div class="box">
+      <h3>Tally 1 Summary</h3>
+      <div class="tally">
+        <div class="opening">Opening<br>₹<span id="opening1">0</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense1">0</span></div>
+        <div class="balance">Balance<br>₹<span id="balance1">0</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Add Expense (Tally 1)</h3>
+      <input type="text" id="desc1" placeholder="Expense description">
+      <input type="number" id="amount1" placeholder="Amount spent">
+      <button onclick="addExpense(1)">➕ Add Expense</button>
+    </div>
+    <h3>Expenses (Tally 1)</h3>
+    <div id="list1"></div>
+  </div>
+
+  <!-- ========== TALLY 2 ========== -->
+  <div id="tally2" class="tab-content">
+    <div class="box">
+      <h3>Opening Amount (Tally 2)</h3>
+      <input type="number" id="openingInput2" placeholder="Enter opening amount">
+      <button onclick="saveOpening(2)">Save / Update</button>
+    </div>
+    <div class="box">
+      <h3>Tally 2 Summary</h3>
+      <div class="tally">
+        <div class="opening">Opening<br>₹<span id="opening2">0</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense2">0</span></div>
+        <div class="balance">Balance<br>₹<span id="balance2">0</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Add Expense (Tally 2)</h3>
+      <input type="text" id="desc2" placeholder="Expense description">
+      <input type="number" id="amount2" placeholder="Amount spent">
+      <button onclick="addExpense(2)">➕ Add Expense</button>
+    </div>
+    <h3>Expenses (Tally 2)</h3>
+    <div id="list2"></div>
+  </div>
+
+  <!-- ========== TALLY 3 ========== -->
+  <div id="tally3" class="tab-content">
+    <div class="box">
+      <h3>Opening Amount (Tally 3)</h3>
+      <input type="number" id="openingInput3" placeholder="Enter opening amount">
+      <button onclick="saveOpening(3)">Save / Update</button>
+    </div>
+    <div class="box">
+      <h3>Tally 3 Summary</h3>
+      <div class="tally">
+        <div class="opening">Opening<br>₹<span id="opening3">0</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense3">0</span></div>
+        <div class="balance">Balance<br>₹<span id="balance3">0</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Add Expense (Tally 3)</h3>
+      <input type="text" id="desc3" placeholder="Expense description">
+      <input type="number" id="amount3" placeholder="Amount spent">
+      <button onclick="addExpense(3)">➕ Add Expense</button>
+    </div>
+    <h3>Expenses (Tally 3)</h3>
+    <div id="list3"></div>
+  </div>
+
+  <!-- ========== TALLY 4 ========== -->
+  <div id="tally4" class="tab-content">
+    <div class="box">
+      <h3>Opening Amount (Tally 4)</h3>
+      <input type="number" id="openingInput4" placeholder="Enter opening amount">
+      <button onclick="saveOpening(4)">Save / Update</button>
+    </div>
+    <div class="box">
+      <h3>Tally 4 Summary</h3>
+      <div class="tally">
+        <div class="opening">Opening<br>₹<span id="opening4">0</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense4">0</span></div>
+        <div class="balance">Balance<br>₹<span id="balance4">0</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Add Expense (Tally 4)</h3>
+      <input type="text" id="desc4" placeholder="Expense description">
+      <input type="number" id="amount4" placeholder="Amount spent">
+      <button onclick="addExpense(4)">➕ Add Expense</button>
+    </div>
+    <h3>Expenses (Tally 4)</h3>
+    <div id="list4"></div>
+  </div>
+
+  <!-- ========== TALLY 5 ========== -->
+  <div id="tally5" class="tab-content">
+    <div class="box">
+      <h3>Opening Amount (Tally 5)</h3>
+      <input type="number" id="openingInput5" placeholder="Enter opening amount">
+      <button onclick="saveOpening(5)">Save / Update</button>
+    </div>
+    <div class="box">
+      <h3>Tally 5 Summary</h3>
+      <div class="tally">
+        <div class="opening">Opening<br>₹<span id="opening5">0</span></div>
+        <div class="expense">Expenses<br>₹<span id="expense5">0</span></div>
+        <div class="balance">Balance<br>₹<span id="balance5">0</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Add Expense (Tally 5)</h3>
+      <input type="text" id="desc5" placeholder="Expense description">
+      <input type="number" id="amount5" placeholder="Amount spent">
+      <button onclick="addExpense(5)">➕ Add Expense</button>
+    </div>
+    <h3>Expenses (Tally 5)</h3>
+    <div id="list5"></div>
+  </div>
+
+  <!-- Logout button (common) -->
+  <div style="margin-top:20px;">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="small-note">Each tally has independent data.</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBxbzsSi-dsFPPGDeogz2SaEsW_3OKu-QU",
+    authDomain: "striped-acrobat-342207.firebaseapp.com",
+    databaseURL: "https://striped-acrobat-342207-default-rtdb.firebaseio.com",
+    projectId: "striped-acrobat-342207",
+    storageBucket: "striped-acrobat-342207.appspot.com",
+    messagingSenderId: "367114842706",
+    appId: "1:367114842706:web:0f6d504163ed3c72ed658b"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  // ---------- Firebase references for each tally (1..5) ----------
+  // Use base path "themoneytally5bro" or keep original? 
+  // I'll use "themoneytally5bro" to avoid conflicts with old data.
+  // But you can change base to whatever you prefer.
+  const basePath = "themoneytally5bro";
+
+  // Build refs for each tally
+  const tallyRefs = {};
+  for (let i = 1; i <= 5; i++) {
+    tallyRefs[i] = {
+      expenseRef: ref(db, `${basePath}/tally${i}/expenses`),
+      openingRef: ref(db, `${basePath}/tally${i}/openingBalance`)
+    };
+  }
+
+  // Keep opening amounts in memory per tally
+  const openingAmounts = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+
+  // ---------- UI switching ----------
+  window.switchTally = function(tallyNum) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    // Show selected
+    document.getElementById(`tally${tallyNum}`).classList.add('active');
+    // Update tab button active state
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.dataset.tally == tallyNum) btn.classList.add('active');
+    });
+  };
+
+  // ---------- Auth state ----------
+  onAuthStateChanged(auth, user => {
+    document.getElementById('loginDiv').style.display = user ? "none" : "block";
+    document.getElementById('appDiv').style.display = user ? "block" : "none";
+  });
+
+  window.login = () =>
+    signInWithEmailAndPassword(auth, email.value, password.value)
+      .catch(e => alert(e.message));
+
+  window.logout = () => signOut(auth);
+
+  // ---------- Save opening for a specific tally ----------
+  window.saveOpening = function(tallyNum) {
+    const input = document.getElementById(`openingInput${tallyNum}`);
+    const v = parseFloat(input.value);
+    if (!isNaN(v)) {
+      set(tallyRefs[tallyNum].openingRef, v);
+      input.value = "";
+    }
+  };
+
+  // ---------- Add expense for a specific tally ----------
+  window.addExpense = function(tallyNum) {
+    const descInput = document.getElementById(`desc${tallyNum}`);
+    const amountInput = document.getElementById(`amount${tallyNum}`);
+    const d = descInput.value.trim();
+    const a = parseFloat(amountInput.value);
+    if (d && !isNaN(a) && a > 0) {
+      push(tallyRefs[tallyNum].expenseRef, { desc: d, amount: a });
+      descInput.value = "";
+      amountInput.value = "";
+    }
+  };
+
+  // ---------- Edit expense for a specific tally ----------
+  window.editExpense = function(tallyNum, id, oldAmount) {
+    const n = parseFloat(prompt("Edit amount:", oldAmount));
+    if (!isNaN(n) && n > 0) {
+      update(ref(db, `${basePath}/tally${tallyNum}/expenses/${id}`), { amount: n });
+    }
+  };
+
+  // ---------- Delete expense for a specific tally ----------
+  window.deleteExpense = function(tallyNum, id) {
+    if (confirm("Delete this expense?")) {
+      remove(ref(db, `${basePath}/tally${tallyNum}/expenses/${id}`));
+    }
+  };
+
+  // ---------- Listen for opening balance changes for each tally ----------
+  for (let i = 1; i <= 5; i++) {
+    const openingSpan = document.getElementById(`opening${i}`);
+    const openingRef = tallyRefs[i].openingRef;
+
+    onValue(openingRef, snap => {
+      const val = snap.exists() ? snap.val() : 0;
+      openingAmounts[i] = val;
+      openingSpan.innerText = val.toFixed(2);
+      // Update balance when opening changes
+      updateBalance(i);
+    });
+  }
+
+  // ---------- Listen for expenses changes for each tally ----------
+  for (let i = 1; i <= 5; i++) {
+    const listDiv = document.getElementById(`list${i}`);
+    const expenseSpan = document.getElementById(`expense${i}`);
+    const expenseRef = tallyRefs[i].expenseRef;
+
+    onValue(expenseRef, snap => {
+      listDiv.innerHTML = "";
+      let totalExpense = 0;
+
+      snap.forEach(child => {
+        const { desc, amount } = child.val();
+        const id = child.key;
+        const amt = Number(amount);
+        totalExpense += amt;
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <div>
+            <strong>${desc}</strong><br>
+            ₹${amt.toFixed(2)}
+          </div>
+          <div class="actions">
+            <button onclick="editExpense(${i}, '${id}', ${amt})">Edit</button>
+            <button onclick="deleteExpense(${i}, '${id}')">Delete</button>
+          </div>
+        `;
+        listDiv.prepend(card);
+      });
+
+      expenseSpan.innerText = totalExpense.toFixed(2);
+      // Store total expense for this tally (or just recalc balance)
+      // Update balance using openingAmounts[i] and totalExpense
+      const balance = (openingAmounts[i] || 0) - totalExpense;
+      document.getElementById(`balance${i}`).innerText = balance.toFixed(2);
+    });
+  }
+
+  // Helper to recalculate balance for a tally (used when opening changes)
+  function updateBalance(tallyNum) {
+    // Get current total expense from the expense span (already formatted)
+    const expenseSpan = document.getElementById(`expense${tallyNum}`);
+    const expenseText = expenseSpan.innerText; // e.g. "123.45"
+    const totalExpense = parseFloat(expenseText) || 0;
+    const opening = openingAmounts[tallyNum] || 0;
+    const balance = opening - totalExpense;
+    document.getElementById(`balance${tallyNum}`).innerText = balance.toFixed(2);
+  }
+
+  // Since onValue for expenses already recalculates balance, we may have double updates but it's fine.
+  // However, when opening changes before any expense data, expense span may be "0" so balance updates correctly.
+
+  // Optional: initialise the UI with tally 1 active (already active by default)
+</script>
+
+</body>
+</html>u
