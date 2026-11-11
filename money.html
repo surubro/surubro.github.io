@@ -6,69 +6,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body { font-family: Arial, sans-serif; margin:0; background:#f5f5f5; }
-    header { background:#4CAF50; color:white; text-align:center; padding:15px; font-size:20px; font-weight:bold; }
+    body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; color: #333; }
+    header { background: #4CAF50; color: white; text-align: center; padding: 15px; font-size: 20px; font-weight: bold; }
 
-    #loginDiv, #appDiv { padding:20px; }
+    #loginDiv, #appDiv { max-width: 600px; margin: 0 auto; padding: 20px; }
 
-    input, button {
-      width:100%;
-      padding:10px;
-      margin:6px 0;
-      font-size:16px;
-      border-radius:6px;
-      border:1px solid #ccc;
-      box-sizing:border-box;
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
     }
 
     button {
-      background:#4CAF50;
-      color:white;
-      font-weight:bold;
-      border:none;
-      cursor:pointer;
+      background: #4CAF50;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
+    button:hover { opacity: 0.9; }
 
     .box {
-      background:white;
-      padding:15px;
-      margin-bottom:15px;
-      border-radius:8px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      background: white;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
     }
 
     .tally {
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      text-align:center;
-      font-weight:bold;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+      font-weight: bold;
     }
 
-    .opening { color:#673ab7; }
-    .expense { color:#f44336; }
-    .balance { color:#333; }
+    .opening { color: #673ab7; }
+    .expense { color: #f44336; }
+    .balance { color: #2e7d32; }
 
     .card {
-      background:white;
-      padding:15px;
-      margin:10px 0;
-      border-radius:8px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.1);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
+      background: white;
+      padding: 14px;
+      margin: 12px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      border-left: 4px solid #4CAF50;
+    }
+
+    .card-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .parent-total-badge {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 3px 8px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .sub-items-container {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #ddd;
+      padding-left: 15px;
+    }
+
+    .sub-item-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fafafa;
+      padding: 8px 10px;
+      margin-top: 6px;
+      border-radius: 6px;
+      border-left: 3px solid #2196F3;
+      font-size: 14px;
     }
 
     .actions button {
-      background:#2196F3;
-      margin-left:5px;
-      padding:6px 10px;
-      font-size:14px;
+      width: auto;
+      background: #2196F3;
+      margin-left: 5px;
+      padding: 5px 9px;
+      font-size: 13px;
+      display: inline-block;
     }
 
-    .actions button:last-child {
-      background:#f44336;
+    .actions button.btn-delete {
+      background: #f44336;
+    }
+
+    .actions button.btn-link {
+      background: #ff9800;
+    }
+
+    .btn-logout {
+      background: #757575;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -88,25 +135,31 @@
 
   <div class="box">
     <h3>Opening Amount</h3>
-    <input type="number" id="openingInput" placeholder="Enter opening amount">
+    <input type="number" id="openingInput" placeholder="Enter opening amount" step="any">
     <button onclick="saveOpening()">Save / Update</button>
   </div>
 
   <div class="box">
     <h3>Tally</h3>
     <div class="tally">
-      <div class="opening">Opening<br>₹<span id="opening">0</span></div>
-      <div class="expense">Expenses<br>₹<span id="expense">0</span></div>
-      <div class="balance">Balance<br>₹<span id="balance">0</span></div>
+      <div class="opening">Opening<br>₹<span id="opening">0.00</span></div>
+      <div class="expense">Expenses<br>₹<span id="expense">0.00</span></div>
+      <div class="balance">Balance<br>₹<span id="balance">0.00</span></div>
     </div>
   </div>
 
   <div class="box">
     <h3>Add Expense</h3>
     <input type="text" id="desc" placeholder="Expense description">
-    <input type="number" id="amount" placeholder="Amount spent">
+    <input type="number" id="amount" placeholder="Amount spent" step="any">
+    
+    <label style="font-size:13px; color:#666; display:block; margin-top:4px;">Link to another expense (optional):</label>
+    <select id="parentSelect">
+      <option value="">-- None (Standalone Expense) --</option>
+    </select>
+
     <button onclick="addExpense()">➕ Add Expense</button>
-    <button onclick="logout()">Logout</button>
+    <button class="btn-logout" onclick="logout()">Logout</button>
   </div>
 
   <h3>Expenses</h3>
@@ -132,50 +185,87 @@
   const db = getDatabase(app);
   const auth = getAuth();
 
-  // 🔥 UPDATED DATABASE PATHS
   const expenseRef = ref(db, "themoneytally1bro/expenses");
   const openingRef = ref(db, "themoneytally1bro/openingBalance");
 
   let openingAmount = 0;
+  let allExpensesCache = {};
 
   onAuthStateChanged(auth, user => {
-    loginDiv.style.display = user ? "none" : "block";
-    appDiv.style.display = user ? "block" : "none";
+    document.getElementById("loginDiv").style.display = user ? "none" : "block";
+    document.getElementById("appDiv").style.display = user ? "block" : "none";
   });
 
   window.login = () =>
-    signInWithEmailAndPassword(auth, email.value, password.value)
+    signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value)
       .catch(e => alert(e.message));
 
   window.logout = () => signOut(auth);
 
   window.saveOpening = () => {
-    const v = parseFloat(openingInput.value);
+    const v = parseFloat(document.getElementById("openingInput").value);
     if (!isNaN(v)) {
       set(openingRef, v);
-      openingInput.value = "";
+      document.getElementById("openingInput").value = "";
     }
   };
 
   window.addExpense = () => {
-    const d = desc.value.trim();
-    const a = parseFloat(amount.value);
+    const d = document.getElementById("desc").value.trim();
+    const a = parseFloat(document.getElementById("amount").value);
+    const parentId = document.getElementById("parentSelect").value || null;
+
     if (d && !isNaN(a) && a > 0) {
-      push(expenseRef, { desc: d, amount: a });
-      desc.value = "";
-      amount.value = "";
+      const data = { desc: d, amount: a };
+      if (parentId) data.parentId = parentId;
+
+      push(expenseRef, data);
+      document.getElementById("desc").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("parentSelect").value = "";
     }
   };
 
-  window.editExpense = (id, oldAmount) => {
+  window.editExpense = (id, oldAmount, oldDesc) => {
+    const newDesc = prompt("Edit description:", oldDesc);
+    if (newDesc === null) return;
     const n = parseFloat(prompt("Edit amount:", oldAmount));
     if (!isNaN(n) && n > 0) {
-      update(ref(db, "themoneytally1bro/expenses/" + id), { amount: n });
+      update(ref(db, "themoneytally1bro/expenses/" + id), {
+        desc: newDesc.trim() || oldDesc,
+        amount: n
+      });
+    }
+  };
+
+  window.changeLink = (id) => {
+    const availableParents = Object.keys(allExpensesCache).filter(key => key !== id && !allExpensesCache[key].parentId);
+    let message = "Enter the number of the expense to link to:\n0: Unlink (make standalone)\n";
+    availableParents.forEach((key, index) => {
+      message += `${index + 1}: ${allExpensesCache[key].desc} (₹${allExpensesCache[key].amount})\n`;
+    });
+
+    const choice = prompt(message);
+    if (choice === null) return;
+
+    const parsed = parseInt(choice, 10);
+    if (parsed === 0) {
+      update(ref(db, "themoneytally1bro/expenses/" + id), { parentId: null });
+    } else if (parsed > 0 && parsed <= availableParents.length) {
+      update(ref(db, "themoneytally1bro/expenses/" + id), { parentId: availableParents[parsed - 1] });
+    } else {
+      alert("Invalid choice.");
     }
   };
 
   window.deleteExpense = id => {
-    if (confirm("Delete this expense?")) {
+    if (confirm("Delete this expense? Linked sub-items will become standalone.")) {
+      // Unlink child expenses before deleting parent
+      Object.keys(allExpensesCache).forEach(childId => {
+        if (allExpensesCache[childId].parentId === id) {
+          update(ref(db, "themoneytally1bro/expenses/" + childId), { parentId: null });
+        }
+      });
       remove(ref(db, "themoneytally1bro/expenses/" + id));
     }
   };
@@ -186,33 +276,104 @@
   });
 
   onValue(expenseRef, snap => {
+    const list = document.getElementById("list");
+    const parentSelect = document.getElementById("parentSelect");
     list.innerHTML = "";
+    allExpensesCache = {};
+
     let totalExpense = 0;
+    const items = [];
 
     snap.forEach(c => {
-      const { desc, amount } = c.val();
+      const val = c.val();
       const id = c.key;
-      totalExpense += Number(amount);
+      val.id = id;
+      val.amount = Number(val.amount) || 0;
+      allExpensesCache[id] = val;
+      items.push(val);
+      totalExpense += val.amount;
+    });
 
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <div>
-          <strong>${desc}</strong><br>
-          ₹${amount}
+    // Populate dropdown with standalone items
+    parentSelect.innerHTML = '<option value="">-- None (Standalone Expense) --</option>';
+    items.filter(item => !item.parentId).forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.id;
+      opt.textContent = `${item.desc} (₹${item.amount.toFixed(2)})`;
+      parentSelect.appendChild(opt);
+    });
+
+    // Separate parents and children
+    const parentItems = items.filter(i => !i.parentId || !allExpensesCache[i.parentId]);
+    const childrenByParent = {};
+
+    items.forEach(i => {
+      if (i.parentId && allExpensesCache[i.parentId]) {
+        if (!childrenByParent[i.parentId]) childrenByParent[i.parentId] = [];
+        childrenByParent[i.parentId].push(i);
+      }
+    });
+
+    // Render parents with their linked children
+    parentItems.forEach(p => {
+      const children = childrenByParent[p.id] || [];
+      const childrenSum = children.reduce((acc, c) => acc + c.amount, 0);
+      const combinedSum = p.amount + childrenSum;
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      let childrenHTML = "";
+      if (children.length > 0) {
+        childrenHTML = `<div class="sub-items-container">
+          <small style="color:#777; font-weight:bold;">Linked Expenses:</small>
+          ${children.map(child => `
+            <div class="sub-item-card">
+              <div>
+                ↳ <strong>${escapeHtml(child.desc)}</strong>: ₹${child.amount.toFixed(2)}
+              </div>
+              <div class="actions">
+                <button onclick="editExpense('${child.id}', ${child.amount}, '${escapeJs(child.desc)}')">Edit</button>
+                <button class="btn-link" onclick="changeLink('${child.id}')">Unlink/Move</button>
+                <button class="btn-delete" onclick="deleteExpense('${child.id}')">Delete</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>`;
+      }
+
+      card.innerHTML = `
+        <div class="card-main">
+          <div>
+            <strong>${escapeHtml(p.desc)}</strong><br>
+            Base: ₹${p.amount.toFixed(2)}
+            ${children.length > 0 ? `<br><span class="parent-total-badge">Total with linked: ₹${combinedSum.toFixed(2)}</span>` : ""}
+          </div>
+          <div class="actions">
+            <button onclick="editExpense('${p.id}', ${p.amount}, '${escapeJs(p.desc)}')">Edit</button>
+            <button class="btn-link" onclick="changeLink('${p.id}')">Link To</button>
+            <button class="btn-delete" onclick="deleteExpense('${p.id}')">Delete</button>
+          </div>
         </div>
-        <div class="actions">
-          <button onclick="editExpense('${id}', ${amount})">Edit</button>
-          <button onclick="deleteExpense('${id}')">Delete</button>
-        </div>
+        ${childrenHTML}
       `;
-      list.prepend(div);
+
+      list.prepend(card);
     });
 
     document.getElementById("expense").innerText = totalExpense.toFixed(2);
-    document.getElementById("balance").innerText =
-      (openingAmount - totalExpense).toFixed(2);
+    document.getElementById("balance").innerText = (openingAmount - totalExpense).toFixed(2);
   });
+
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.innerText = text;
+    return div.innerHTML;
+  }
+
+  function escapeJs(text) {
+    return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+  }
 </script>
 
 </body>
